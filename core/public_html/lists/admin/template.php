@@ -85,8 +85,8 @@ if (!empty($_POST['action']) && $_POST['action'] == "addimages") {
   //$msg = '';
 } elseif (!empty($_POST['save']) || !empty($_POST['sendtest'])) { ## let's save when sending a test
   $templateok = 1;
-  $title = removeXss($_POST['title']);
-  if ($title && strpos($content,"[CONTENT]") !== false) {
+  $title = $_POST['title'];
+  if (!empty($title) && strpos($content,"[CONTENT]") !== false) {
     $images = getTemplateImages($content);
     
  //   var_dump($images);
@@ -125,11 +125,11 @@ if (!empty($_POST['action']) && $_POST['action'] == "addimages") {
   }
   if ($templateok) {
     if (!$id) {
-      Sql_Query("insert into {$tables["template"]} (title) values(\"$title\")");
+      Sql_Query(sprintf('insert into %s (title) values("%s")',$tables['template'],sql_escape($title)));
       $id = Sql_Insert_Id($tables['template'], 'id');
     }
     Sql_Query(sprintf('update %s set title = "%s",template = "%s" where id = %d',
-       $tables["template"],$title,sql_escape($content),$id));
+       $tables["template"],sql_escape($title),sql_escape($content),$id));
     Sql_Query(sprintf('select * from %s where filename = "%s" and template = %d',
       $tables["templateimage"],"powerphplist.png",$id));
     if (!Sql_Affected_Rows())
@@ -139,8 +139,22 @@ if (!empty($_POST['action']) && $_POST['action'] == "addimages") {
       $newpoweredimage,
       70,30));
     $actionresult .= '<p class="information">'.s('Template saved').'</p>';
+    
+    ## ##17419 don't prompt for remote images that exist
+    $missingImages = array();
+    while (list($key,$val) = each ($images)) {
+      $key = trim($key);
+      if (preg_match('~^https?://~i',$key)) {
+        $imageFound = testUrl($key);
+        if (!$imageFound) {
+          $missingImages[$key] = $val;
+        }
+      } else {
+        $missingImages[$key] = $val;
+      }
+    }
 
-    if (sizeof($images)) {
+    if (sizeof($missingImages)) {
       include dirname(__FILE__) . "/class.image.inc";
       $image = new imageUpload();
       print "<h3>".$GLOBALS['I18N']->get('Images').'</h3><p class="information">'.$GLOBALS['I18N']->get('Below is the list of images used in your template. If an image is currently unavailable, please upload it to the database.')."</p>";
@@ -151,7 +165,7 @@ if (!empty($_POST['action']) && $_POST['action'] == "addimages") {
       reset($images);
       while (list($key,$val) = each ($images)) {
         $key = trim($key);
-        if (preg_match('~^http://~i',$key)) {
+        if (preg_match('~^https?://~i',$key)) {
           $missingImage = true;
           $imageFound = testUrl($key);
           if ($imageFound != 200) {
@@ -169,8 +183,12 @@ if (!empty($_POST['action']) && $_POST['action'] == "addimages") {
       if (empty($_POST['sendtest'])) return;
   #    return;
     } else {
-      print '<p class="information">'.$GLOBALS['I18N']->get('Template does not contain local images')."</p>";
-      if (empty($_POST['sendtest'])) return;
+      $_SESSION['action_result'] = s('Template was successfully saved');
+#      print '<p class="information">'.$GLOBALS['I18N']->get('Template does not contain local images')."</p>";
+      if (empty($_POST['sendtest'])) {
+        Redirect('templates');
+        return;
+      }
   #    return;
     }
   } else {
@@ -311,9 +329,9 @@ if ($id) {
     $GLOBALS['I18N']->get('(comma separate addresses - all must be existing subscribers)'));
   $testpanel = new UIPanel($GLOBALS['I18N']->get('Send Test'),$sendtest_content);
   $testpanel->setID('testpanel');
-  if ($systemTemplateID == $id) { ## for now, testing only for system message templates
+#  if ($systemTemplateID == $id) { ## for now, testing only for system message templates
     print $testpanel->display();
-  }
+#  }
 ?>
 
 </form>

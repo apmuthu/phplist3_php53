@@ -17,15 +17,14 @@ if (isset($_GET['start'])) {
 
 $addcomparison = 0;
 $access = accessLevel('statsoverview');
-$and = '';
+$ownership = '';
 $subselect = '';
 $paging = '';
-$and_params = array();
+
 #print "Access Level: $access";
 switch ($access) {
   case 'owner':
-    $and = ' and owner = ?';
-    $and_params[] = $_SESSION['logindetails']['id'];
+    $ownership = sprintf(' and owner = %d ', $_SESSION['logindetails']['id']);
     if ($id) {
       $query = sprintf('select owner from %s where id = ? and owner = ?', $GLOBALS['tables']['message']);
       $rs = Sql_Query_Params($query, array($id, $_SESSION['logindetails']['id']));
@@ -41,8 +40,7 @@ switch ($access) {
     break;
   case 'none':
   default:
-    $and = ' and id = ?';
-    $and_params[] = 0;
+    $ownership = ' and msg.id = 0';
     print $GLOBALS['I18N']->get('You do not have access to this page');
     return;
     break;
@@ -60,20 +58,20 @@ if ($download) {
 }  
 
 if (!$id) {
-  print '<p>'.$GLOBALS['I18N']->get('Select Message to view').'</p>';
+ # print '<p>'.$GLOBALS['I18N']->get('Select Message to view').'</p>';
   
   if (empty($start)) {
     print '<div class="actions">'.PageLinkButton('statsoverview&dl=true',$GLOBALS['I18N']->get('Download as CSV file')).'</div>';
   }
 
   $timerange = ' and msg.entered > date_sub(current_timestamp,interval 12 month)';
-  #$timerange = '';
+  $timerange = '';
 
   $query = sprintf('select msg.owner,msg.id as messageid,count(um.viewed) as views, 
     count(um.status) as total,subject,date_format(sent,"%%e %%b %%Y") as sent,
-    bouncecount as bounced from %s um,%s msg where um.messageid = msg.id and um.status = "sent" %s %s
+    bouncecount as bounced from %s um,%s msg where um.messageid = msg.id and um.status = "sent" %s %s %s
     group by msg.id order by msg.entered desc',
-    $GLOBALS['tables']['usermessage'],$GLOBALS['tables']['message'],$subselect,$timerange);
+    $GLOBALS['tables']['usermessage'],$GLOBALS['tables']['message'],$subselect,$timerange,$ownership);
   $req = Sql_Query($query);
   $total = Sql_Num_Rows($req);
   if ($total > 10 && !$download) {
@@ -87,7 +85,7 @@ if (!$id) {
     print '<p class="information">'.$GLOBALS['I18N']->get('There are currently no messages to view').'</p>';
   }
 
-  $ls = new WebblerListing($GLOBALS['I18N']->get('Campaigns in the last year'));
+  $ls = new WebblerListing('');
   $ls->usePanel($paging);
   while ($row = Sql_Fetch_Array($req)) {
     $element = '<!--'.$row['messageid'].'-->'.shortenTextDisplay($row['subject'],30);
@@ -131,6 +129,12 @@ print PageLinkButton('statsoverview',s('View all campaigns'));
 
 $messagedata = loadMessageData($id);
 //var_dump($messagedata);
+
+if (empty($messagedata['subject'])) {
+  Error(s('Campaign not found'));
+  return;
+}
+
 print '<h3>'.$messagedata['subject']. '</h3>';
 
 $ls = new WebblerListing('');

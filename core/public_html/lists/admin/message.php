@@ -79,7 +79,16 @@ if ($msgdata['status'] == 'draft' || $msgdata['status'] == 'suspended') {
   print '<div class="actions">';
   print '<p>'.PageLinkButton('send&amp;id='.$id,$GLOBALS['I18N']->get('Edit this message')).'</p>';
   print '</div>';
-}
+} else {
+  print '<div class="actions">';
+  
+  $editbutton = new ConfirmButton(
+     s('Editing an active or finished campaign will place it back in the draft queue, continue?'),
+     PageURL2('send&id='.$id),
+     s('Edit campaign'));
+  print $editbutton->show();
+  print '</div>';
+}  
 
 $content = '<table class="messageView">';
 ## optimise this, use msgdata above
@@ -127,14 +136,14 @@ if (!Sql_Num_Rows($result))
   $content .= '<tr><td colspan="2">' . $GLOBALS['I18N']->get('None yet') . '</td></tr>';
 while ($lst = Sql_fetch_array($result)) {
   array_push($lists_done,$lst['id']);
-  $content .= sprintf ('<tr><td>%d</td><td>%s</td></tr>',$lst['id'],$lst['name']);
+  $content .= sprintf ('<tr><td>%d</td><td>%s</td></tr>',$lst['id'],stripslashes($lst['name']));
 }
 
 if ($msgdata['excludelist']) {
   $content .= '<tr><td colspan="2"><h4>' . $GLOBALS['I18N']->get('Except when they were also member of these lists') . ':</h4></td></tr>';
   $result = Sql_Query(sprintf('select l.name, l.id from %s l where id in (%s)',$tables['list'],join(',',$msgdata['excludelist'])));
   while ($lst = Sql_fetch_array($result)) {
-    $content .= sprintf ('<tr><td>%d</td><td>%s</td></tr>',$lst['id'],$lst['name']);
+    $content .= sprintf ('<tr><td>%d</td><td>%s</td></tr>',$lst['id'],stripslashes($lst['name']));
   }
 }
 $content .= '</table>';
@@ -153,13 +162,15 @@ $result = Sql_query("SELECT * FROM $tables[list] $subselect");
 while ($row = Sql_fetch_array($result)) {
   if (!in_array($row['id'],$lists_done)) {
     $messlis .= '<li><input type="checkbox" name="list[' . $row["id"] . ']" value="signup" ';
-    if (isset($_POST['list'][$row["id"]]) && $_POST['list'][$row["id"]] == 'signup')
+    if (isset($_POST['list'][$row["id"]]) && $_POST['list'][$row["id"]] == 'signup') {
       $messlis .= 'checked="checked"';
+    }
     $messlis .= " />".$row['name'];
-    if ($row["active"])
-      $messlis .= ' (' . $GLOBALS['I18N']->get('List is Active') . ')';
-    else
-      $messlis .= ' (' . $GLOBALS['I18N']->get('List is not Active') . ')';
+    if ($row["active"]) {
+      $messlis .= ' (' . $GLOBALS['I18N']->get('Public list') . ')';
+    } else {
+      $messlis .= ' (' . $GLOBALS['I18N']->get('Private list') . ')';
+    }
     $some = 1;
     $messlis .= '</li>';
   }

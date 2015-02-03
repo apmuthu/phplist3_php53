@@ -1,1 +1,1 @@
-Qui puoi aggiungere pi&ugrave; amministratori al sistema.
+Qui potete aggiungere altri amministratori al sistema.

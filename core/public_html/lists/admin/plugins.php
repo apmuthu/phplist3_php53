@@ -46,7 +46,7 @@ if (!empty($_POST['pluginurl']) && class_exists('ZipArchive')) {
   print '<h2>'.s('Project').' '.$project_name.'</h2>';
   
   $filename = '';
-  $packagefile = fetchUrl($packageurl);
+  $packagefile = file_get_contents($packageurl);
   if (!$packagefile) {
     print Error(s('Unable to download plugin package, check your connection'));
   } else {
@@ -57,7 +57,7 @@ if (!empty($_POST['pluginurl']) && class_exists('ZipArchive')) {
     print '<h3>'.s('Installing plugin').'</h3>';
   }
   $zip = new ZipArchive;
-  if (!empty($filename) && $zip->open($GLOBALS['tmpdir'].'/phpListPlugin-'.$filename)) {
+  if (!empty($filename) && $zip->open($GLOBALS['tmpdir'].'/phpListPlugin-'.$filename) === TRUE) {
     
     /* the zip may have a variety of directory structures, as Github seems to add at least one for the "branch" of 
      * the project and then the developer has some more. 
@@ -119,7 +119,7 @@ if (!empty($_POST['pluginurl']) && class_exists('ZipArchive')) {
      #       var_dump($pluginInfo);
               
             print '<br/>';
-            if (rename($GLOBALS['tmpdir'].'/phpListPluginInstall/'.$dir_prefix.'/plugins/'.$dirEntry,
+            if (copy_recursive($GLOBALS['tmpdir'].'/phpListPluginInstall/'.$dir_prefix.'/plugins/'.$dirEntry,
               $pluginDestination.'/'.$dirEntry)) {
                 delFsTree($pluginDestination.'/'.$dirEntry.'.'.$bu_dir);
                 $installOk = true;
@@ -150,8 +150,8 @@ if (!empty($_POST['pluginurl']) && class_exists('ZipArchive')) {
     } else {
       Error(s('Plugin directory is not writable'));
     }
-  //} else {
-    //Error(s('Invalid plugin package'));
+  } else {
+    Error(s('Invalid plugin package'));
   }
 
   print s('Plugin installation failed');
@@ -178,6 +178,7 @@ if (defined('PLUGIN_ROOTDIR') && !is_writable(PLUGIN_ROOTDIR)) {
 $ls = new WebblerListing(s('Installed plugins'));
 
 if (empty($GLOBALS['allplugins'])) return;
+ksort($GLOBALS['allplugins'], SORT_FLAG_CASE | SORT_STRING);
 
 foreach ($GLOBALS['allplugins'] as $pluginname => $plugin) {
   $pluginDetails = array();

@@ -59,7 +59,14 @@ if (!$id) {
   $id = Sql_Insert_Id($GLOBALS['tables']['message'], 'id');
 
   if (isset($_GET['list'])) {
-    $addlists = explode(',',$_GET['list']);
+    if ($_GET['list'] == 'all') {
+      $req = Sql_Query('select id from '.$tables['list']);
+      while ($row = Sql_Fetch_Row($req)) {
+        $addlists[] = $row[0];
+      }
+    } else {
+      $addlists = explode(',',$_GET['list']);
+    }
     $addlists = cleanArray($addlists);
     foreach ($addlists as $listid) {
       $query = "replace into %s (messageid,listid,entered) values(?,?,current_timestamp)";
@@ -238,6 +245,15 @@ if ($send || $sendtest || $prepare || $save || $savedraft) {
       print $GLOBALS["can_fetchUrl"].Warn(s('You are trying to send a remote URL, but PEAR::HTTP_Request or CURL is not available, so this will fail'));
     }
 
+    if ($GLOBALS["commandline"]) {
+      if (isset($_POST["targetlist"]) && is_array($_POST["targetlist"])) {
+        Sql_query("delete from {$tables["listmessage"]} where messageid = $id");
+        foreach($_POST["targetlist"] as $listid => $val) {
+          $result = Sql_query("insert ignore into {$tables["listmessage"]} (messageid,listid,entered) values($id,$listid,now())");
+        }
+      }
+    }
+    
 # we want to create a join on tables as follows, in order to find users who have their attributes to the values chosen
 # (independent of their list membership).
 # select
@@ -300,10 +316,11 @@ if ($send || $sendtest || $prepare || $save || $savedraft) {
           }
 
           # do a final check
-          if (filesize($GLOBALS["attachment_repository"]."/".$newfile))
-            print Info($GLOBALS['I18N']->get("addingattachment")." ".$att_cnt . " .. ok");
-          else
-            print Info($GLOBALS['I18N']->get("addingattachment")." ".$att_cnt." .. failed");
+          if (filesize($GLOBALS["attachment_repository"]."/".$newfile)) {
+            print Info(s('Attachment %d succesfully added',$att_cnt));
+          } else {
+            print Info(s('Adding attachment %d failed',$att_cnt));
+          }
         } else {
           print Warn($GLOBALS['I18N']->get("Uploaded file not properly received, empty file"));
         }
@@ -316,7 +333,7 @@ if ($send || $sendtest || $prepare || $save || $savedraft) {
         $attachmentid = Sql_Insert_Id($tables['attachment'], 'id');
         Sql_query(sprintf('insert into %s (messageid,attachmentid) values(%d,%d)',
         $tables["message_attachment"],$id,$attachmentid));
-        print Info($GLOBALS['I18N']->get("addingattachment")." ".$att_cnt. " mime: $type");
+        print Info(s("Adding attachment")." ".$att_cnt. " mime: $type");
       }
     }
   }
@@ -359,7 +376,9 @@ if ($send || $sendtest || $prepare || $save || $savedraft) {
       foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
         $plugin->messageQueued($id);
       }
-      if (MANUALLY_PROCESS_QUEUE) {
+      if (getConfig('pqchoice') == 'phplistdotcom') {
+        print activateRemoteQueue();
+      } elseif (MANUALLY_PROCESS_QUEUE) {
         print '<p>'.PageLinkButton("processqueue",$GLOBALS['I18N']->get("processqueue")).'</p>';
       } else {
         print '<p>'.PageLinkButton("messages&tab=active",$GLOBALS['I18N']->get("view progress")).'</p>';
@@ -397,12 +416,28 @@ if ($send || $sendtest || $prepare || $save || $savedraft) {
       $_SESSION['lasttestsent'] = 0;
     }
     
+    $sendtestAllowed = true;
+    ## check with plugins that sending a test is allowed
+    reset($GLOBALS['plugins']);
+    while ($sendtestAllowed && $plugin = current($GLOBALS['plugins']) ) {
+      $sendtestAllowed = $plugin->sendTestAllowed($messagedata);
+      if (!$sendtestAllowed) {
+        if (VERBOSE) {
+          cl_output('Sending test blocked by plugin '.$plugin->name);
+        }
+      }
+      next($GLOBALS['plugins']);
+    } 
+    
     $delay = time() - $_SESSION['lasttestsent'];
     if ($delay < SENDTEST_THROTTLE) {
       foreach ($GLOBALS['plugins'] as $plname => $plugin) {
         $plugin->processError('Send test throttled on '.$delay);
       }
       $sendtestresult .= s('You can send a test mail once every %d seconds',SENDTEST_THROTTLE)."<br/>";
+      $emailaddresses = array();
+    } elseif (!$sendtestAllowed) {
+      $sendtestresult .= s('Sending test mails is currently not available')."<br/>";
       $emailaddresses = array();
     } else {
       // Let's send test messages to everyone that was specified in the
@@ -463,7 +498,7 @@ if ($send || $sendtest || $prepare || $save || $savedraft) {
         $sendtestresult .= '<br/>';
       } else {
         $sendtestresult .= $GLOBALS['I18N']->get("Email address not found to send test message.").": $address";
-        $sendtestresult .= sprintf('  <div class="inline"><a href="%s&action=addemail&email=%s" class="button ajaxable">%s</a></div>',$baseurl,urlencode($address),$GLOBALS['I18N']->get("add"));
+        $sendtestresult .= sprintf('  <div class="inline"><a href="%s&action=addemail&email=%s%s" class="button ajaxable">%s</a></div>',$baseurl,urlencode($address),addCsrfGetToken(),$GLOBALS['I18N']->get("add"));
       }
     }
     $sendtestresult .= "<hr/>";
@@ -473,19 +508,20 @@ if ($send || $sendtest || $prepare || $save || $savedraft) {
   if (ALLOW_ATTACHMENTS) {
     // Delete Attachment button hit...
     $deleteattachments = $_POST["deleteattachments"];
-    foreach($deleteattachments as $attid)
-    {
+    foreach($deleteattachments as $attid) {
+      $attDetails = Sql_fetch_assoc_query(sprintf('select filename from %s where id = %d',$tables["attachment"],$attid));
+      $phys_file = $GLOBALS["attachment_repository"]."/".$attDetails["filename"];
+      $fileParts = pathinfo($phys_file);
+      $phys_file2 = $GLOBALS["attachment_repository"]."/".$fileParts['filename']; ## to remove the file created by tempnam
+      
+      @unlink($phys_file);
+      @unlink($phys_file2);
+      
       $result = Sql_Query(sprintf("delete from %s where id = %d and messageid = %d",
         $tables["message_attachment"],
         $attid,
         $id));
       print Info($GLOBALS['I18N']->get("Removed Attachment "));
-      // NOTE THAT THIS DOESN'T ACTUALLY DELETE THE ATTACHMENT FROM THE DATABASE, OR
-      // FROM THE FILE SYSTEM - IT ONLY REMOVES THE MESSAGE / ATTACHMENT LINK.  THIS
-      // SHOULD PROBABLY BE CORRECTED, BUT I (Pete Ness) AM NOT SURE WHAT OTHER IMPACTS
-      // THIS MAY HAVE.
-      // (My thoughts on this are to check for any orphaned attachment records and if
-      //  there are any, to remove it from the disk and then delete it from the database).
     }
   }
 }
@@ -630,7 +666,7 @@ if (!$done) {
 
   $maincontent .= '
   <div class="field"><label for="subject">'.$GLOBALS['I18N']->get("Subject").Help("subject").'</label>'.
-  '<input type="text" name="subject"
+  '<input type="text" name="subject"  id="subjectinput"
     value="'.htmlentities($utf8_subject,ENT_QUOTES,'UTF-8').'" size="60" /></div>
   <div class="field"><label for="fromfield">'.$GLOBALS['I18N']->get("From Line").Help("from").'</label>'.'
     <input type="text" name="fromfield"
@@ -672,7 +708,7 @@ if (!$done) {
   $scheduling_content = '<div id="schedulecontent">';
   if (defined('SYSTEM_TIMEZONE')) {
     $scheduling_content .= '
-    <div class="field">'.s('phpList operates in the time zone ').SYSTEM_TIMEZONE.'</div>';
+    <div class="field">'.s('phpList operates in the time zone "%s"',SYSTEM_TIMEZONE).'</div>';
   } else {
     $scheduling_content .= '
     <div class="field">'.s('Dates and times are relative to the Server Time').'<br/>'.s('Current Server Time is').' <span id="servertime">'.$currentTime[0].'</span>'.'</div>';
@@ -846,12 +882,13 @@ if (!$done) {
 
 
       $ls = new WebblerListing($GLOBALS['I18N']->get('Current Attachments'));
-
+      $totalSize = 0;
       while ($row = Sql_fetch_array($result)) {
         $ls->addElement($row["id"]);
         $ls->addColumn($row["id"],$GLOBALS['I18N']->get('filename'),$row["remotefile"]);
         $ls->addColumn($row["id"],$GLOBALS['I18N']->get('desc'),$row["description"]);
-        $ls->addColumn($row["id"],$GLOBALS['I18N']->get('size'),$row["size"]);
+        $ls->addColumn($row["id"],$GLOBALS['I18N']->get('size'),formatBytes($row["size"]));
+        $totalSize += $row["size"];
         $phys_file = $GLOBALS["attachment_repository"]."/".$row["filename"];
         if (is_file($phys_file) && filesize($phys_file)) {
           $ls->addColumn($row["id"],$GLOBALS['I18N']->get('file'),$GLOBALS["img_tick"]);
@@ -860,9 +897,13 @@ if (!$done) {
         }
         $ls->addColumn($row["id"],$GLOBALS['I18N']->get('del'),sprintf('<input type="checkbox" name="deleteattachments[]" value="%s"/>',$row["linkid"]));
       }
-      $ls->addButton($GLOBALS['I18N']->get('delchecked'),"javascript:document.sendmessageform.submit()");
+      $ls->addButton(s('Delete checked'),"javascript:document.sendmessageform.submit()");
       $att_content .= '<div>'.$ls->display().'</div>';
     }
+    if (defined('MAX_MAILSIZE') && 3 * $totalSize > MAX_MAILSIZE) {  ## the 3 is roughly the size increase to encode the string
+      $att_content .= Warn(s('The total size of attachments is very large. Sending this campaign may fail due to resource limits.'));
+    }
+    
     for ($att_cnt = 1;$att_cnt <= NUMATTACHMENTS;$att_cnt++) {
       $att_content .= sprintf  ('<div>%s</div><div><input type="file" name="attachment%d"/>&nbsp;&nbsp;<input class="submit" type="submit" name="save" value="%s"/></div>',$GLOBALS['I18N']->get('New Attachment'),$att_cnt,$GLOBALS['I18N']->get('Add (and save)'));
       if (FILESYSTEM_ATTACHMENTS) {
@@ -889,10 +930,6 @@ if (!$done) {
   // if there isn't one, load the developer one, just being lazy here :-)
   if (empty($messagedata["testtarget"]) && isset($GLOBALS["developer_email"])) {
     $messagedata["testtarget"] = $GLOBALS["developer_email"];
-  }
-
-  if (empty($messagedata['testtarget'])) {
-    $messagedata['testtarget'] = $_SESSION['logininfo']['email'];
   }
 
   // Display the HTML for the "Send Test" button, and the input field for the email addresses
@@ -934,6 +971,13 @@ if (!$done) {
     </div>',
      Help("resetstats").' '.s('Reset click statistics'),
      !empty($messagedata['resetstats']) ? 'checked="checked"':'');
+
+  $send_content .= sprintf('
+    <div class="isTestCampaign">
+    <label for"cb[istestcampaign]">%s</label><input type="hidden" name="cb[istestcampaign]" value="1" /><input type="checkbox" name="istestcampaign" id="istestcampaign" value="1" %s />
+    </div>',
+     Help("istestcampaign").' '.s('This is a test campaign'),
+     !empty($messagedata['istestcampaign']) ? 'checked="checked"':'');
    
   $show_lists = 0;
 
@@ -1119,13 +1163,19 @@ $finishSending = mktime($messagedata['finishsending']['hour'],$messagedata['fini
   $messagedata['finishsending']['month'],$messagedata['finishsending']['day'],$messagedata['finishsending']['year']);
 $embargoTime = mktime($messagedata['embargo']['hour'],$messagedata['embargo']['minute'],0,
   $messagedata['embargo']['month'],$messagedata['embargo']['day'],$messagedata['embargo']['year']);
-  
+$currentTime = time();
+
 if ($finishSending < $embargoTime) { 
   $allReady = false;
   $GLOBALS['pagefooter']['addtoqueue'] .= '<script type="text/javascript">
   $("#addtoqueue").append(\'<div class="missing">'.s('This campaign is scheduled to stop sending before the embargo time. No mails will be sent.').'<br/>'.PageLinkButton('send&amp;id='.$messagedata['id'].'&amp;tab=Scheduling',s('Review Scheduling')).'</div>\');
   </script>';  
-}
+} elseif ($finishSending < $currentTime) {
+  $allReady = false;
+  $GLOBALS['pagefooter']['addtoqueue'] .= '<script type="text/javascript">
+  $("#addtoqueue").append(\'<div class="missing">'.s('This campaign is scheduled to stop sending in the past. No mails will be sent.').'<br/>'.PageLinkButton('send&amp;id='.$messagedata['id'].'&amp;tab=Scheduling',s('Review Scheduling')).'</div>\');
+  </script>';  
+}  
 
 if (empty($messagedata['targetlist'])) {
   $allReady = false;
@@ -1165,6 +1215,8 @@ if ($allReady) {
 
 $saveDraftButton = '<div class="sendSubmit">
     <input class="submit" type="submit" name="savedraft" value="'.s('Save as draft').'"/>
+    <input type="hidden" name="id" value="'.$id.'"/>
+    <input type="hidden" name="status" value="draft"/> <input class="submit" type="submit" name="save" value="'.s('Save and continue editing').'"/>
     <input type="hidden" name="id" value="'.$id.'"/>
     <input type="hidden" name="status" value="draft"/></div>
 ';

@@ -45,8 +45,8 @@ if (!empty($_POST["change"])) {
         $totalres = Sql_fetch_Row($result);
         $total = $totalres[0]; 
         if (!$total) {
-          Sql_Query(sprintf('insert into %s (loginname,namelc,created) values("%s","%s",current_timestamp)',
-            $tables["admin"],strtolower(normalize($_POST["loginname"])),strtolower(normalize($_POST["loginname"]))));
+          Sql_Query(sprintf('insert into %s (loginname,namelc,password,created) values("%s","%s","%s",current_timestamp)',
+            $tables["admin"],strtolower(normalize($_POST["loginname"])),strtolower(normalize($_POST["loginname"])),encryptPass(md5(rand(0,1000)))));
           $id = Sql_Insert_Id($tables['admin'], 'id');
         } else {
           $id = 0;
@@ -60,6 +60,15 @@ if (!empty($_POST["change"])) {
     }
   } else {
     $id = sprintf('%d',$_POST["id"]);
+    ##17388 - disallow changing an admin email to an already existing one
+    if (!empty($_POST['email'])) {
+      $exists = Sql_Fetch_Row_Query(sprintf('select id from %s where email = "%s"',$tables['admin'],sql_escape($_POST['email'])));
+      if (!empty($exists[0]) && $exists[0] != $id) {
+        Error(s('Cannot save admin, that email address already exists for another admin'));
+        print PageLinkButton('admin&id='.$id,s('Back to edit admin'));
+        return;
+      }
+    }
   }
 
   if ($id) {
@@ -109,7 +118,6 @@ if (!empty($_GET["delete"])) {
   if ($delete != $_SESSION["logindetails"]["id"]) {
     Sql_query(sprintf('delete from %s where id = %d',$GLOBALS["tables"]["admin"],$delete));
     Sql_query(sprintf('delete from %s where adminid = %d',$GLOBALS["tables"]["admin_attribute"],$delete));
-    Sql_query(sprintf('delete from %s where adminid = %d',$GLOBALS["tables"]["admin_task"],$delete));
     print '..'.$GLOBALS['I18N']->get('Done');
   } else {
     print '..'.$GLOBALS['I18N']->get('Failed, you cannot delete yourself');

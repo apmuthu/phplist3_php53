@@ -3,6 +3,8 @@
 # language dependent text used in the interface for users (not admin)
 
 $strCharSet             = 'UTF-8';
+$strLancode             = 'en'; ## two letter iso code
+$strLandir              = 'ltr'; ## language direction (ltr or rtl)
 $strName                = 'Name';
 $strAddress             = 'Address';
 $strEmail               = 'Email address';
@@ -28,7 +30,7 @@ $strThanks              = 'Thank you for subscribing to our newsletters.';
 $strEmailConfirmation   = 'Your email address has been added to our system. You will receive a message with a request to confirm your membership. Please make sure to click the link in that message to confirm your subscription.';
 $strEmailFailed          = 'Sorry, sending the message to request your confirmation failed, please click "Reload" to try again. If it still does not work, please contact the administrator.';
 $strUnsubscribeTitle    = 'Unsubscribe from our Newsletters';
-$strUnsubscribeDone     = 'You have been unsubscribed from our newsletters and you will a receive confirmation message shortly.';
+$strUnsubscribeDone     = 'You have been unsubscribed from our newsletters and you will receive a confirmation message shortly.';
 $strUnsubscribedNoConfirm = 'You have been unsubscribed from this newsletter system';
 $strBack                = 'Back';
 $strUnsubscribeInfo     = 'Unsubscribe from our newsletters';
@@ -43,6 +45,7 @@ $strResubmit            = 'Re-submit';
 $strUnsubscribeSubmit   = 'Unsubscribe from the selected newsletters';
 $strValuesMissing       = 'The following required values are missing';
 $strConfirmInfo         = 'Thank you for confirming your subscription to our newsletters. The newsletters you are subscribed to are listed below';
+$strAlreadyConfirmed    = 'We already received your confirmation previously.';
 $strConfirmTitle        = 'phpList membership confirmation page';
 $strUserNotFound        = 'Subscriber not found';
 $strUserAlreadyInitialised = 'Sorry, your password has already been set';

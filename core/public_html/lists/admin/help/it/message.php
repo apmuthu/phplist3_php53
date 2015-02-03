@@ -1,18 +1,26 @@
-Nel campo del messaggio puoi usare delle variabili che saranno sostituite dai rispettivi valori di un utente:
-<br/>Le variabili devono essere nella forma <b>[NAME]</b> dove NAME pu&ograve; essere sostituito con il nome di uno dei tuoi attributi.
-<br />For example if you have an attribute "First Name" put [FIRST NAME] in the message somewhere to identify the location where the "First Name" value of the recipient needs to be inserted.</p>
-<p>Al momento sono presenti i seguenti attributi:
+<p>
+Nel campo del messaggio potete usare delle "variabili" che saranno sostituite dai rispettivi valori di un utente:
+<br />Le variabili devono essere nel form <b>[NAME]</b> dove NAME pu&ograve; essere sostituito con il nome di uno dei tuoi attributi.
+<br />Per esempio, se avete un attributo "Nome" mettere [NOME] da qualche parte nel messaggio al fine di identificare dove si trova il valore del "Nome" ed il campo in cui va inserito.</p>
+<p>Potete anche aggiungere un testo da usare, se l'utente non ha alcun valore per questo attributo. Per farlo utilizzare la seguente sintassi:
+<br/><strong>[SEGNALIBRO%%Altro]</strong>
+<br/>Ad esempio potete iniziare il vostro messaggio con: 
+<br/><i>Caro [NOME%%Amico],</i>
+<br/> e il sistema inserir&agrave; il NOME per tutti gli utenti che hanno questo valore, e "Amico" per tutti gli altri.
+</p>
 
+<p>Al momento sono definiti i seguenti attributi:
 <?php
 
 print listPlaceHolders();
 
-if (ENABLE_RSS) {
+if (phplistPlugin::isEnabled('rssmanager')) {
 ?>
-  <p>Puoi impostare dei template per i messaggi che vengono spediti con elementi RSS. Per fare questo clicca "Programma" e indica la frequenza per il messaggio. Il messaggio sar&agrave; poi usato per spedire la lista degli elementi agli utenti sulle liste che hanno questa frequenza impostata. Devi usare il segnaposto [RSS] nel tuo messaggio per identificare dove deve andare la lista.</p>
+ <p>Potete impostare dei modelli per i messaggi che vengono spediti con elementi RSS. Per fare questo clicca su "Programmazione" e indica la frequenza per il messaggio. Il messaggio sar&agrave; poi usato per spedire la lista degli elementi agli utenti sulle liste che hanno impostato questa frequenza. Devete usare il segnalibro [RSS] nel messaggio per definire dove deve andare la lista.</p>
 <?php }
 ?>
-<p>Per spedire il contenuto di una pagina web, aggiungi i seguenti codici al messaggio:<br/>
+<p>Per spedire il contenuto di una pagina web, aggiungete i seguenti codici al messaggio:<br/>
 <b>[URL:</b>http://www.esempio.org/nome_file.html<b>]</b></p>
-<p>In questo URL puoi includere informazioni basilari sull'utente, ma non informazioni sugli attributi:<br/>
-<b>[URL:</b>http://www.esempio.org/userprofile.php?email=<b>[</b>email<b>]]</b><br/></p>
+<p>In questo URL potete includere informazioni sull'utente, ma non informazioni sugli attributi:<br/>
+<b>[URL:</b>http://www.esempio.org/profiloutente.php?email=<b>[</b>email<b>]]</b><br/>
+</p>

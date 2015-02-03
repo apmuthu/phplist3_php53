@@ -115,12 +115,12 @@ $(document).ready(function() {
     });
 /* Draggable behaviour for table sorting*/	
 	// disable drag n drop for description rows
-	$( ".draggable tr" ).each(function( index ) {
+	$( ".disable-draggable tr" ).each(function( index ) {
 		$(this).attr('id','row-'+index);
 	});
 	$("tr:first").addClass('nodrag');
 	// Make a nice striped effect on the table
-	table_2 = $(".draggable");
+	table_2 = $(".disable-draggable");
 	// Initialise the second table specifying a dragClass and an onDrop function that will display an alert
 	var rowsH = $( ".rows" ).height();
 	var actionsH = $( ".actions" ).height();
@@ -177,4 +177,43 @@ $(document).ready(function() {
 	  $( ".rows" ).height(rowsH);
 	  $('.tmptable').remove();
 	});	
+
+        // styling list tab in send page
+	$('body.send').find('.ui-tabs-panel li').each(function(){
+	  var li = $(this);
+	  listify(li);
+	});
+        listify_finish_tab('.campaignTracking');
+        listify_finish_tab('.resetStatistics');
+        listify_finish_tab('.isTestCampaign');
+
+        function listify_finish_tab(selector)
+        {
+            var cbx = $(selector).find('input[type=checkbox]');
+            var cbx_name = $(cbx).attr('name');
+            var label = $(selector).find('label');
+            $(cbx).attr('id', cbx_name);
+            $(label).attr('for', cbx_name);
+        }
+
+        function listify(selector)
+        {
+            $(selector).each(function(index, val) {
+                // Give all checkboxes the same ID as the name attribute
+                var cbx_name = $(this).find('input[type=checkbox]').attr('name');
+                $(this).find('input[type=checkbox]').attr('id', cbx_name);
+
+                // Wrap the contents of the <li> with a <label>
+                var content = $(this).html().replace('(<span', '<span');
+                content = content.replace('span>)','span><small>');
+                content = content + "</small>";
+                $(this).html('<label for="' + cbx_name + '">' + content + '</label>');
+
+                // Pop the checkbox out of the label (for CSS selecting reasons)
+                var cbx = $(this).find('input[type=checkbox]');
+                $(this).prepend(cbx);
+            });
+            $('li input[type=checkbox]').hide();
+        }
+
 });

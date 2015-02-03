@@ -5,11 +5,11 @@
   by the developers  but also helps build interest, traffic and use of
   PHPlist, which is beneficial to it's future development.
 
-  Michiel Dethmers, phpList Ltd 2003 - 2011
+  Michiel Dethmers, phpList Ltd 2003 - 2013
 */
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo $strLancode?>" lang="<?php echo $strLancode?>" dir="<?php echo $strLandir?>">
 <head>
 <meta http-equiv="pragma" content="no-cache" />
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />

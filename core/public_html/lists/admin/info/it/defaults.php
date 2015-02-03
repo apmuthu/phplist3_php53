@@ -1,2 +1,2 @@
-<h1>agiungi alcuni possibili attributi utili</h1>
-<p>Scegli gli attributi che vuoi aggiungere al tuo sistema di mailinglist:</p>
+<h3>Potete aggiungete alcuni attributi utili</h3>
+Scegliete gli attributi che volete aggiungere al vostro sistema di mailinglist:

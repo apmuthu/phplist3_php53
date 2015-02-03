@@ -1,4 +1,3 @@
-<form method="post" action="">
 <?php
 require_once dirname(__FILE__).'/accesscheck.php';
 
@@ -22,23 +21,27 @@ if (isset($_GET['id'])) {
 }
 
 if (isset($_POST["save"])) {
-  $owner = $_POST["owner"];
-  $title = removeXss($_POST['title']);
+  if (!verifyToken()) {
+    print Error(s('Invalid security token, please reload the page and try again'));
+    return;
+  }
+  $owner = (int)$_POST["owner"];
+  $title = $_POST['title']; ## danger, make sure to escape 
 
   if (!$owner)
     $owner = $_SESSION['logindetails']['id'];
   if ($id) {
     Sql_Query(sprintf('update %s set title = "%s",owner = %d where id = %d',
-      $tables["subscribepage"],$title,$owner,$id));
+      $tables["subscribepage"],sql_escape($title),$owner,$id));
    } else {
     Sql_Query(sprintf('insert into %s (title,owner) values("%s",%d)',
-      $tables["subscribepage"],$title,$owner));
+      $tables["subscribepage"],sql_escape($title),$owner));
      $id = Sql_Insert_Id($tables['subscribepage'], 'id');
   }
   Sql_Query(sprintf('delete from %s where id = %d',$tables["subscribepage_data"],$id));
-  foreach (array("title","language_file","intro","header","footer","thankyoupage","button","htmlchoice","emaildoubleentry") as $item) {
+  foreach (array("title","language_file","intro","header","footer","thankyoupage","button","htmlchoice","emaildoubleentry",'ajax_subscribeconfirmation') as $item) {
     Sql_Query(sprintf('insert into %s (name,id,data) values("%s",%d,"%s")',
-      $tables["subscribepage_data"],$item,$id,$_POST[$item]));
+      $tables["subscribepage_data"],$item,$id,sql_escape($_POST[$item])));
   }
 
   foreach (array("subscribesubject","subscribemessage","confirmationsubject","confirmationmessage","unsubscribesubject","unsubscribemessage") as $item) {
@@ -60,7 +63,9 @@ if (isset($_POST["save"])) {
       ## rather crude sanitisation
       //      $default = preg_replace('/[^\w -\.]+/','',$default);
       // use unicode matching to keep non-ascii letters
-      $default = preg_replace('/[^\p{L} -\.]+/u','',$default);
+      if (!is_numeric($default)) { ## https://mantis.phplist.com/view.php?id=17532
+        $default = preg_replace('/[^\p{L} -\.]+/u','',$default);
+      }
       $order = sprintf('%d',$_POST['attr_listorder'][$att]);
       $required = !empty($_POST['attr_required'][$att]);
 //END BUGFIX 15285 - note 50677 (part 1)     
@@ -90,23 +95,25 @@ if (isset($_POST["save"])) {
   Redirect("spage");
 }
 @ob_end_flush();
+print formStart(' class="spageEdit" ');
 
 ## initialise values from defaults
 $data = array();
-$data["title"] = $GLOBALS['I18N']->get('Title of this set of lists');
+$data["title"] = $GLOBALS['I18N']->get('Subscribe to our newsletter');
 $data["button"] = $strSubmit;
 $data["intro"] = $strSubscribeInfo;
 $data['language_file'] = '';#$GLOBALS['language_module'];
 $data["header"] = getConfig("pageheader");
 $data["footer"] = getConfig("pagefooter");
 $data["thankyoupage"] = '<h3>'.$GLOBALS["strThanks"].'</h3>'."\n". $GLOBALS["strEmailConfirmation"];
+$data["ajax_subscribeconfirmation"] = getConfig("ajax_subscribeconfirmation");
 $data["subscribemessage"] = getConfig("subscribemessage");
 $data["subscribesubject"] = getConfig("subscribesubject");
 $data["confirmationmessage"] = getConfig("confirmationmessage");
 $data["confirmationsubject"] = getConfig("confirmationsubject");
 $data["unsubscribemessage"] = getConfig("unsubscribemessage");
 $data["unsubscribesubject"] = getConfig("unsubscribesubject");
-$data["htmlchoice"] = "checkforhtml";
+$data["htmlchoice"] = "checkfortext";
 $data["emaildoubleentry"] = "yes";
 $data["rssdefault"] = "daily"; //Leftover from the preplugin era
 $data["rssintro"] = $GLOBALS['I18N']->get('Please indicate how often you want to receive messages');  //Leftover from the preplugin era
@@ -186,6 +193,11 @@ $generalinfoHTML .=  sprintf('<label for="footer">%s</label><textarea name="foot
 $generalinfoHTML .=  sprintf('<label for="thankyoupage">%s</label><textarea name="thankyoupage" cols="60" rows="10" class="virtual">%s</textarea>',
   $GLOBALS['I18N']->get('Thank you page'),
   htmlspecialchars(stripslashes($data["thankyoupage"])));
+
+$generalinfoHTML .= sprintf('<label for="ajax_subscribeconfirmation">%s</label><textarea name="ajax_subscribeconfirmation" cols="60" rows="10" class="virtual">%s</textarea>',
+  s("Text to display when subscription with an AJAX request was successful"),
+  htmlspecialchars(stripslashes($data["ajax_subscribeconfirmation"])));
+  
 $generalinfoHTML .=  sprintf('<label for="button">%s</label><input type="text" name="button" value="%s" size="60" />',
   $GLOBALS['I18N']->get('Text for Button'),
   htmlspecialchars($data["button"]));
@@ -252,6 +264,7 @@ $transactionHTML .= sprintf('<label for="unsubscribemessage">%s</label><textarea
   $GLOBALS['I18N']->get('Message'),
   htmlspecialchars(stripslashes($data["unsubscribemessage"])));
 
+
 $transactionHTML .= '</div>';
   
 print $transactionHTML;
@@ -310,7 +323,7 @@ if (!Sql_Affected_Rows())
   $listsHTML .= $GLOBALS['I18N']->get('No lists available, please create one first');
 while ($row = Sql_Fetch_Array($req)) {
   $listsHTML .= sprintf ('<label><input type="checkbox" name="list[%d]" value="%d" %s /> %s</label><div>%s</div>',
-    $row["id"],$row["id"],in_array($row["id"],$selected_lists)?'checked="checked"':'',stripslashes($row["name"]),stripslashes($row["description"]));
+    $row["id"],$row["id"],in_array($row["id"],$selected_lists)?'checked="checked"':'',stripslashes($row["name"]),htmlspecialchars(stripslashes($row["description"])));
 }
 
 $listsHTML .=  '</div>';
@@ -346,6 +359,4 @@ print '
 <input class="submit" type="submit" name="save" value="'.$GLOBALS['I18N']->get('Save Changes').'" />
 
 </form>';
-
-?>
 

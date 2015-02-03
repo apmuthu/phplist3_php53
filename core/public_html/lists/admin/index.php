@@ -3,7 +3,7 @@
 @ob_start();
 $er = error_reporting(0);
 # check for commandline and cli version
-if (!isset($_SERVER["SERVER_NAME"]) && !PHP_SAPI == "cli") {
+if (!isset($_SERVER["SERVER_NAME"]) && PHP_SAPI != "cli") {
   print "Warning: commandline only works well with the cli version of PHP";
 }
 
@@ -15,7 +15,9 @@ require_once dirname(__FILE__) .'/commonlib/lib/unregister_globals.php';
 require_once dirname(__FILE__) .'/commonlib/lib/magic_quotes.php';
 
 # setup commandline
-if (php_sapi_name() == "cli") {
+#if (php_sapi_name() == "cli") {
+## 17355 - change the way CL is detected, using the way Drupal does it.
+if (!isset($_SERVER['SERVER_SOFTWARE']) && (php_sapi_name() == 'cli' || (is_numeric($_SERVER['argc']) && $_SERVER['argc'] > 0))) {
   for ($i=0; $i<$_SERVER['argc']; $i++) {
     $my_args = array();
     if (preg_match("/(.*)=(.*)/",$_SERVER['argv'][$i], $my_args)) {
@@ -42,36 +44,26 @@ if (php_sapi_name() == "cli") {
 $configfile = '';
 
 if (isset($_SERVER["ConfigFile"]) && is_file($_SERVER["ConfigFile"])) {
-  #print '<!-- using (server)'.$_SERVER["ConfigFile"].'-->'."\n";
    $configfile = $_SERVER["ConfigFile"];
 } elseif (isset($cline["c"]) && is_file($cline["c"])) {
-  #print '<!-- using (cline)'.$cline["c"].' -->'."\n";
   $configfile = $cline["c"];
-# obsolete, set Config in Linux environment, use -c /path/to/config instead
-/*} elseif (isset($_ENV["CONFIG"]) && is_file($_ENV["CONFIG"]) && filesize($_ENV["CONFIG"]) > 1) {
-#  print '<!-- using '.$_ENV["CONFIG"].'-->'."\n";
-  include $_ENV["CONFIG"];*/
 } elseif (is_file(dirname(__FILE__).'/../config/config.php')) {
-#  print '<!-- using (common)../config/config.php -->'."\n";
    $configfile = "../config/config.php";
 } else {
   $configfile = "../config/config.php";
 }
 
 if (is_file($configfile) && filesize($configfile) > 20) {
-#  print '<!-- using config '.$configfile.'-->';
   include $configfile;
 } elseif ($GLOBALS["commandline"]) {
   print 'Cannot find config file'."\n";
 } else {
-  $GLOBALS['installer'] = 1;
-  include(dirname(__FILE__).'/install.php');
+  print '<h3>Cannot find config file, please check permissions</h3>';
   exit;
 }
 $ajax = isset($_GET['ajaxed']);
 
 if (!isset($database_host) || !isset($database_user) || !isset($database_password) || !isset($database_name)) {
- # print $GLOBALS['I18N']->get('Database details incomplete, please check your config file');
   print 'Database details incomplete, please check your config file';
   exit;
 }
@@ -220,7 +212,7 @@ if (isset($GLOBALS["installation_name"])) {
 }
 print "$page_title</title>";
 
-if (isset($GLOBALS["require_login"]) && $GLOBALS["require_login"]) {
+if (!empty($GLOBALS["require_login"])) {
   if ($GLOBALS["admin_auth_module"] && is_file("auth/".$GLOBALS["admin_auth_module"])) {
     require_once "auth/".$GLOBALS["admin_auth_module"];
   } elseif ($GLOBALS["admin_auth_module"] && is_file($GLOBALS["admin_auth_module"])) {
@@ -238,7 +230,7 @@ if (isset($GLOBALS["require_login"]) && $GLOBALS["require_login"]) {
     print Fatal_Error($GLOBALS['I18N']->get('Admin Authentication initialisation failure'));
     return;
   }
-  if ((!isset($_SESSION["adminloggedin"]) || !$_SESSION["adminloggedin"]) && isset($_REQUEST["login"]) && isset($_REQUEST["password"])) {
+  if ((!isset($_SESSION["adminloggedin"]) || !$_SESSION["adminloggedin"]) && isset($_REQUEST["login"]) && isset($_REQUEST["password"]) && !empty($_REQUEST["password"])) {
     $loginresult = $GLOBALS["admin_auth"]->validateLogin($_REQUEST["login"],$_REQUEST["password"]);
     if (!$loginresult[0]) {
       $_SESSION["adminloggedin"] = "";
@@ -255,7 +247,8 @@ if (isset($GLOBALS["require_login"]) && $GLOBALS["require_login"]) {
         "passhash" => sha1($_REQUEST["password"]),
       );
       ##16692 - make sure admin permissions apply at first login
-      $GLOBALS["admin_auth"]->validateAccount($_SESSION["logindetails"]["id"]);      
+      $GLOBALS["admin_auth"]->validateAccount($_SESSION["logindetails"]["id"]); 
+      unset($_SESSION['session_age']);
       if (!empty($_POST["page"])) {
         $page = preg_replace('/\W+/','',$_POST["page"]);
       }
@@ -269,6 +262,23 @@ if (isset($GLOBALS["require_login"]) && $GLOBALS["require_login"]) {
       	$msg = $GLOBALS['I18N']->get('Failed sending a change password token');
       }
       $page = "login";
+  } elseif (!empty($_GET['secret']) && ($_GET['page'] == 'processbounces' || $_GET['page'] == 'processqueue' || $_GET['page'] == 'processcron')) {
+    ## remote processing call
+    $ourSecret = getConfig('remote_processing_secret');
+    if ($ourSecret != $_GET['secret']) {
+      @ob_end_clean();
+      print 'Error'.': '.s('Incorrect processing secret');
+      exit;
+    }
+    
+    $_SESSION["adminloggedin"] = $_SERVER["REMOTE_ADDR"];
+    $_SESSION["logindetails"] = array(
+      "adminname" => 'remotecall',
+      "id" => 0,
+      "superuser" => 0,
+      "passhash" => 'xxxx',
+    );
+
   } elseif (!isset($_SESSION["adminloggedin"]) || !$_SESSION["adminloggedin"]) {
     #$msg = 'Not logged in';
     $page = "login";
@@ -295,6 +305,13 @@ if ($page == 'login') {
   unset($_GET['pi']);
 }
 
+if (!empty($_SESSION["adminloggedin"]) && !empty($_SESSION['session_age']) && $_SESSION['session_age'] > SESSION_TIMEOUT) {
+  $_SESSION["adminloggedin"] = "";
+  $_SESSION["logindetails"] = "";
+  $page = "login";
+  $msg = s('Your session timed out, please log in again');
+} 
+
 ##  force to login page, if an Ajax call is made without being logged in
 if ($ajax && empty($_SESSION['adminloggedin'])) {
   $_SESSION['action_result'] = s('Your session timed out, please login again');
@@ -302,7 +319,8 @@ if ($ajax && empty($_SESSION['adminloggedin'])) {
   exit;
 }
 
-if (LANGUAGE_SWITCH && empty($logoutontop) && !$ajax) {
+$languageswitcher = '';
+if (LANGUAGE_SWITCH && empty($logoutontop) && !$ajax && empty($_SESSION['firstinstall']) && empty($_GET['firstinstall'])) {
     $languageswitcher = '
  <div id="languageswitcher">
        <form name="languageswitchform" method="post" action="">';
@@ -351,7 +369,7 @@ if (!$ajax) {
 } 
 
 if (!$ajax) {
-  print '<h4 class="pagetitle">'.strtolower($page_title).'</h4>';
+  print '<h4 class="pagetitle">'.mb_strtolower($page_title).'</h4>';
 }
 
 if ($GLOBALS["require_login"] && $page != "login") {
@@ -451,15 +469,6 @@ if (USEFCK) {
 }
 */
 
-if (!empty($_COOKIE['browsetrail'])) {
-  if (!isset($_SESSION['browsetrail']) || !is_array($_SESSION['browsetrail'])) {
-    $_SESSION['browsetrail'] = array();
-  }
-  if (!in_array($_COOKIE['browsetrail'],$_SESSION['browsetrail'])) {
-    $_SESSION['browsetrail'][] = $_COOKIE['browsetrail'];
-  }
-}
-
 if (defined("USE_PDF") && USE_PDF && !defined('FPDF_VERSION')) {
   Warn($GLOBALS['I18N']->get('You are trying to use PDF support without having FPDF loaded'));
 }
@@ -498,7 +507,7 @@ if (checkAccess($page,"") || $page == 'about') {
         unset($_SESSION['action_result']);
       }
 
-      if ($GLOBALS['commandline']) {
+      if ($GLOBALS['commandline'] || !empty($_GET['secret'])) {
         @ob_end_clean();
         @ob_start();
       }
@@ -521,8 +530,8 @@ if (checkAccess($page,"") || $page == 'about') {
       }
       print '</ul>';
     } elseif ($page != 'login') {
-      print '<br/>'."$page -&gt; ".$I18N->get('Sorry this page was not found in the plugin').'<br/>';#.' '.$plugin->coderoot.$include.'<br/>';
-      #print $plugin->coderoot . "$include";
+      print '<br/>'."$page -&gt; ".s('Sorry this page was not found in the plugin').'<br/>';#.' '.$plugin->coderoot.$include.'<br/>';
+      cl_output("$page -> ".s('Sorry this page was not found in the plugin'));#. ' '.$plugin->coderoot . "$include");
     }
   } else {
     if ($GLOBALS["commandline"]) {
@@ -566,8 +575,8 @@ if (isset($GLOBALS["statslog"])) {
 }
   print '-->';
 
-if ($ajax || !empty($GLOBALS["commandline"])) {
-  @ob_clean();
+if (!empty($GLOBALS['inRemoteCall']) || $ajax || !empty($GLOBALS["commandline"])) {
+  @ob_end_clean();
   exit;
 } elseif (!isset($_GET["omitall"])) {
   if (!$GLOBALS['compression_used']) {
@@ -597,7 +606,7 @@ function parseCline() {
       $par = substr($clinearg,1,1);
       $clinearg = substr($clinearg,2,strlen($clinearg));
      # $res[$par] = "";
-      $cur = strtolower($par);
+      $cur = mb_strtolower($par);
       $res[$cur] .= $clinearg;
      } elseif ($cur) {
       if ($res[$cur])
@@ -614,3 +623,10 @@ function parseCline() {
   return $res;
 }
 
+/* no idea why it wouldn't be there (no dependencies are mentioned on php.net/mb_strtolower), but
+ * found a system missing it. We need it from the start */
+if (!function_exists('mb_strtolower')) {
+  function mb_strtolower($string) {
+    return strtolower($string);
+  }
+}

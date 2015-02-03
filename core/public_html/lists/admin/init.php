@@ -86,7 +86,9 @@ if (!isset($GLOBALS['ui']) || !is_dir(dirname(__FILE__).'/ui/'.$GLOBALS['ui'])) 
 
 include_once dirname(__FILE__)."/structure.php";
 
-$tables = array();
+if (!isset($tables)) {
+  $tables = array();
+}
 foreach ($GLOBALS["DBstructuser"] as $tablename => $tablecolumns) {
   $tables[$tablename] =  $usertable_prefix . $tablename;
 };
@@ -97,7 +99,6 @@ foreach ($GLOBALS["DBstructphplist"] as $tablename => $tablecolumns) {
 unset($GLOBALS["DBstructuser"]);
 unset($GLOBALS["DBstructphplist"]);
 
-$GLOBALS['adodb_inc_file'] = $adodb_inc_file;
 $GLOBALS['show_dev_errors'] = $show_dev_errors;
 $magic_quotes = ini_get('magic_quotes_gpc');
 if ($magic_quotes == 'off' || empty($magic_quotes)) {
@@ -109,9 +110,13 @@ if ($magic_quotes == 'off' || empty($magic_quotes)) {
 if (empty($GLOBALS['language_module'])) {
   $GLOBALS['language_module'] = 'english.inc';
 }
-if (empty($GLOBALS['database_module'])) {
-  $GLOBALS['database_module'] = 'mysql.inc';
+if (empty($GLOBALS['database_module']) || !is_file(dirname(__FILE__).'/'.$GLOBALS['database_module'])) {
+  $GLOBALS['database_module'] = 'mysqli.inc';
 }
+if (!isset($database_connection_compression))
+  $database_connection_compression = false;
+if (!isset($database_connection_ssl))
+  $database_connection_ssl = false;
 
 ## @@ would be nice to move this to the config file at some point
 # http://mantis.phplist.com/view.php?id=15521
@@ -135,19 +140,28 @@ if (!isset($bounce_unsubscribe_threshold)) {
 if (!isset($bounce_unsubscribe_threshold) && isset($bounce_unsubscribe_treshold)) {
   $bounce_unsubscribe_threshold = $bounce_unsubscribe_treshold;
 }
+if (!isset($bounce_mailbox_purge)) {
+  $bounce_mailbox_purge = true;
+}
+if (!isset($bounce_mailbox_purge_unprocessed)) {
+  $bounce_mailbox_purge_unprocessed = true;
+}
+
 # set some defaults if they are not specified
 if (!defined("REGISTER")) define("REGISTER",1);
 if (!defined("USE_PDF")) define("USE_PDF",0);
 if (!defined("VERBOSE")) define("VERBOSE",0);
 if (!defined("TEST")) define("TEST",1);
 if (!defined("DEVSITE")) define("DEVSITE",0);
-define('TRANSLATIONS_XML','http://translate.phplist.com/translations.xml');
+define('TRANSLATIONS_XML','https://translate.phplist.com/translations.xml');
 
 //define('TLD_AUTH_LIST','http://data.iana.org/TLD/tlds-alpha-by-domain.txt');
 //define('TLD_AUTH_MD5','http://data.iana.org/TLD/tlds-alpha-by-domain.txt.md5');
-define('TLD_AUTH_LIST','http://www.phplist.com/files/tlds-alpha-by-domain.txt');
-define('TLD_AUTH_MD5','http://www.phplist.com/files/tlds-alpha-by-domain.txt.md5');
+define('TLD_AUTH_LIST','https://www.phplist.com/files/tlds-alpha-by-domain.txt');
+define('TLD_AUTH_MD5','https://www.phplist.com/files/tlds-alpha-by-domain.txt.md5');
 define('TLD_REFETCH_TIMEOUT',15552000); ## 180 days, about 6 months
+define('PQAPI_URL','https://pqapi.phplist.com/1/t/pqapi');
+if (!defined('SHOW_PQCHOICE')) define('SHOW_PQCHOICE',false);
 
 // obsolete by rssmanager plugin
 // if (!defined("ENABLE_RSS")) define("ENABLE_RSS",0);
@@ -197,6 +211,7 @@ $hash_length = strlen(hash(ENCRYPTION_ALGO,'some text'));
 if (!defined("PHPMAILER")) define("PHPMAILER",1);
 if (!defined('WARN_ABOUT_PHP_SETTINGS')) define('WARN_ABOUT_PHP_SETTINGS',1);
 if (!defined('NUMATTACHMENTS')) define('NUMATTACHMENTS',1);
+if (!defined('PLUGIN_ROOTDIR')) define('PLUGIN_ROOTDIR','plugins'); ##17270 - this will point to the plugins subdir of admin
 if (!defined('PLUGIN_ROOTDIRS')) define('PLUGIN_ROOTDIRS','');
 if (!defined('PHPMAILERHOST')) define("PHPMAILERHOST",'');
 if (!defined("MANUALLY_PROCESS_QUEUE")) define("MANUALLY_PROCESS_QUEUE",1);
@@ -210,8 +225,8 @@ if (!defined("FCKIMAGES_DIR")) define("FCKIMAGES_DIR","uploadimages");
 if (!defined('UPLOADIMAGES_DIR')) define('UPLOADIMAGES_DIR','images');
 if (!defined("USE_MANUAL_TEXT_PART")) define("USE_MANUAL_TEXT_PART",0);
 if (!defined("ALLOW_NON_LIST_SUBSCRIBE")) define("ALLOW_NON_LIST_SUBSCRIBE",0);
-if (!defined("MAILQUEUE_BATCH_SIZE")) define("MAILQUEUE_BATCH_SIZE",0); 
-if (!defined("MAILQUEUE_BATCH_PERIOD")) define("MAILQUEUE_BATCH_PERIOD",3600); 
+if (!defined("MAILQUEUE_BATCH_SIZE")) define("MAILQUEUE_BATCH_SIZE",1000); 
+if (!defined("MAILQUEUE_BATCH_PERIOD")) define("MAILQUEUE_BATCH_PERIOD",30); 
 if (!defined('MAILQUEUE_THROTTLE')) define('MAILQUEUE_THROTTLE',0); 
 if (!defined('MAILQUEUE_AUTOTHROTTLE')) define('MAILQUEUE_AUTOTHROTTLE',0); 
 if (!defined("NAME")) define("NAME",'phpList');
@@ -249,7 +264,7 @@ if (!defined('ALWAYS_ADD_USERTRACK')) define('ALWAYS_ADD_USERTRACK',1);
 if (!defined('MERGE_DUPLICATES_DELETE_DUPLICATE')) define('MERGE_DUPLICATES_DELETE_DUPLICATE',1);
 if (!defined('USE_PERSONALISED_REMOTEURLS')) define('USE_PERSONALISED_REMOTEURLS',1);
 if (!defined('USE_LOCAL_SPOOL')) define('USE_LOCAL_SPOOL',0);
-if (!defined('SEND_LISTADMIN_COPY')) define('SEND_LISTADMIN_COPY',true);
+if (!defined('SEND_LISTADMIN_COPY')) define('SEND_LISTADMIN_COPY',false);
 if (!defined('EMAIL_ADDRESS_VALIDATION_LEVEL')) define('EMAIL_ADDRESS_VALIDATION_LEVEL',3);
 if (!defined('BLACKLIST_EMAIL_ON_BOUNCE')) define('BLACKLIST_EMAIL_ON_BOUNCE',5);
 if (!defined('UNBLACKLIST_IN_PROFILE')) define('UNBLACKLIST_IN_PROFILE',false);
@@ -258,9 +273,10 @@ if (!defined('ENCRYPT_ADMIN_PASSWORDS')) define('ENCRYPT_ADMIN_PASSWORDS',1);
 if (!defined('PASSWORD_CHANGE_TIMEFRAME')) define('PASSWORD_CHANGE_TIMEFRAME','1 day');
 if (!defined('MAX_SENDPROCESSES')) define('MAX_SENDPROCESSES',1);
 if (!defined('MAXLIST')) define('MAXLIST',1);
+if (!defined('SHOW_LIST_OFALL_SUBSCRIBERS')) define('SHOW_LIST_OFALL_SUBSCRIBERS',false);
 if (!defined('SENDPROCESS_SERVERNAME')) define('SENDPROCESS_SERVERNAME','localhost');
 if (!defined('CHECK_REFERRER')) define('CHECK_REFERRER',true);
-# if (!defined('PHPMAILER_PATH')) define ('PHPMAILER_PATH',dirname(__FILE__) . '/phpmailer/class.phpmailer.php');
+# if (!defined('PHPMAILER_PATH')) define ('PHPMAILER_PATH',dirname(__FILE__) . '/PHPMailer/PHPMailerAutoload.php');
 # if (!defined('PHPMAILER_PATH')) define ('PHPMAILER_PATH',dirname(__FILE__) . '/PHPMailer_v5.1/class.phpmailer.php');
 if (!defined('DB_TRANSLATION')) define('DB_TRANSLATION',0);
 if (!defined('MAX_PROCESS_MESSAGE')) define('MAX_PROCESS_MESSAGE',5); ## how many campaigns to work on at the same time
@@ -274,7 +290,9 @@ if (!defined('ADD_EMAIL_THROTTLE')) define('ADD_EMAIL_THROTTLE',1); ## seconds b
 if (!defined('SENDTEST_THROTTLE')) define('SENDTEST_THROTTLE',1); ## seconds between send test
 if (!defined('SENDTEST_MAX')) define('SENDTEST_MAX',999); ## max number of emails in a send test
 if (!defined('MAX_PROCESSQUEUE_TIME')) define('MAX_PROCESSQUEUE_TIME',99999);
-
+if (!defined('LANGUAGE_AUTO_UPDATE')) define('LANGUAGE_AUTO_UPDATE',true);
+if (!defined('SESSION_TIMEOUT')) define('SESSION_TIMEOUT',1800);
+if (!defined('MAX_MAILSIZE')) define('MAX_MAILSIZE',209715200); // in bytes, 200Mb
 if (!defined('INTERFACELIB')) define('INTERFACELIB',1);
 if (!defined('PHPMAILERBLASTHOST') && defined('PHPMAILERHOST')) {
   define('PHPMAILERBLASTHOST',PHPMAILERHOST);
@@ -300,8 +318,9 @@ if (!defined('SESSIONNAME')) define('SESSIONNAME','phpList'.$GLOBALS['installati
 ## this doesn't yet work with the FCKEditor
 #ini_set('session.name',str_replace(' ','',SESSIONNAME));
 
-define('USE_AMAZONSES',defined('AWS_ACCESSKEYID') && AWS_ACCESSKEYID && function_exists('curl_init'));
+if (!defined('USE_AMAZONSES')) define('USE_AMAZONSES',defined('AWS_ACCESSKEYID') && AWS_ACCESSKEYID && function_exists('curl_init'));
 if (!defined('AWS_POSTURL')) define('AWS_POSTURL','https://email.us-east-1.amazonaws.com/');
+if (!defined('PHPLIST_POWEREDBY_URLROOT')) define('PHPLIST_POWEREDBY_URLROOT','http://powered.phplist.com/images');
 
 if (!isset($allowed_referrers) || !is_array($allowed_referrers)) {
   $allowed_referrers = array();
@@ -346,6 +365,9 @@ if (!isset($GLOBALS['tmpdir'])) {
 if (!is_dir($GLOBALS["tmpdir"]) || !is_writable($GLOBALS["tmpdir"]) && !empty ($system_tmpdir)) {
   $GLOBALS["tmpdir"] = $system_tmpdir;
 }
+if (!isset($attachment_repository)) {
+  $attachment_repository = $tmpdir;
+}
 
 if (!isset($pageroot)) {
   $pageroot = '/lists';
@@ -356,19 +378,13 @@ $adminpages = $GLOBALS['pageroot'].'/admin';
 ## remove possibly duplicated // at the beginning
 $adminpages = preg_replace('~^//~','/',$adminpages);
 
-if (!isset($table_prefix)) {
-  $table_prefix = 'phplist_';
-}
-if (!isset($usertable_prefix)) {
-  $usertable_prefix = 'phplist_user_';
-}
-
 if (!isset($systemroot)) {
   $systemroot = dirname(__FILE__);
 }
 if (!defined('FORWARD_ALTERNATIVE_CONTENT')) define('FORWARD_ALTERNATIVE_CONTENT',0);
 if (!defined('KEEPFORWARDERATTRIBUTES')) define('KEEPFORWARDERATTRIBUTES',0);
 if (!defined('FORWARD_EMAIL_COUNT') ) define('FORWARD_EMAIL_COUNT',1);
+if (!defined('FORWARD_FRIEND_COUNT_ATTRIBUTE')) define('FORWARD_FRIEND_COUNT_ATTRIBUTE',0);
 ## when click track links are detected, block sending
 ## if false, will only show warning. For now defaulting to false, but may change that later
 if (!defined('BLOCK_PASTED_CLICKTRACKLINKS')) define('BLOCK_PASTED_CLICKTRACKLINKS',false);
@@ -377,8 +393,8 @@ if (FORWARD_EMAIL_COUNT < 1) {
   print 'Config Error: FORWARD_EMAIL_COUNT must be > (int) 0';
   exit;
 }
-# allows FORWARD_EMAIL_COUNT forwards per user per period in mysql interval terms default one day
-if (!defined('FORWARD_EMAIL_PERIOD') ) define('FORWARD_EMAIL_PERIOD', '1 day');
+# allows FORWARD_EMAIL_COUNT forwards per user per period in mysql interval terms
+if (!defined('FORWARD_EMAIL_PERIOD') ) define('FORWARD_EMAIL_PERIOD', '1 minute');
 if (!defined('FORWARD_PERSONAL_NOTE_SIZE')) define('FORWARD_PERSONAL_NOTE_SIZE',0);
 if (!defined('EMBEDUPLOADIMAGES')) define('EMBEDUPLOADIMAGES',0);
 if (!defined('IMPORT_FILESIZE')) define('IMPORT_FILESIZE',5);
@@ -410,6 +426,8 @@ if (!isset($GLOBALS['check_for_host'])) $GLOBALS['check_for_host'] = 0;
 if (!defined('USE_MINIFIED_ASSETS')) define('USE_MINIFIED_ASSETS',false);
 
 ## set up a memcached global object, and test it
+$GLOBALS['MC'] = null;
+
 if (defined('MEMCACHED')) {
   include_once dirname(__FILE__).'/class.memcached.php';
   if (class_exists('phpListMC')) {
@@ -433,8 +451,11 @@ $counters = array(
   'num_users_for_message' => 0,
   'batch_count' => 0,
   'batch_total' => 0,
-  'sendemail returned false' => 0,
+  'sendemail returned false total' => 0,
   'send blocked by domain throttle' => 0,
+  'add attachment error' => 0,
+  'sendemail returned false' => 0,
+  'sentastest' => 0,
 );
 
 $GLOBALS['disallowpages'] = array();

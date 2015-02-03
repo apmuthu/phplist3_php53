@@ -1,1 +1,1 @@
-<br />Elimina rimuover&agrave; questa persona solamente dalla lista
+<br />Elimina rimuover&agrave; questo utente solo da questa lista

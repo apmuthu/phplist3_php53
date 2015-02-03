@@ -19,10 +19,15 @@ class phplistPlugin {
   public $configvars = array ();
   # config var    array( type, name [array values]));
   public $DBstruct= array ();
-  # These files can be called from the commandline
-  # This should hold an array per file: filename (without .php) => path relative to admin/
-  public $commandlinePluginPages = array();
   
+  # These files can be called from the commandline
+  # The variable holds an array of page names, (the file name without .php) and the files must be in the $coderoot directory.
+  public $commandlinePluginPages = array();
+
+  # An array of page names that can be called as public pages, e.g. www.mysite.com/lists/?pi=myplugin&p=mypage
+  # The page name is the file name without .php. The files must be in the $coderoot directory
+  public $publicPages = array();
+
   public $configArray = array();
 
   public $importTabTitle = ''; ## title of the tab for the import page
@@ -101,6 +106,7 @@ class phplistPlugin {
     if (isset($this->settings)) {
       foreach ($this->settings as $item => $itemDetails) {
         $GLOBALS['default_config'][$item] = $itemDetails;
+        $GLOBALS['default_config'][$item]['hidden'] = false;
       }
     }
     $this->version = $this->getVersion();
@@ -180,7 +186,12 @@ class phplistPlugin {
     if (isset($this->pageTitles[$page])) return s($this->pageTitles[$page]);
     return $this->name.' : '.$page;
   }
-  
+ 
+  function pageTitleHover($page) {
+    if (isset($this->pageTitleHover[$page])) return s($this->pageTitleHover[$page]);
+    return $this->name.' : '.$page;
+  }
+   
   /** deleteSent - wipe DB entries marking a campaign sent for subscribers
    * 
    * this is used in DEV mode only
@@ -297,14 +308,20 @@ class phplistPlugin {
     return $text;
   }
   
+  function subscriberConfirmation($subscribepageID,$userdata = array()) {
+    
+  } 
+  
   ############################################################
   # Messages
+  
+  /* displayMessages
+   *  obsolete
+   * @return string
+   */
 
   function displayMessages($msg, &$status) {
-    # purpose: add or change status display of a message
-    # Should become more uniform like the other display functions, using the webblerlist
-    # 200711 Bas
-    return null;
+    return "";
   }
   
   ############################################################
@@ -326,12 +343,17 @@ class phplistPlugin {
     return '';
   }
 
+  /** sendMessageTabSave
+   * 
+   * called before a campaign is being saved. All data will be saved by phpList, 
+   * but you can capture it here and save it elsewhere if you need to
+   * 
+   * @param messageid integer: id of the campaign
+   * @param messagedata array: associative array with all data
+   * @return null 
+   */
+
   function sendMessageTabSave($messageid= 0, $data= array ()){
-    ## add a tab to the "Send a Message page" for options to be set in the plugin
-    # parameters: 
-    #    messageid = ID of the message being saved (should always be > 0)
-    #    messagedata = associative array of all data from the db for this message
-    # returns: HTML code to communicate the result to the user
     return '';
   }
 
@@ -507,6 +529,35 @@ class phplistPlugin {
     # 200710 Bas
     return true;
   }
+  
+  
+  /**
+   * processSendSuccess
+   * 
+   * called when sending of this messageid to this subscriber was successful
+   * 
+   * @param messageid integer 
+   * @param userdata array
+   * @param isTest boolean, true when testmessage
+   * @return null
+   */
+  
+  function processSendSuccess($messageid, $userdata, $isTest = false) {
+  }
+  
+  /**
+   * processSendFailed
+   * 
+   * called when sending of this messageid to this subscriber failed
+   * 
+   * @param messageid integer 
+   * @param userdata array
+   * @param isTest boolean, true when testmessage
+   * @return null
+   */
+  function processSendFailed($messageid, $userdata, $isTest = false) {
+  }
+  
 
   /*
    * processSendStats
@@ -527,9 +578,10 @@ class phplistPlugin {
   /* sendReport
    * @param string $subject
    * @param string $message
-   * @return null
+   * @return bool -> true if report has been processed and dealt with
    */
   function sendReport ($subject,$message) {
+    return false;
   }
 
   /* sendError
@@ -569,6 +621,26 @@ class phplistPlugin {
    * @return null
    */
   function processQueueStart() {
+  }
+  
+  /* allowProcessQueue
+   * called at the beginning of processQueue
+   * if this returns anything but "true" processing will be cancelled
+   * @param none
+   * @return bool
+   */
+  function allowProcessQueue() {
+    return true;
+  }
+  
+  /* sendtestAllowed 
+   * called when trying to send a test email
+   * return false is sending a test email is not allowed
+   * @param array messagedata 
+   * @return bool;
+   */
+  function sendTestAllowed($messagedata) {
+    return true;
   }
 
   /*

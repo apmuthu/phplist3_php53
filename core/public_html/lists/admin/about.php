@@ -27,11 +27,12 @@
     <h3><?php echo s('Design')?>:</h3>
     <ul>
     <li>Tarek Djebali</li>
+    <li><a href="http://www.behance.net/pradil">Alfredo Marco Pradil</a></li>
     </ul>
     <h3><?php echo s('Design implementation')?>:</h3>
     <ul>
     <li>Tarek Djebali</li>
-    <li><a href="http://www.marielazarate.com.ar">Mariela Zárate</a></li>
+    <li><a href="http://mariela.harpo-web.com">Mariela Zárate</a></li>
     </ul>
     <h3><a href="http://docs.phplist.com" target="_blank"><?php echo s('Documentation')?></a></h3>
     <ul>

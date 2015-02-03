@@ -69,8 +69,12 @@ function HTML2Text($text) {
   while (preg_match("/\n\s*\n\s*\n/",$text)) {
     $text = preg_replace("/\n\s*\n\s*\n/","\n\n",$text);
   }
-  $text = wordwrap($text,70);
-
+  $ww = (int) getConfig("wordwrap");
+  if (!$ww) {
+    $ww = 70;
+  }
+  
+  $text = wordwrap($text,$ww);
   return $text;
 }
 
@@ -91,7 +95,8 @@ $search = array ("'&(quot|#34);'i",  // Replace html entities
                  "'&(copy|#169);'i",
                  "'&rsquo;'i",
                  "'&ndash;'i",
-                 "'&#(\d+);'e");  // evaluate as php
+//                 "'&#(\d+);'e" // evaluate as php, deprecated in 5.5 and up
+                 ); 
 
 $replace = array ("\"",
                   "&",
@@ -104,7 +109,8 @@ $replace = array ("\"",
                   chr(169),
                   "'",
                   "-",
-                  "chr(\\1)");
+//                  "chr(\\1)"
+                  );
 
   $text = preg_replace ($search, $replace, $text);
 

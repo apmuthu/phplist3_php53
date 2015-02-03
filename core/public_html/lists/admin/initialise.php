@@ -15,7 +15,21 @@ if (isset($_REQUEST['adminemail']) && !is_email($_REQUEST['adminemail'])) {
 
 $force = !empty($_GET['force']) && $_GET['force'] == 'yes';
 
-if (!empty($_REQUEST['firstinstall']) && (empty($_REQUEST['adminemail']) || strlen($_REQUEST['adminpassword']) < 8)) {
+if ($force) {
+  while (list($table, $val) = each($DBstruct)) {
+    if ($table == "attribute") {
+      $req = Sql_Query("select tablename from {$tables["attribute"]}");
+      while ($row = Sql_Fetch_Row($req))
+        Sql_Drop_Table($table_prefix . 'listattr_' . $row[0]);
+    }
+    Sql_Drop_Table($tables[$table]);
+  }
+  session_destroy();
+  Redirect('initialise&firstinstall=1');
+  exit;
+}
+
+if (empty($_SESSION['hasconf']) && !empty($_REQUEST['firstinstall']) && (empty($_REQUEST['adminemail']) || strlen($_REQUEST['adminpassword']) < 8)) {
   print '<noscript>';
   print '<div class="error">'.s('To install phpList, you need to enable Javascript').'</div>';
   print '</noscript>';
@@ -104,6 +118,8 @@ while (list($table, $val) = each($DBstruct)) {
 
         ## let's add them as a subscriber as well
         $userid = addNewUser($adminemail,$adminpass);
+        Sql_Query(sprintf('update %s set confirmed = 1 where id = %d',$tables['user'],$userid));
+        
         /* to send the token at the end, doesn't work yet
         $adminid = Sql_Insert_Id();
         */
@@ -121,6 +137,10 @@ while (list($table, $val) = each($DBstruct)) {
       echo "... ".s("failed")."<br />\n";
   }
 }
+#https://mantis.phplist.com/view.php?id=16879 make sure the new settings are saved
+if ($success) {
+  $_SESSION['hasconf'] = true;
+}
 
 ## initialise plugins that are already here
 foreach ($GLOBALS['plugins'] as $pluginName => $plugin) {
@@ -136,10 +156,20 @@ if ($success) {
   SaveConfig('version',VERSION,0);
   # mark now to be the last time we checked for an update
   Sql_Replace($tables['config'], array('item' => "updatelastcheck", 'value' => 'current_timestamp', 'editable' => '0'), 'item', false);
-  SaveConfig('admin_address',$_REQUEST['adminemail'],1);
+  SaveConfig('admin_address',$adminemail,1);
   SaveConfig('message_from_name',strip_tags($_REQUEST['adminname']),1);
+  SaveConfig('campaignfrom_default',"$adminemail ".strip_tags($_REQUEST['adminname']));
+  SaveConfig('notifystart_default',$adminemail);
+  SaveConfig('notifyend_default',$adminemail);
+  SaveConfig('report_address',$adminemail);
+  SaveConfig('message_from_address',$adminemail);
+  SaveConfig('message_from_name',strip_tags($_REQUEST['adminname']));
+  SaveConfig('message_replyto_address',$adminemail);
+  
   if (!empty($_REQUEST['orgname'])) {
     SaveConfig('organisation_name',strip_tags($_REQUEST['orgname']),1);
+    SaveConfig('campaignfrom_default',"$adminemail ".strip_tags($_REQUEST['orgname']));
+    SaveConfig('message_from_name',strip_tags($_REQUEST['orgname']));
   } elseif (!empty($_REQUEST['adminname'])) {
     SaveConfig('organisation_name',strip_tags($_REQUEST['adminname']),1);
   } else {
@@ -167,16 +197,24 @@ if ($success) {
   Sql_Query(sprintf('insert into %s (listid, userid, entered) values(%d,%d,now())',$tables['listuser'],1,$userid));
   Sql_Query(sprintf('insert into %s (listid, userid, entered) values(%d,%d,now())',$tables['listuser'],2,$userid));
  
+  $uri = $_SERVER['REQUEST_URI'];
+  $uri = str_replace('?'.$_SERVER['QUERY_STRING'],'',$uri);
+ 
   $body = '
-    Version: '.VERSION."\r\n".
-   ' Url: '.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']."\r\n";
-  printf('<p class="information">'.$GLOBALS['I18N']->get('Success').': <a class="button" href="mailto:info@phplist.com?subject=Successful installation of phplist&body=%s">'.$GLOBALS['I18N']->get('Tell us about it').'</a>. </p>', $body);
-  printf('<p class="information">
-    '.$GLOBALS['I18N']->get("Please make sure to read the file README.security that can be found in the zip file.").'</p>');
-  printf('<p class="information">
-    '.$GLOBALS['I18N']->get("Please make sure to").'
-    <a href="http://announce.hosted.phplist.com"> '.$GLOBALS['I18N']->get("subscribe to the announcements list")."</a> ".
-    $GLOBALS['I18N']->get("to make sure you are updated when new versions come out. Sometimes security bugs are found which make it important to upgrade. Traffic on the list is very low.").' </p>');
+    Version: '.VERSION."\r\n"
+    .' Url: '
+    .$_SERVER['SERVER_NAME']
+    .$uri
+    ."\r\n";
+  printf('<p class="information">'
+    .$GLOBALS['I18N']->get('Success')
+    .': <a class="button" href="mailto:info@phplist.com?subject=Successful installation of phplist&amp;body=%s">'
+    .$GLOBALS['I18N']->get('Tell us about it')
+    .'</a>. </p>', $body);
+  //printf('<p class="information">
+    //'.$GLOBALS['I18N']->get("Please make sure to read the file README.security that can be found in the zip file.").'</p>');
+  print subscribeToAnnouncementsForm($_REQUEST['adminemail']);
+
   if (ENCRYPT_ADMIN_PASSWORDS && !empty($adminid)) {
     print sendAdminPasswordToken($adminid);
   }
@@ -187,7 +225,7 @@ if ($success) {
   . ' values (0, ?, ?, ?, ?, ?)';
   $query = sprintf($query, $GLOBALS["tables"]["templateimage"]);
   Sql_Query_Params($query, array('image/png', 'powerphplist.png', $newpoweredimage, 70, 30));
-  print '<p>'.$GLOBALS['I18N']->get("Continue with")." ".PageLinkButton("setup",$GLOBALS['I18N']->get("phpList Setup"))."</p>";
+  print '<div id="continuesetup" style="display:none;" class="fleft">'.$GLOBALS['I18N']->get("Continue with")." ".PageLinkButton("setup",$GLOBALS['I18N']->get("phpList Setup"))."</div>";
 
   unset($_SESSION['hasI18Ntable']);
 

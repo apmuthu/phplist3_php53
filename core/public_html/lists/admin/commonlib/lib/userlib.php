@@ -123,7 +123,7 @@ function getAttributeIDbyName ($sName) {
   # Can also be used as 'isAttribute'
 
   if(empty($sName)) return 0;
-  global $usertable_prefix;
+  global $usertable_prefix, $tables;
   # workaround for integration webbler/phplist
   if (!isset($usertable_prefix)) {
     $usertable_prefix = '';
@@ -193,10 +193,11 @@ function AttributeValue($table,$value) {
     $res = Sql_Query(sprintf('select name from %slistattr_%s where id = %d',
     $table_prefix,$table,$value));
     $row = Sql_Fetch_row($res);
+    return $row[0];
   } else {
 #    return "Invalid Attribute Index";
   }
-  return $row[0];
+  return "";
 }
 
 function existUserID($id = 0) {
@@ -387,6 +388,14 @@ function addUserToBlackList($email,$reason = '') {
   addEmailToBlackList($email,$reason);
 }
 
+function addUserToBlackListID($id,$reason = '') {
+	Sql_Query(sprintf('update %s set blacklisted = 1 where id = %s',
+	$GLOBALS['tables']["user"],$id));
+	#0012262: blacklist only email when email bounces. (not users): Function split so email can be blacklisted without blacklisting user
+	$email = Sql_Fetch_Row_Query("select email from {$GLOBALS["tables"]["user"]} where id = $id");
+	addEmailToBlackList($email[0],$reason);
+}
+
 function addEmailToBlackList($email,$reason = '',$date = '') {
   if (empty($date)) {
     $sqldate = 'now()';
@@ -509,7 +518,8 @@ function is_email($email) {
       preg_match('/-@/',$email) ||
       preg_match('/\.@/',$email) ||
       preg_match('/^\./',$email) ||
-      preg_match('/^\-/',$email)
+      preg_match('/^\-/',$email) ||
+      strpos($email, '\\') === 0
     ) {
     return 0;
   }

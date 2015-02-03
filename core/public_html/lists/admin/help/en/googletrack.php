@@ -5,5 +5,5 @@
 <p>Selecting this option will add some tracking code to all links.
 After sending your campaign, check your Google Analytics account under <strong>Traffic sources -&gt; Campaigns</strong> to see the results.</p>
 
-
+<p>Do not use this if your campaign already contains Google Analytics links, because existing ones will be removed.</p>
 

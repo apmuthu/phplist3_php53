@@ -17,7 +17,7 @@ if ($GLOBALS["require_login"] && !isSuperUser()) {
       if ($id) {
         Sql_Query("select id from ".$GLOBALS['tables']["list"]. $subselect . " and id = $id");
         if (!Sql_Affected_Rows()) {
-          Error($GLOBALS['I18N']->get('You do not have enough priviliges to view this page'));
+          Error($GLOBALS['I18N']->get('You do not have enough privileges to view this page'));
           return;
         }
       } else {
@@ -36,7 +36,7 @@ if ($GLOBALS["require_login"] && !isSuperUser()) {
     default:
       $subselect_and = " and owner = -1";
       if ($id) {
-        Fatal_Error($GLOBALS['I18N']->get('You do not have enough priviliges to view this page'));
+        Fatal_Error($GLOBALS['I18N']->get('You do not have enough privileges to view this page'));
         return;
       }
       $subselect = " where id = 0";
@@ -52,8 +52,7 @@ if (!empty($_POST["addnewlist"]) && !empty($_POST["listname"])) {
   if ($GLOBALS["require_login"] && !isSuperUser()) {
     $owner = $_SESSION["logindetails"]["id"];
   }
-  if (!isset($_POST["active"])) $_POST["active"] = 0;
-  $_POST['listname'] = removeXss($_POST['listname']);
+  if (!isset($_POST["active"])) $_POST["active"] = listUsedInSubscribePage($id);
   ## prefix isn't used any more
   $_POST['prefix'] = '';
   
@@ -100,7 +99,7 @@ if (!empty($_POST["addnewlist"]) && !empty($_POST["listname"])) {
   }
   print '<div class="actionresult">'.$_SESSION['action_result'].'</div>';
   if ($_GET['page'] == 'editlist') {
-    print '<div class="actions">'.PageLinkButton('importsimple&amp;list='.$id,s('Add some subscribers')).'</div>';
+    print '<div class="actions">'.PageLinkButton('importsimple&amp;list='.$id,s('Add some subscribers')).' '.PageLinkButton('editlist',s('Add another list')).'</div>';
   }
   unset($_SESSION['action_result']);
   return;
@@ -130,7 +129,7 @@ if (empty($list['category'])) {
 <?php echo formStart(' class="editlistSave" ')?>
 <input type="hidden" name="id" value="<?php echo $id ?>" />
 <div class="label"><label for="listname"><?php echo $GLOBALS['I18N']->get('List name'); ?>:</label></div>
-<div class="field"><input type="text" name="listname" value="<?php echo  htmlspecialchars(StripSlashes($list["name"]))?>" /></div>
+<div class="field"><input type="text" name="listname" value="<?php echo  htmlspecialchars(stripslashes($list["name"]))?>" /></div>
 
 <div class="field"><input type="checkbox" name="active" value="1"
 <?php 

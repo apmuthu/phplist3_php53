@@ -89,6 +89,14 @@ $default_config = array (
   'category'=> 'security',
 ),
 
+  ## remote processing secret
+"remote_processing_secret" => array (
+ 'value' =>  substr(md5(uniqid(mt_rand(), true)),rand(0,10),rand(10,20)),
+ 'description' => s("Secret for remote processing"),
+  'type' => "text",
+  'category'=> 'security',
+),
+
   # admin addresses are other people who receive copies of subscriptions
 "admin_addresses" => array (
   'value' => '',
@@ -129,7 +137,7 @@ $default_config = array (
 "report_address" => array (
   'value' => 'listreports@[DOMAIN]',
   'description' => s("Who gets the reports (email address, separate multiple emails with a comma)"),
-  'type' => "email",
+  'type' => "emaillist",
   'allowempty' => true,
   'category'=> 'reporting',
 ),
@@ -162,9 +170,10 @@ $default_config = array (
 
   # if there is only one visible list, do we hide it and automatically
   # subscribe users who sign up
+  ## not sure why you would not want this :-) maybe it should not be an option at all
 "hide_single_list" => array (
   'value' => "1",
-  'description' => s("If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up (0/1)"),
+  'description' => s("If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up"),
   'type' => "boolean",
   'allowempty' => true,
   'category'=> 'subscription-ui',
@@ -177,7 +186,7 @@ $default_config = array (
   'description' => s("Categories for lists. Separate with commas."),
   'type' => "text",
   'allowempty' => true,
-  'category'=> 'segmentation',
+  'category'=> 'list-organisation',
 ),
 
   # width of a textline field
@@ -202,7 +211,7 @@ $default_config = array (
   # send copies of subscribe, update unsubscribe messages to the administrator
 "send_admin_copies" => array (
   'value' => "0",
-  'description' => s("Does the admin get copies of subscribe, update and unsubscribe messages (0/1)"),
+  'description' => s("Send notifications about subscribe, update and unsubscribe"),
   'type' => "boolean",
   'allowempty' => true,
   'category'=> 'reporting',
@@ -640,7 +649,6 @@ Thank you.
 
 );
 
-
 ########## certainly do not edit after this #########
 
 $redfont = "";
@@ -678,15 +686,7 @@ if (!function_exists("getconfig")) {
     } else {
       $hasconf = $_SESSION['hasconf'];
     }
-		# correct old methods for finding public urls
-		# @@@@ hmm maybe need to revert this
-		/*
-		if ($item == "forwardurl" || $item == "subscribeurl" || $item == "unsubscribeurl" || $item == "confirmationurl" || $item == "preferencesurl") {
-		  $toget = 'public_baseurl';
-		} else {
-		  $toget = $item;
-		}
-		*/
+
 		$toget = $item;
 		$value = '';
 		if ($hasconf) {
@@ -707,7 +707,7 @@ if (!function_exists("getconfig")) {
 			} else {
 				$row = Sql_Fetch_Row($req);
 				$value = $row[0];
-        if ($row[1] == 0) {
+        if (!empty($default_config[$item]['hidden'])) {
           $GLOBALS['noteditableconfig'][] = $item;
         }
 			}
@@ -731,6 +731,11 @@ if (!function_exists("getconfig")) {
       ## cast to bool
       $value = $value == "true";
 		}
+    
+    ## disallow single quotes in listcategories
+    if ($item == 'list_categories') {
+      $value = str_replace("'"," ",$value);
+    }
 
 		# if this is a subpage item, and no value was found get the global one
 		if (!$value && strpos( $item,":") !== false) {
@@ -753,58 +758,67 @@ if (!function_exists("getconfig")) {
 }
 
 function getUserConfig($item, $userid = 0) {
-	global $default_config, $tables, $domain, $website;
-	$hasconf = Sql_Table_Exists($tables["config"]);
-	$value = '';
-	if ($hasconf) {
-		$query = 'select value,editable from ' . $tables['config'] . ' where item = ?';
-		$req = Sql_Query_Params($query, array($item));
-		if (!Sql_Num_Rows($req)) {
-		  if ( array_key_exists($item, $default_config) ) { 
-		    $value = $default_config[$item]['value'];
-	    }
+  global $default_config, $tables, $domain, $website;
+  $hasconf = Sql_Table_Exists($tables["config"]);
+  $value = '';
+
+  if ($hasconf) {
+    $query = 'select value,editable from ' . $tables['config'] . ' where item = ?';
+    $req = Sql_Query_Params($query, array($item));
+
+    if (!Sql_Num_Rows($req)) {
+      if ( array_key_exists($item, $default_config) ) { 
+        $value = $default_config[$item]['value'];
+      }
     } else {
-			$row = Sql_fetch_Row($req);
-			$value = $row[0];
+      $row = Sql_fetch_Row($req);
+      $value = $row[0];
+
       if ($row[1] == 0) {
         $GLOBALS['noteditableconfig'][] = $item;
       }
-		}
-	}
-	# if this is a subpage item, and no value was found get the global one
-	if (!$value && strpos( $item,":") !== false) {
-		list ($a, $b) = explode(":", $item);
-		$value = getUserConfig($a, $userid);
-	}
-	if ($userid) {
-		$query = 'select uniqid from ' . $tables['user'] . ' where id = ?';
-		$rs = Sql_Query_Params($query, array($userid));
-		$user_req = Sql_Fetch_Row($rs);
-		$uniqid = $user_req[0];
-		# parse for placeholders
-		# do some backwards compatibility:
-		# hmm, reverted back to old system
+    }
+  }
+  # if this is a subpage item, and no value was found get the global one
+  if (!$value && strpos( $item,":") !== false) {
+    list ($a, $b) = explode(":", $item);
+    $value = getUserConfig($a, $userid);
+  }
+
+  if ($userid) {
+    $query = 'select uniqid, email from ' . $tables['user'] . ' where id = ?';
+    $rs = Sql_Query_Params($query, array($userid));
+    $user_req = Sql_Fetch_Row($rs);
+    $uniqid = $user_req[0];
+    $email = $user_req[1];
+    # parse for placeholders
+    # do some backwards compatibility:
+    # hmm, reverted back to old system
 
     $url = getConfig("unsubscribeurl");
     $sep = strpos($url,'?') !== false ? '&' : '?';
     $value = str_ireplace('[UNSUBSCRIBEURL]', $url . $sep . 'uid=' . $uniqid, $value);
-		$url = getConfig("confirmationurl");
+    $url = getConfig("confirmationurl");
     $sep = strpos($url,'?') !== false ? '&' : '?';
-		$value = str_ireplace('[CONFIRMATIONURL]', $url . $sep . 'uid=' . $uniqid, $value);
-		$url = getConfig("preferencesurl");
+    $value = str_ireplace('[CONFIRMATIONURL]', $url . $sep . 'uid=' . $uniqid, $value);
+    $url = getConfig("preferencesurl");
     $sep = strpos($url,'?') !== false ? '&' : '?';
-		$value = str_ireplace('[PREFERENCESURL]', $url . $sep . 'uid=' . $uniqid, $value);
-	}
-	$value = str_ireplace('[SUBSCRIBEURL]', getConfig("subscribeurl"), $value);
-	$value = preg_replace('/\[DOMAIN\]/i', $domain, $value); #@ID Should be done only in one place. Combine getConfig and this one?
-	$value = preg_replace('/\[WEBSITE\]/i', $website, $value);
-	if ($value == "0") {
-		$value = "false";
-	}
-	elseif ($value == "1") {
-		$value = "true";
-	}
-	return $value;
+    $value = str_ireplace('[PREFERENCESURL]', $url . $sep . 'uid=' . $uniqid, $value);
+    $value = str_ireplace('[EMAIL]', $email, $value);
+
+    $value = parsePlaceHolders($value, getUserAttributeValues($email));
+  }
+  $value = str_ireplace('[SUBSCRIBEURL]', getConfig("subscribeurl"), $value);
+  $value = preg_replace('/\[DOMAIN\]/i', $domain, $value); #@ID Should be done only in one place. Combine getConfig and this one?
+  $value = preg_replace('/\[WEBSITE\]/i', $website, $value);
+
+  if ($value == "0") {
+    $value = "false";
+  }
+  elseif ($value == "1") {
+    $value = "true";
+  }
+  return $value;
 }
 
 $access_levels = array (

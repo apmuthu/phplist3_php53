@@ -20,16 +20,16 @@ if (defined("IN_WEBBLER") && is_object($GLOBALS["config"]["plugins"]["phplist"])
   $GLOBALS["tables"] = $GLOBALS["config"]["plugins"]["phplist"]->tables;
 }
 
-include_once dirname(__FILE__).'/class.phplistmailer.php';
-$usephpmailer = 1;  
-
+/* this should probably move to init.php */
 $GLOBALS['bounceruleactions'] = array(
-  'deleteuser' => $GLOBALS['I18N']->get('delete user'),
-  'unconfirmuser' => $GLOBALS['I18N']->get('unconfirm user'),
-  'blacklistuser' => $GLOBALS['I18N']->get('blacklist user'),
-  'deleteuserandbounce' => $GLOBALS['I18N']->get('delete user and bounce'),
-  'unconfirmuseranddeletebounce' => $GLOBALS['I18N']->get('unconfirm user and delete bounce'),
-  'blacklistuseranddeletebounce' => $GLOBALS['I18N']->get('blacklist user and delete bounce'),
+  'deleteuser' => $GLOBALS['I18N']->get('delete subscriber'),
+  'unconfirmuser' => $GLOBALS['I18N']->get('unconfirm subscriber'),
+  'blacklistuser' => $GLOBALS['I18N']->get('blacklist subscriber'),
+  'blacklistemail' => $GLOBALS['I18N']->get('blacklist email address'),
+  'deleteuserandbounce' => $GLOBALS['I18N']->get('delete subscriber and bounce'),
+  'unconfirmuseranddeletebounce' => $GLOBALS['I18N']->get('unconfirm subscriber and delete bounce'),
+  'blacklistuseranddeletebounce' => $GLOBALS['I18N']->get('blacklist subscriber and delete bounce'),
+  'blacklistemailanddeletebounce' => $GLOBALS['I18N']->get('blacklist email address and delete bounce'),
   'deletebounce' => $GLOBALS['I18N']->get('delete bounce'),
 );
 
@@ -59,14 +59,18 @@ function setMessageData($msgid,$name,$value) {
           $result  =  Sql_query("insert ignore into ".$GLOBALS['tables']["listmessage"]."  (messageid,listid,entered) values($msgid,$listid,current_timestamp)");
         }
       }
+      ## once we used "all" to set all, unset it, to avoid confusion trying to unselect lists
+      unset($value['all']);
     } else {
       foreach($value as $listid => $val) {
-        $query
-        = ' insert into ' . $GLOBALS['tables']["listmessage"]
-        . '    (messageid,listid,entered)'
-        . ' values'
-        . '    (?, ?, current_timestamp)';
-        $result = Sql_Query_Params($query, array($msgid, $listid));
+        if ($listid != 'unselect') { ## see #16940 - ignore a list called "unselect" which is there to allow unselecting all
+          $query
+          = ' insert into ' . $GLOBALS['tables']["listmessage"]
+          . '    (messageid,listid,entered)'
+          . ' values'
+          . '    (?, ?, current_timestamp)';
+          $result = Sql_Query_Params($query, array($msgid, $listid));
+        }
       }
     }
   }
@@ -130,19 +134,26 @@ function loadMessageData($msgid) {
     'notify_end' =>  getConfig("notifyend_default"),
     'google_track' => $default['google_track'] == 'true' || $default['google_track'] === true || $default['google_track'] == '1',
     'excludelist' => array(),
+    'sentastest' => 0,
   );
   if (is_array($prevMsgData)) {
     foreach ($prevMsgData as $key => $val) {
       $messagedata[$key] = $val;
     }
   }
-  
+
+  if (!empty($GLOBALS["commandline"]) && $_GET["page"] == "send") {
+    $messagedata["fromfield"] = $_POST["from"];
+    $messagedata["subject"] = $_POST["subject"];
+    $messagedata["message"] = $_POST["message"];
+    $messagedata["targetlist"] = $_POST["targetlist"];
+  }
+
   $msgdata_req = Sql_Query(sprintf('select * from %s where id = %d',
     $GLOBALS['tables']['messagedata'],$msgid));
   while ($row = Sql_Fetch_Assoc($msgdata_req)) {
     if (strpos($row['data'],'SER:') === 0) {
-      $data = substr($row['data'],4);
-      $data = @unserialize(stripslashes($data));
+      $data = stripSlashesArray(unserialize(substr($row['data'], 4)));
     } else {
       $data = stripslashes($row['data']);
     }
@@ -210,10 +221,10 @@ function loadMessageData($msgid) {
     $messagedata["fromname"] = $messagedata["fromemail"];
   }
   
-  if (!empty($messagedata['targetlist']['unselect'])) {
+  if (isset($messagedata['targetlist']['unselect'])) {
     unset($messagedata['targetlist']['unselect']);
   }
-  if (!empty($messagedata['excludelist']['unselect'])) {
+  if (isset($messagedata['excludelist']['unselect'])) {
     unset($messagedata['excludelist']['unselect']);
   }
 
@@ -455,7 +466,7 @@ function sendAdminCopy($subject,$message,$lists = array()) {
       $admin_mail = trim($admin_mail);
       if ( !isset($sent[$admin_mail]) && !empty($admin_mail) ) {
         sendMail($admin_mail,$subject,$message,system_messageheaders($admin_mail));
-        logEvent(s('Sending admin copy to').' '.$admin_mail);
+     //   logEvent(s('Sending admin copy to').' '.$admin_mail);
         $sent[$admin_mail] = 1;
        }
      }
@@ -726,13 +737,13 @@ function getPageLock($force = 0) {
       Sql_query("update {$tables["sendprocess"]} set alive = 0 where id = ".$running_res['id']);
     } elseif ((int)$count >= (int)$max) {
    #   cl_output (sprintf($GLOBALS['I18N']->get('A process for this page is already running and it was still alive %s seconds ago'),$running_res['age']));
-      output (sprintf($GLOBALS['I18N']->get('A process for this page is already running and it was still alive %s seconds ago'),$running_res['age']));
+      output (sprintf($GLOBALS['I18N']->get('A process for this page is already running and it was still alive %s seconds ago'),$running_res['age']),0);
       sleep(1); # to log the messages in the correct order
       if ($GLOBALS["commandline"]) {
         cl_output($GLOBALS['I18N']->get('Running commandline, quitting. We\'ll find out what to do in the next run.'));
         exit;
       }
-      output ($GLOBALS['I18N']->get('Sleeping for 20 seconds, aborting will quit'));
+      output ($GLOBALS['I18N']->get('Sleeping for 20 seconds, aborting will quit'),0);
       flush();
       $abort = ignore_user_abort(0);
       sleep(20);
@@ -740,7 +751,7 @@ function getPageLock($force = 0) {
     $waited++;
     if ($waited > 10) {
       # we have waited 10 cycles, abort and quit script
-      output($GLOBALS['I18N']->get('We have been waiting too long, I guess the other process is still going ok'));
+      output($GLOBALS['I18N']->get('We have been waiting too long, I guess the other process is still going ok'),0);
       return false;
     }
     $query
@@ -1017,10 +1028,10 @@ function fetchUrl($url,$userdata = array()) {
   $lastmodified = time();
   $cache = getPageCache($url,$lastmodified);
   if (!$cache) {
-    ## @#TODO, make it work with Request2
     if (function_exists('curl_init')) {
       $content = fetchUrlCurl($url,$request_parameters);
     } elseif (0 && $GLOBALS['has_pear_http_request'] == 2) {
+      ## @#TODO, make it work with Request2
       @require_once "HTTP/Request2.php";
     } elseif ($GLOBALS['has_pear_http_request']) {
       @require_once "HTTP/Request.php";
@@ -1359,19 +1370,9 @@ function flushClickTrackCache() {
 }
 
 function resetMessageStatistics($messageid = 0) {
-  ## remove the "forward" entries, but only if they are for one (this) message
-  $delete = array();
-  $req = Sql_Query(sprintf('select forwardid from %s where messageid = %d',$GLOBALS['tables']['linktrack_uml_click'],$messageid));
-  while ($fwdid = Sql_Fetch_Row($req)) {
-    $count = Sql_Fetch_Row_Query(sprintf('select count(*) from %s where id = %d',$GLOBALS['tables']['linktrack_forward'],$fwdid[0]));
-    if ($count[0] < 2) {
-      $delete[] = $fwdid[0];
-    }
-  }
-  if (sizeof($delete)) {
-    Sql_Query(sprintf('delete from %s where id in (%s)',$GLOBALS['tables']['linktrack_forward'],join(',',$delete)));
-  }
+  ## remove the record of the links in the message, actual clicks of links, and the users sent to
   
+  Sql_Query(sprintf('delete from %s where messageid = %d',$GLOBALS['tables']['linktrack_ml'],$messageid));
   Sql_Query(sprintf('delete from %s where messageid = %d',$GLOBALS['tables']['linktrack_uml_click'],$messageid));
   Sql_Query(sprintf('delete from %s where messageid = %d',$GLOBALS['tables']['usermessage'],$messageid));
 }
@@ -1450,6 +1451,27 @@ function verifyToken() {
   return true;
 }
 
+## verify the session token on ajaxed GET requests
+function verifyCsrfGetToken() {
+  if ($GLOBALS['commandline']) return true;
+  if (isset($_GET['tk']) && isset($_SESSION['csrf_token'])) {
+    if ($_GET['tk'] != $_SESSION['csrf_token']) {
+      print s('Error, incorrect session token');
+      exit;
+    }
+  } elseif (isset($_SESSION['csrf_token'])) {
+    print s('Error, incorrect session token');
+    exit;
+  }  
+}
+
+function addCsrfGetToken() {
+  if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = substr(md5(uniqid(mt_rand(), true)),rand(0,32),rand(0,32));
+  }  
+  return '&tk='.$_SESSION['csrf_token'];
+}
+
 function refreshTlds($force = 0) {
   ## fetch list of Tlds and store in DB
   $lastDone = getConfig('tld_last_sync');
@@ -1521,8 +1543,8 @@ function shortenTextDisplay($text,$max = 30) {
   } else {
     $display = $text;
   }
-  $display = str_replace('/','/ ',$display);
-  $display = str_replace('@','@ ',$display);
+  $display = str_replace('/','/&#x200b;',$display);
+  $display = str_replace('@','@&#x200b;',$display);
   
   return sprintf('<span title="%s" ondblclick="alert(\'%s\');">%s</span>',htmlspecialchars($text),htmlspecialchars($text),$display);
 }
@@ -1574,4 +1596,122 @@ function delFsTree($dir) {
     (is_dir("$dir/$file")) ? delFsTree("$dir/$file") : unlink("$dir/$file");
   }
   return rmdir($dir);
+}
+
+function copy_recursive($source, $dest)
+{
+    if (is_dir($source))  {
+        mkdir($dest);
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($source),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+        foreach ($iterator as $item) {
+            if ($item->getBasename() == '..' || $item->getBasename() == '.') {
+                continue;
+            }
+            if ($item->isDir()) {
+                mkdir($dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName());
+            } else {
+                if (!copy($item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    return copy($source, $dest);
+}
+
+function parsePlaceHolders($content,$array = array()) {
+  ## the editor turns all non-ascii chars into the html equivalent so do that as well
+  foreach ($array as $key => $val) {
+    $array[strtoupper($key)] = $val;
+    $array[htmlentities(strtoupper($key),ENT_QUOTES,'UTF-8')] = $val;
+    $array[str_ireplace(' ','&nbsp;',strtoupper($key))] = $val;
+  }
+
+  foreach ($array as $key => $val) {
+    if (PHP5) {  ## the help only lists attributes with strlen($name) < 20
+    #  print '<br/>'.$key.' '.$val.'<hr/>'.htmlspecialchars($content).'<hr/>';
+      if (stripos($content,'['.$key.']') !== false) {
+        $content = str_ireplace('['.$key.']',$val,$content);
+      } 
+      if (preg_match('/\['.$key.'%%([^\]]+)\]/i',$content,$regs)) { ## @@todo, check for quoting */ etc
+    #    var_dump($regs);
+        if (!empty($val)) {
+          $content = str_ireplace($regs[0],$val,$content);
+        } else {
+          $content = str_ireplace($regs[0],$regs[1],$content);
+        }
+      }
+    } else { 
+      $key = str_replace('/','\/',$key);
+      if (preg_match('/\['.$key.'\]/i',$content,$match)) {
+        $content = str_replace($match[0],$val,$content);
+      }
+    }
+  }
+  return $content;
+}
+
+function quoteEnclosed($value,$col_delim = "\t",$row_delim = "\n") {
+  $enclose = 0;
+  if (strpos($value,'"') !== false) {
+    $value = str_replace('"','""',$value);
+    $enclose = 1;
+  }
+  if (strpos($value,$col_delim) !== false) {
+    $enclose = 1;
+  }
+  if (strpos($value,$row_delim) !== false) {
+    $enclose = 1;
+  }
+  if ($enclose) {
+    $value = '"'.$value .'"';
+  }
+  return $value;
+}
+
+function activateRemoteQueue() {
+  $result = '';
+  $activated = file_get_contents(PQAPI_URL.'&cmd=start&key='.getConfig('PQAPIkey').'&s='.urlencode(getConfig('remote_processing_secret')).'&u='.base64_encode($_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['REQUEST_URI'])));
+  if ($activated == 'OK') {
+    $result .= '<h3>'.s('Remote queue processing has been activated successfully').'</h3>';
+    $result .= '<p>'.PageLinkButton("messages&tab=active",$GLOBALS['I18N']->get("view progress")).'</p>';
+  } elseif ($activated == 'KEYFAIL' || $activated == 'NAC') {
+    $result .= '<h3>'. s('Error activating remote queue processing').'</h3>';
+    if ($activated == 'KEYFAIL') {
+      $result .= s('The API key is incorrect');
+    } elseif ($activated == 'NAC') {
+      $result .= s('The phpList.com server is unable to reach your phpList installation');
+    } else {
+      $result .= s('Unknown error');
+    }
+    $result .= '<p><a href="./?page=hostedprocessqueuesetup" class="button">'.s('Change settings').'</a></p>';
+    $result .= '<p><a href="./?page=processqueue&pqchoice=local" class="button">'.s('Run queue locally').'</a></p>';
+  } else {
+    $result .= '<h3>'.s('Error activating remote queue processing').'</h3>';
+    $result .= '<p><a href="./?page=processqueue&pqchoice=local" class="button">'.s('Run queue locally').'</a></p>';
+  }
+  return $result;
+}
+
+function subscribeToAnnouncementsForm($emailAddress = "") {
+  if (!is_email($emailAddress) && isset($_SESSION['logindetails']['id'])) {
+    $emailAddress = $GLOBALS["admin_auth"]->adminEmail($_SESSION['logindetails']['id']);
+  }
+  
+  return '<p class="information">'
+    .'<h3>'.s("Sign up to receive news and updates about phpList ").'</h3>'
+    .s("to make sure you are updated when new versions come out. Sometimes security bugs are found which make it important to upgrade. Traffic on the list is very low.").
+'<script type="text/javascript">var pleaseEnter = "'.strip_tags($emailAddress).'";</script> '.   
+'<script type="text/javascript" src="../js/jquery-1.5.2.min.js"></script> 
+<script type="text/javascript" src="../js/phplist-subscribe-0.3.min.js"></script> 
+<div id="phplistsubscriberesult"></div> <form action="https://announce.hosted.phplist.com/lists/?p=subscribe&id=3" method="post" id="phplistsubscribeform"> 
+<input type="text" name="email" value="" id="emailaddress" /> 
+<button type="submit" id="phplistsubscribe">'.s('Subscribe').'</button> <button id="phplistnotsubscribe" class="fright">'.s('Do not subscribe').'</button></form>'
+    .' </p>';
 }

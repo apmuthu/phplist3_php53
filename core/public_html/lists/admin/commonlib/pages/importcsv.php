@@ -43,18 +43,18 @@ if (!empty ($_GET["reset"]) && $_GET["reset"] == "yes") {
   print PageLinkButton('import2', s('Continue'));
   return;
 } else {
-  if ((!empty($_SESSION["import_file"]) || !empty($_SESSION["test_import"])) && (!isset($_GET['confirm']) || $_GET['confirm'] != 'yes')) {
+ # if ((!empty($_SESSION["import_file"]) || !empty($_SESSION["test_import"])) && (!isset($_GET['confirm']) || $_GET['confirm'] != 'yes')) {
     $button = new ConfirmButton(
        s('Are you sure you want to reset the import session?'),
        PageURL2("import2&reset=yes","reset",""),
        s('Reset Import session'));
      
     print '<div class="fright">'.$button->show(). '</div>';
-  }
+ # }
 }
 if (isset ($_POST["import"])) {
   if (!verifyToken()) {
-    print Error(s('Invalid security token, please reload the page and try again', 'http://resources.phplist.com/documentation/errors/securitytoken'));
+    print Error(s('Invalid security token, please reload the page and try again'), 'http://resources.phplist.com/documentation/errors/securitytoken');
     return;
   }
   
@@ -67,6 +67,13 @@ if (isset ($_POST["import"])) {
   }
   if (empty ($_FILES["import_file"])) {
     Fatal_Error($GLOBALS['I18N']->get('No file was specified. Maybe the file is too big? '));
+    return;
+  }
+  
+  ## disallow some extensions. Won't avoid all problems, but will help with the most common ones.
+  $extension = strtolower(pathinfo($_FILES["import_file"]["name"], PATHINFO_EXTENSION));
+  if (in_array($extension, array('xls','ods','ots','fods', 'xlsx', 'xlt' , 'dif', 'dbf', 'html', 'slk'))) {
+    Fatal_Error(s('Please upload a plain text file only. You cannot use a spreadsheet. You need to export the data from the spreadsheet into a TAB delimited text file'));
     return;
   }
 
@@ -160,6 +167,10 @@ if (!empty($_SESSION["import_file"])) {
   }
   $email_list = file_get_contents($_SESSION["import_file"]);
   flush();
+  
+  if (!isset($_SESSION['import_attribute'])) {
+    $_SESSION['import_attribute'] = array();
+  }
   // Clean up email file
   $email_list = trim($email_list);
   $email_list = str_replace("\r", "\n", $email_list);
@@ -406,7 +417,7 @@ if (!empty($_SESSION["test_import"])) {
   print '<h3>'.s('Importing %d subscribers to %d lists, please wait',sizeof($email_list),sizeof($_SESSION['lists'])).'</h3>';
   print $GLOBALS['img_busy'];
   print '<div id="progresscount" style="width: 200; height: 50;">Progress</div>';
-  print '<br/> <iframe id="import1" src="./?page=pageaction&action=import2&ajaxed=true" scrolling="no" height="5" width="100"></iframe>';
+  print '<br/> <iframe id="import2" src="./?page=pageaction&action=import2&ajaxed=true'.addCsrfGetToken().'" scrolling="no" height="5" width="100"></iframe>';
   return;
 }  
 
@@ -514,7 +525,7 @@ if (sizeof($email_list)) {
     } else {
       # Warn("Omitting invalid one: $email");
     }
-    $user["systemvalues"]["email"] = parsePlaceHolders($system_values["email"], array_merge($replace, $system_values, array (
+    $user["systemvalues"]["email"] = parseImportPlaceHolders($system_values["email"], array_merge($replace, $system_values, array (
       "number" => $c
     )));
     $user["systemvalues"]["email"] = cleanEmail($user["systemvalues"]["email"]);
@@ -681,6 +692,7 @@ printf($GLOBALS['I18N']->get('phpList will not process files larger than %dMB'),
 
 <?php
 ## we should not allow sending this, but run it through process queue instead
+## https://mantis.phplist.com/view.php?id=16898
 ?>
 <!--tr><td colspan="2"><?php echo $GLOBALS['I18N']->get('If you choose "send notification email" the subscribers you are adding will be sent the request for confirmation of subscription to which they will have to reply. This is recommended, because it will identify invalid emails.')?></td></tr>
 <tr><td><?php echo $GLOBALS['I18N']->get('Send&nbsp;Notification&nbsp;email')?>&nbsp;<input type="radio" name="notify" value="yes" /></td><td><?php echo $GLOBALS['I18N']->get('Make confirmed immediately')?>&nbsp;<input type="radio" name="notify" value="no" checked="checked"/></td></tr>

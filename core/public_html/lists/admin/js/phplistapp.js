@@ -43,6 +43,12 @@ function getServerTime() {
    setTimeout("getServerTime()",60100); // just over a minute
 }
 
+function autoSave() {
+  // in the future, do an auto-save, for now, we want to keep the session alive
+  $("#autosave").load('./?page=pageaction&ajaxed=true&action=keepalive');
+}
+
+
 function refreshCriteriaList() {
   var id = urlParameter('id',document.location);
   $("#existingCriteria").html(busyImage);
@@ -182,12 +188,22 @@ $(document).ready(function() {
     $(".tabbed1").tabs();
   }
   
+  $("#subjectinput").focus(function() {
+    if (this.value == '(no subject)') {
+      this.value = "";
+    }
+  })
+  $("#subjectinput").blur(function() {
+    if (this.value == "") {
+      this.value = "(no subject)";
+      return;
+    }
+  });
   $("#remoteurlinput").focus(function() {
     if (this.value == 'e.g. http://www.phplist.com/testcampaign.html') {
       this.value = "";
     }
   })
-  
   $("#remoteurlinput").blur(function() {
     if (this.value == "") {
       this.value = "e.g. http://www.phplist.com/testcampaign.html";
@@ -196,6 +212,17 @@ $(document).ready(function() {
     $("#remoteurlstatus").html(busyImage);
     $("#remoteurlstatus").load("./?page=pageaction&action=checkurl&ajaxed=true&url="+this.value);
   });
+  $("#filtertext").focus(function() {
+    if (this.value == ' --- filter --- ') {
+      this.value = "";
+    }
+  })
+  $("#filtertext").blur(function() {
+    if (this.value == "") {
+      this.value = " --- filter --- ";
+      return;
+    }
+  });  
 
   $("input:radio[name=sendmethod]").change(function() {
     if (this.value == "remoteurl") {
@@ -215,7 +242,7 @@ $(document).ready(function() {
       return false;
     }
   });
-
+  
   $("#criteriaSelect").change(function() {
     var val = $("#criteriaSelect").val();
     var operator = '';
@@ -246,6 +273,8 @@ $(document).ready(function() {
   $("#initialadminpassword").keyup(function() {
     if (this.value.length >= 8) {
       $("#initialisecontinue").removeAttr('disabled');
+    } else if (this.value.length < 8) {
+      $("#initialisecontinue").attr('disabled', 'disabled');
     }
   });
   $("#initialiseform").submit(function() {
@@ -271,6 +300,10 @@ $(document).ready(function() {
     setTimeout("refreshExport()",10000);
   })
 
+  $("#selectallcheckbox").click(function() {
+     $(':checkbox').prop('checked', this.checked);
+  })
+
   //fade out 'actionresult' user feedback
   $('.actionresult').delay(4000).fadeOut(4000); 
   //fade out 'result' user feedback
@@ -289,6 +322,9 @@ $(document).ready(function() {
 
   var docurl = document.location.search;
   document.cookie="browsetrail="+escape(docurl);
+
+ // setTimeout("autoSave();",60000); // once a minute should suffice
+  setTimeout("autoSave();",500); // for testing
 
 /* future dev
   $("#listinvalid").load("./?page=pageaction&action=listinvalid&ajaxed=true",function() {

@@ -1,1 +1,3 @@
-<p>Puoi esportare gli utenti basandoti sulle date.<br/>Se fai click sul pulsante "Esporta", si aprir&agrave; un box per il download dell'archivio.  Questo &egrave; un archivio delimitato da TAB contenente i risultati della vostra richiesta di esportazione sulla base dei parametri scelti.<br/>Questo archivio &egrave; utilizzabile dalla maggior parte degli applicativi di foglio elettronico.</p>
+Potete esportare gli utenti in base alle date.<br/>
+Se cliccate sul pulsante "Esporta", si aprir&agrave; un popup per il download del file. Questo &egrave; un file delimitato da TABULAZIONE contenente i risultati della vostra richiesta di esportazione.<br/>
+Questo file &egrave; utilizzabile dalla maggior parte degli applicativi di foglio elettronico.</p>

@@ -3,18 +3,20 @@ require_once dirname(__FILE__).'/accesscheck.php';
 
 print formStart('class="listListing"');
 $some = 0;
-if (isset($_GET['s'])) {
-  $s = sprintf('%d',$_GET['s']);
+if (isset($_GET['start'])) {
+  $s = sprintf('%d',$_GET['start']);
 } else {
   $s = 0;
 }
 $baseurl = './?page=list';
+$paging = '';
 
 $actionresult = '';
 
 if (isset($_POST['listorder']) && is_array($_POST['listorder']))
   while (list($key,$val) = each ($_POST['listorder'])) {
     $active = empty($_POST['active'][$key]) ? '0' : '1';
+    $active = $active || listUsedInSubscribePage($key);
     $query
     = ' update %s'
     . ' set listorder = ?, active = ?'
@@ -56,6 +58,7 @@ if ($GLOBALS['require_login'] && !isSuperUser()) {
 print '</div>';
 
 if (isset($_GET['delete'])) {
+  verifyCsrfGetToken();
   $delete = sprintf('%d',$_GET['delete']);
   # delete the index in delete
   $actionresult = $GLOBALS['I18N']->get('Deleting') . ' '.$GLOBALS['I18N']->get('list')." $delete ..\n";
@@ -126,7 +129,9 @@ if (sizeof($aListCategories)) {
   } else {
     $tabs->setCurrent(s('Uncategorised'));
   }
-  print $tabs->display();
+  if (sizeof($aListCategories) > 1) {
+    print $tabs->display();
+  }
 }
 $countquery
 = ' select *'
@@ -143,7 +148,12 @@ if ($total == 0 && sizeof($aListCategories) && $current == '' && empty($_GET['ta
 }
 
 print '<p class="total">'.$total .' '. $GLOBALS['I18N']->get('Lists').'</p>';
-$limit = '';
+if ($total > 50 && empty($_SESSION['showalllists'])) {
+  $paging = simplePaging("list",$s,$total,10,'&nbsp;');
+  $limit = " limit $s,10";
+} else {
+  $limit = '';
+}
 
 $query
 = ' select *'
@@ -155,6 +165,51 @@ $result = Sql_query($query);
 $numlists = Sql_Affected_Rows($result);
 
 $ls = new WebblerListing(s('Lists'));
+$ls->usePanel($paging);
+
+/** Always Show a "list" of all subscribers 
+ * https://mantis.phplist.com/view.php?id=17433
+ * many users are confused when they have more subscribers than members of lists
+ * this will avoid that confusion
+ * we can only do this for superusers of course
+ * */
+if (SHOW_LIST_OFALL_SUBSCRIBERS && isSuperUser()) {
+
+  $query
+  = ' select count(u.id) as total,'
+  . ' sum(u.confirmed) as confirmed, '
+  . ' sum(u.blacklisted) as blacklisted '
+  . ' from '.$tables['user'].' u';
+
+  $req = Sql_Query($query);
+  $membercount = Sql_Fetch_Assoc($req);
+    
+  $members = $membercount['confirmed'];
+  $unconfirmedMembers = (int)($membercount['total'] - $members);
+  $desc = s('All subscribers');
+  if ($unconfirmedMembers > 0) {
+    $membersDisplay = '<span class="memberCount" title="'.s('Confirmed members').'">'.$members.'</span> <span class="unconfirmedCount" title="'.s('Unconfirmed members').'">('.$unconfirmedMembers. ')</span>';
+  } else {
+    $membersDisplay = '<span class="memberCount">'.$members.'</span>';
+  }
+
+  $element = '<!-- '.$row['id'].'-->'.s('All subscribers');
+  $ls->addElement($element);
+  $ls->setClass($element,'rows row1');
+  $ls->addColumn($element,
+    $GLOBALS['I18N']->get('Members'),'<div style="display:inline-block;text-align:right;width:50%;float:left;">'.$membersDisplay. '</div><span class="view" style="text-align:left;display:inline-block;float:right;width:48%;"><a class="button " href="./?page=members&id=all" title="'.$GLOBALS['I18N']->get('View Members').'">'.$GLOBALS['I18N']->get('View Members').'</a></span>');
+    
+
+  $deletebutton = new ConfirmButton(
+     s('This is a system list. You cannot delete it.'),
+     PageURL2("list"),
+     s('delete this list'));
+   
+  $ls->addRow($element,'','<span class="edit-list"><a class="button" href="?page=editlist" title=""></a></span>'.'<span class="send-list">'.PageLinkButton('send&new=1&list=all',$GLOBALS['I18N']->get('send'),'','',s('start a new campaign targetting all lists')).'</span>'.
+    '<span class="add_member">'.PageLink2('import',s('Add Members')).'</span>'.
+    '<span class="delete">'.$deletebutton->show().'</span>'
+    ,'','','actions nodrag');
+}
 
 if ($numlists > 15) {
   Info(s('You seem to have quite a lot of lists, do you want to organise them in categories? ').' '.PageLinkButton('catlists',$GLOBALS['I18N']->get('Great idea!')));
@@ -173,47 +228,44 @@ if ($numlists > 15) {
 
 while ($row = Sql_fetch_array($result)) {
   
-  /*
-   * this is rather demanding with quite a few lists/subscribers
-   * find a better way
-   */
+  ## we only consider confirmed and not blacklisted subscribers members of a list
+  ## we assume "confirmed" to be 1 or 0, so that the sum gives the total confirmed
+  ## could be incorrect, as 1000 is also "true" but will be ok (saves a few queries)
   
+  ## same with blacklisted, but we're disregarding that for now, because blacklisted subscribers should not 
+  ## be on the list at all. 
+  ## @@TODO increase accuracy, without adding loads of queries.
   $query
-  = ' select count(*)'
+  = ' select count(u.id) as total,'
+  . ' sum(u.confirmed) as confirmed, '
+  . ' sum(u.blacklisted) as blacklisted '
   . ' from ' . $tables['listuser']
-  . ' where listid = ?';
-  $rsc = Sql_Query_Params($query, array($row["id"]));
-  $membercount = Sql_Fetch_Row($rsc);
-    $members = $membercount[0];
-
-/*
-  $query = sprintf('
-  select count(distinct userid) as bouncecount from %s listuser,
-  %s umb where listuser.userid = umb.user and listuser.listid = ? ',
-  $GLOBALS['tables']['listuser'],$GLOBALS['tables']['user_message_bounce'],$row['id'])
-
-  print $query;
-*/
-  $bouncecount =
-    Sql_Fetch_Row_Query(sprintf('select count(distinct userid) as bouncecount from %s listuser, %s umb where listuser.userid = umb.user and listuser.listid = %s ',$GLOBALS['tables']['listuser'],$GLOBALS['tables']['user_message_bounce'],$row['id']));
-    $bounces = $bouncecount[0];
-
+  . ' lu, '.$tables['user'].' u where u.id = lu.userid and listid = ? ';
+  
+  $req = Sql_Query_Params($query, array($row["id"]));
+  $membercount = Sql_Fetch_Assoc($req);
+  
+  $members = $membercount['confirmed'];
+  $unconfirmedMembers = (int)($membercount['total'] - $members);
   $desc = stripslashes($row['description']);
-
-  ## allow plugins to add columns
-  foreach ($GLOBALS['plugins'] as $plugin) {
-    $desc = $plugin->displayLists($row) . $desc;
+  if ($unconfirmedMembers > 0) {
+    $membersDisplay = '<span class="memberCount" title="'.s('Confirmed members').'">'.$members.'</span> <span class="unconfirmedCount" title="'.s('Unconfirmed members').'">('.$unconfirmedMembers. ')</span>';
+  } else {
+    $membersDisplay = '<span class="memberCount">'.$members.'</span>';
   }
+ 
+  //## allow plugins to add columns
+  // @@@ TODO review this
+  //foreach ($GLOBALS['plugins'] as $plugin) {
+    //$desc = $plugin->displayLists($row) . $desc;
+  //}
 
   $element = '<!-- '.$row['id'].'-->'.stripslashes($row['name']);
-  $ls->addElement($element,PageUrl2("editlist&amp;id=".$row["id"]));
+  $ls->addElement($element);
   $ls->setClass($element,'rows row1');
   $ls->addColumn($element,
-    $GLOBALS['I18N']->get('Members'),
-    PageLink2("members",'<span class="membercount">'.$members.'</span>',"id=".$row["id"]).' '.PageLinkDialog('importsimple&list='.$row["id"],'+'));
-  $ls->addColumn($element,
-    $GLOBALS['I18N']->get('Bounces'),
-    PageLink2("listbounces",'<span class="bouncecount">'.$bounces.'</span>',"id=".$row["id"]));#.' '.PageLink2('listbounces&id='.$row["id"],$GLOBALS['I18N']->get('view'))
+    $GLOBALS['I18N']->get('Members'),'<div style="display:inline-block;text-align:right;width:50%;float:left;">'.$membersDisplay. '</div><span class="view" style="text-align:left;display:inline-block;float:right;width:48%;"><a class="button " href="./?page=members&id='.$row["id"].'" title="'.$GLOBALS['I18N']->get('View Members').'">'.$GLOBALS['I18N']->get('View Members').'</a></span>');
+    
   $ls->addColumn($element,
     $GLOBALS['I18N']->get('Public'),sprintf('<input type="checkbox" name="active[%d]" value="1" %s %s />',$row["id"],
   $row["active"] ? 'checked="checked"' : '',listUsedInSubscribePage($row["id"]) ? ' disabled="disabled" ':''));
@@ -236,9 +288,10 @@ while ($row = Sql_fetch_array($result)) {
      PageURL2("list&delete=".$row["id"]),
      s('delete this list'));
    
-  $ls->addRow($element,'',$deletebutton->show().PageLinkButton('send&new=1&list='.$row['id'],$GLOBALS['I18N']->get('send'),'','',$GLOBALS['I18N']->get('start a new campaign targetting this list')),'','','actions nodrag');
-  
-
+  $ls->addRow($element,'','<span class="edit-list"><a class="button" href="?page=editlist&amp;id='.$row["id"].'" title="'.$GLOBALS['I18N']->get('Edit this list').'"></a></span>'.'<span class="send-list">'.PageLinkButton('send&new=1&list='.$row['id'],$GLOBALS['I18N']->get('send'),'','',$GLOBALS['I18N']->get('start a new campaign targetting this list')).'</span>'.
+    '<span class="add_member">'.PageLinkDialogOnly('importsimple&list='.$row["id"],s('Add Members')).'</span>'.
+    '<span class="delete">'.$deletebutton->show().'</span>'
+    ,'','','actions nodrag');
 
   $some = 1;
 }

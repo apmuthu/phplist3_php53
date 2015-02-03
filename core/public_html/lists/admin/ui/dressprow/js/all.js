@@ -1101,6 +1101,12 @@ function getServerTime() {
    setTimeout("getServerTime()",60100); // just over a minute
 }
 
+function autoSave() {
+  // in the future, do an auto-save, for now, we want to keep the session alive
+  $("#autosave").load('./?page=pageaction&ajaxed=true&action=keepalive');
+}
+
+
 function refreshCriteriaList() {
   var id = urlParameter('id',document.location);
   $("#existingCriteria").html(busyImage);
@@ -1240,12 +1246,22 @@ $(document).ready(function() {
     $(".tabbed1").tabs();
   }
   
+  $("#subjectinput").focus(function() {
+    if (this.value == '(no subject)') {
+      this.value = "";
+    }
+  })
+  $("#subjectinput").blur(function() {
+    if (this.value == "") {
+      this.value = "(no subject)";
+      return;
+    }
+  });
   $("#remoteurlinput").focus(function() {
     if (this.value == 'e.g. http://www.phplist.com/testcampaign.html') {
       this.value = "";
     }
   })
-  
   $("#remoteurlinput").blur(function() {
     if (this.value == "") {
       this.value = "e.g. http://www.phplist.com/testcampaign.html";
@@ -1254,6 +1270,17 @@ $(document).ready(function() {
     $("#remoteurlstatus").html(busyImage);
     $("#remoteurlstatus").load("./?page=pageaction&action=checkurl&ajaxed=true&url="+this.value);
   });
+  $("#filtertext").focus(function() {
+    if (this.value == ' --- filter --- ') {
+      this.value = "";
+    }
+  })
+  $("#filtertext").blur(function() {
+    if (this.value == "") {
+      this.value = " --- filter --- ";
+      return;
+    }
+  });  
 
   $("input:radio[name=sendmethod]").change(function() {
     if (this.value == "remoteurl") {
@@ -1273,7 +1300,7 @@ $(document).ready(function() {
       return false;
     }
   });
-
+  
   $("#criteriaSelect").change(function() {
     var val = $("#criteriaSelect").val();
     var operator = '';
@@ -1304,6 +1331,8 @@ $(document).ready(function() {
   $("#initialadminpassword").keyup(function() {
     if (this.value.length >= 8) {
       $("#initialisecontinue").removeAttr('disabled');
+    } else if (this.value.length < 8) {
+      $("#initialisecontinue").attr('disabled', 'disabled');
     }
   });
   $("#initialiseform").submit(function() {
@@ -1329,6 +1358,10 @@ $(document).ready(function() {
     setTimeout("refreshExport()",10000);
   })
 
+  $("#selectallcheckbox").click(function() {
+     $(':checkbox').prop('checked', this.checked);
+  })
+
   //fade out 'actionresult' user feedback
   $('.actionresult').delay(4000).fadeOut(4000); 
   //fade out 'result' user feedback
@@ -1347,6 +1380,9 @@ $(document).ready(function() {
 
   var docurl = document.location.search;
   document.cookie="browsetrail="+escape(docurl);
+
+ // setTimeout("autoSave();",60000); // once a minute should suffice
+  setTimeout("autoSave();",500); // for testing
 
 /* future dev
   $("#listinvalid").load("./?page=pageaction&action=listinvalid&ajaxed=true",function() {
@@ -2229,12 +2265,12 @@ $(document).ready(function() {
     });
 /* Draggable behaviour for table sorting*/	
 	// disable drag n drop for description rows
-	$( ".draggable tr" ).each(function( index ) {
+	$( ".disable-draggable tr" ).each(function( index ) {
 		$(this).attr('id','row-'+index);
 	});
 	$("tr:first").addClass('nodrag');
 	// Make a nice striped effect on the table
-	table_2 = $(".draggable");
+	table_2 = $(".disable-draggable");
 	// Initialise the second table specifying a dragClass and an onDrop function that will display an alert
 	var rowsH = $( ".rows" ).height();
 	var actionsH = $( ".actions" ).height();
@@ -2291,5 +2327,45 @@ $(document).ready(function() {
 	  $( ".rows" ).height(rowsH);
 	  $('.tmptable').remove();
 	});	
+
+        // styling list tab in send page
+	$('body.send').find('.ui-tabs-panel li').each(function(){
+	  var li = $(this);
+	  listify(li);
+	});
+        listify_finish_tab('.campaignTracking');
+        listify_finish_tab('.resetStatistics');
+        listify_finish_tab('.isTestCampaign');
+
+        function listify_finish_tab(selector)
+        {
+            var cbx = $(selector).find('input[type=checkbox]');
+            var cbx_name = $(cbx).attr('name');
+            var label = $(selector).find('label');
+            $(cbx).attr('id', cbx_name);
+            $(label).attr('for', cbx_name);
+        }
+
+        function listify(selector)
+        {
+            $(selector).each(function(index, val) {
+                // Give all checkboxes the same ID as the name attribute
+                var cbx_name = $(this).find('input[type=checkbox]').attr('name');
+                $(this).find('input[type=checkbox]').attr('id', cbx_name);
+
+                // Wrap the contents of the <li> with a <label>
+                var content = $(this).html().replace('(<span', '<span');
+                content = content.replace('span>)','span><small>');
+                content = content + "</small>";
+                $(this).html('<label for="' + cbx_name + '">' + content + '</label>');
+
+                // Pop the checkbox out of the label (for CSS selecting reasons)
+                var cbx = $(this).find('input[type=checkbox]');
+                $(this).prepend(cbx);
+            });
+            $('li input[type=checkbox]').hide();
+        }
+
 });
+
 /*ui/dressprow/js/jcarousellite_1.0.1.min.js*/ (function($){$.fn.jCarouselLite=function(o){o=$.extend({btnPrev:null,btnNext:null,btnGo:null,mouseWheel:false,auto:null,speed:200,easing:null,vertical:false,circular:true,visible:3,start:0,scroll:1,beforeStart:null,afterEnd:null},o||{});return this.each(function(){var b=false,animCss=o.vertical?"top":"left",sizeCss=o.vertical?"height":"width";var c=$(this),ul=$("ul",c),tLi=$("li",ul),tl=tLi.size(),v=o.visible;if(o.circular){ul.prepend(tLi.slice(tl-v-1+1).clone()).append(tLi.slice(0,v).clone());o.start+=v}var f=$("li",ul),itemLength=f.size(),curr=o.start;c.css("visibility","visible");f.css({overflow:"hidden",float:o.vertical?"none":"left"});ul.css({margin:"0",padding:"0",position:"relative","list-style-type":"none","z-index":"1"});c.css({overflow:"hidden",position:"relative","z-index":"2",left:"0px"});var g=o.vertical?height(f):width(f);var h=g*itemLength;var j=g*v;f.css({width:f.width(),height:f.height()});ul.css(sizeCss,h+"px").css(animCss,-(curr*g));c.css(sizeCss,j+"px");if(o.btnPrev)$(o.btnPrev).click(function(){return go(curr-o.scroll)});if(o.btnNext)$(o.btnNext).click(function(){return go(curr+o.scroll)});if(o.btnGo)$.each(o.btnGo,function(i,a){$(a).click(function(){return go(o.circular?o.visible+i:i)})});if(o.mouseWheel&&c.mousewheel)c.mousewheel(function(e,d){return d>0?go(curr-o.scroll):go(curr+o.scroll)});if(o.auto)setInterval(function(){go(curr+o.scroll)},o.auto+o.speed);function vis(){return f.slice(curr).slice(0,v)};function go(a){if(!b){if(o.beforeStart)o.beforeStart.call(this,vis());if(o.circular){if(a<=o.start-v-1){ul.css(animCss,-((itemLength-(v*2))*g)+"px");curr=a==o.start-v-1?itemLength-(v*2)-1:itemLength-(v*2)-o.scroll}else if(a>=itemLength-v+1){ul.css(animCss,-((v)*g)+"px");curr=a==itemLength-v+1?v+1:v+o.scroll}else curr=a}else{if(a<0||a>itemLength-v)return;else curr=a}b=true;ul.animate(animCss=="left"?{left:-(curr*g)}:{top:-(curr*g)},o.speed,o.easing,function(){if(o.afterEnd)o.afterEnd.call(this,vis());b=false});if(!o.circular){$(o.btnPrev+","+o.btnNext).removeClass("disabled");$((curr-o.scroll<0&&o.btnPrev)||(curr+o.scroll>itemLength-v&&o.btnNext)||[]).addClass("disabled")}}return false}})};function css(a,b){return parseInt($.css(a[0],b))||0};function width(a){return a[0].offsetWidth+css(a,'marginLeft')+css(a,'marginRight')};function height(a){return a[0].offsetHeight+css(a,'marginTop')+css(a,'marginBottom')}})(jQuery);

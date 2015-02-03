@@ -50,16 +50,24 @@ $track = $track ^ XORmask;
 $userid = sprintf('%d',$userid);
 $fwdid = sprintf('%d',$fwdid);
 $messageid = sprintf('%d',$messageid);
-/*$linkdata = Sql_Fetch_array_query(sprintf('select * from %s where linkid = %d and userid = %d and messageid = %d',
-  $GLOBALS['tables']['linktrack'],$linkid,$userid,$messageid));*/
+
 $query = sprintf('select * from %s where id = ?', $GLOBALS['tables']['linktrack_forward']);
 $rs = Sql_Query_Params($query, array($fwdid));
 $linkdata = Sql_Fetch_array($rs);
 
 if (!$fwdid || $linkdata['id'] != $fwdid || !$userid || !$messageid) {
-  FileNotFound();
+  ## try the old table to avoid breaking links
+  $linkdata = Sql_Fetch_array_query(sprintf('select * from %s where linkid = %d and userid = %d and messageid = %d',
+  $GLOBALS['tables']['linktrack'],$fwdid,$userid,$messageid));
+  if (!empty($linkdata['forward'])) {
+    ## we're not recording clicks, but at least links in older newsletters won't break.
+    header("Location: " . $linkdata['forward']);
+    exit;
+  }
+    
 #  echo 'Invalid Request';
   # maybe some logging?
+  FileNotFound();
   exit;
 }
 
@@ -147,10 +155,19 @@ if (!empty($messagedata['google_track'])) {
   if (strpos($url,'utm_medium') !== false) {
     $url = preg_replace('/utm_(\w+)\=[^&]+/','',$url);
   }
-  if (strpos($url,'?')) {
-    $url = $url.'&'.$trackingcode;
+  ## 16894 make sure to keep the fragment value at the end of the URL
+  if (strpos($url,'#')) {
+    list($tmplink,$fragment) = explode('#',$url);
+    $url = $tmplink;
+    unset($tmplink);
+    $fragment = '#'.$fragment;
   } else {
-    $url = $url.'?'.$trackingcode;
+    $fragment = '';
+  }
+  if (strpos($url,'?')) {
+    $url = $url.'&'.$trackingcode.$fragment;
+  } else {
+    $url = $url.'?'.$trackingcode.$fragment;
   }
 }
 

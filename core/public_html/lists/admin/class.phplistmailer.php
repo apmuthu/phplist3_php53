@@ -1,14 +1,12 @@
 <?php
 require_once dirname(__FILE__).'/accesscheck.php';
 
-if (defined('PHPMAILER_PATH')) {
-  #require_once '/usr/share/php/libphp-phpmailer/class.phpmailer.php';
-  require_once PHPMAILER_PATH;
-}
-
-if (!class_exists('PHPmailer')) {
- //https://github.com/Synchro/PHPMailer/tags
-  require_once dirname(__FILE__).'/PHPMailer-5.2.5/class.phpmailer.php';
+if (defined('PHPMAILER_PATH') and PHPMAILER_PATH != '') {
+    #require_once '/usr/share/php/libphp-phpmailer/class.phpmailer.php'
+    require_once PHPMAILER_PATH;
+} else {
+    //https://github.com/PHPMailer/PHPMailer
+    require_once dirname(__FILE__) . '/PHPMailer/PHPMailerAutoload.php';
 }
 
 class PHPlistMailer extends PHPMailer {
@@ -34,13 +32,11 @@ class PHPlistMailer extends PHPMailer {
     public $LE              = "\n";
     public $Hello = '';
     public $timeStamp = '';
-    public $TextEncoding      = '7bit';
-    
 
     function PHPlistMailer($messageid,$email,$inBlast = true,$exceptions = false) {
       parent::__construct($exceptions);
-      parent::SetLanguage('en', dirname(__FILE__) . '/phpmailer/language/');
-      $this->addCustomHeader("X-Mailer: phpList v".VERSION);
+      parent::SetLanguage('en', dirname(__FILE__) . '/PHPMailer/language/');
+      $this->addCustomHeader("X-phpList-version: ".VERSION);
       $this->addCustomHeader("X-MessageID: $messageid");
       $this->addCustomHeader("X-ListMember: $email");
 
@@ -126,6 +122,9 @@ class PHPlistMailer extends PHPMailer {
       } else {
          $this->isMail();
       }
+      if (empty($_SERVER['SERVER_NAME']) || empty($this->Hostname)) {
+        $this->Hostname = getConfig("domain");
+      }
 
       if (defined('PHPMAILER_SECURE') && PHPMAILER_SECURE) {
         $this->SMTPSecure = PHPMAILER_SECURE;
@@ -166,9 +165,14 @@ class PHPlistMailer extends PHPMailer {
       } else {
         $ip_domain = gethostbyaddr($ip_address);
       }
+      if ( $ip_domain != $ip_address ) {
+        $from = "$ip_domain [$ip_address]";
+      } else {
+        $from = "[$ip_address]";
+      }
       $hostname = $_SERVER["HTTP_HOST"];
       $request_time = date('r',$_SERVER['REQUEST_TIME']);
-      $sTimeStamp = "from $ip_domain [$ip_address] by $hostname with HTTP; $request_time";
+      $sTimeStamp = "from $from by $hostname with HTTP; $request_time";
       $this->addTimeStamp($sTimeStamp);
     }
 
@@ -177,7 +181,6 @@ class PHPlistMailer extends PHPMailer {
     }
 
     function add_text($text) {
-      $this->TextEncoding = TEXTEMAIL_ENCODING;
       if (!$this->Body) {
         $this->IsHTML(false);
         $this->Body = html_entity_decode($text ,ENT_QUOTES, 'UTF-8' ); #$text;
@@ -255,12 +258,11 @@ class PHPlistMailer extends PHPMailer {
           }
         }
         if(!parent::Send()) {
-          #echo "Message was not sent <p class="x">";
-          logEvent("Error sending email to ".$to_addr);
+          logEvent(s('Error sending email to %s',$to_addr).' '.$this->ErrorInfo);
           return 0;
         }#
       } else {
-        logEvent('Error sending email to '.$to_addr);
+        logEvent(s('Error, empty message-body sending email to %s',$to_addr));
         return 0;
       }
       return 1;
@@ -268,7 +270,6 @@ class PHPlistMailer extends PHPMailer {
 
     function Send() {
       if(!parent::Send()) {
-        logEvent("Error sending email to ".$to_addr);
         return 0;
       }
       return 1;
@@ -299,6 +300,7 @@ class PHPlistMailer extends PHPMailer {
       $templateid = sprintf('%d',$templateid);
         
       // Build the list of image extensions
+      $extensions = array();
       while(list($key,) = each($this->image_types)) {
         $extensions[] = $key;
       }
@@ -391,7 +393,7 @@ class PHPlistMailer extends PHPMailer {
         $this->AddEmbeddedImageString(base64_decode($contents), $cid, $name, $this->encoding, $content_type);
       } elseif (method_exists($this,'AddStringEmbeddedImage')) {
         ## PHPMailer 5.2.5 and up renamed the method
-        ## https://github.com/Synchro/PHPMailer/issues/42#issuecomment-16217354
+        ## https://github.com/PHPMailer/PHPMailer/issues/42#issuecomment-16217354
         $this->AddStringEmbeddedImage(base64_decode($contents), $cid, $name, $this->encoding, $content_type);
       } elseif (isset($this->attachment) && is_array($this->attachment)) {
         // Append to $attachment array
@@ -509,12 +511,9 @@ class PHPlistMailer extends PHPMailer {
 
       $messageheader = preg_replace('/'.$this->LE.'$/','',$messageheader);
       $messageheader .= $this->LE."Subject: ".$this->EncodeHeader($this->Subject).$this->LE;
-/*
-      print nl2br(htmlspecialchars($messageheader));
 
-      exit;
-*/
-   
+      #print nl2br(htmlspecialchars($messageheader));      exit;
+
       $date = date('r');
       $aws_signature = base64_encode(hash_hmac('sha256',$date,AWS_SECRETKEY,true));
       
@@ -537,7 +536,7 @@ class PHPlistMailer extends PHPMailer {
 */
  #     print '<hr/>Rawmessage '.nl2br(htmlspecialchars($messageheader. $this->LE. $this->LE.$messagebody));
 
-      $rawmessage = base64_encode($messageheader. $this->LE.$messagebody);
+      $rawmessage = base64_encode($messageheader. $this->LE.$this->LE.$messagebody);
   #   $rawmessage = str_replace('=','',$rawmessage);
 
       $requestdata = array(
@@ -591,8 +590,11 @@ class PHPlistMailer extends PHPMailer {
     function MailSend($header, $body) {
       $this->mailsize = strlen($header.$body);
 
-      ## use Amazon, if set up
+      ## use Amazon, if set up, @@TODO redo with latest PHPMailer
+      ## https://github.com/PHPMailer/PHPMailer/commit/57b183bf6a203cb69231bc3a235a00905feff75b
+      
       if (USE_AMAZONSES) {
+        $header .= "To: ".$this->destinationemail.$this->LE;
         return $this->AmazonSESSend($header,$body);
       }
 
@@ -604,13 +606,6 @@ class PHPlistMailer extends PHPMailer {
         ## if local spool is not set, send the normal way
         return parent::MailSend($header,$body);
       }
-      if (empty($GLOBALS['developer_email'])) {
-        $header .= "To: ".$this->destinationemail.$this->LE;
-      } else {
-        $header .= 'X-Originally-To: '.$this->destinationemail.$this->LE;
-        $header .= 'To: '.$GLOBALS['developer_email'].$this->LE;
-      }
-      $header .= "Subject: ".$this->EncodeHeader($this->Subject).$this->LE;
       $fname = tempnam(USE_LOCAL_SPOOL,'msg');
       file_put_contents($fname,$header."\n".$body);
       file_put_contents($fname.'.S',$this->Sender);

@@ -32,9 +32,22 @@ $dbversion = getConfig("version");
 if (!$dbversion)
   $dbversion = "Older than 1.4.1";
 output( '<p class="information">'.$GLOBALS['I18N']->get('Your database version').': '.$dbversion.'</p>');
-if ($dbversion == VERSION)
+
+if ($GLOBALS['database_module'] == 'mysql.inc') {
+  print Warn(s('Please edit your config file and change "mysql.inc" to "mysqli.inc" to avoid future PHP incompatibility').
+  resourceLink('http://resources.phplist.com/system/mysql-mysqli-update')
+  );
+}
+
+if ($dbversion == VERSION) {
   output($GLOBALS['I18N']->get('Your database is already the correct version, there is no need to upgrade'));
-else 
+  
+  print '<p>'.PageLinkAjax('upgrade&update=tlds',s('update Top Level Domains'),'','button').'</p>';
+
+  print subscribeToAnnouncementsForm();
+
+  
+} else 
 
 if (isset($_GET["doit"]) && $_GET["doit"] == 'yes') {
   $success = 1;
@@ -453,7 +466,7 @@ if (isset($_GET["doit"]) && $_GET["doit"] == 'yes') {
 
   ## fetch the list of TLDs, if possible
   if (defined('TLD_AUTH_LIST')) {
-    refreshTlds();
+    refreshTlds(true);
   }
   
   ## changed terminology
@@ -471,10 +484,10 @@ if (isset($_GET["doit"]) && $_GET["doit"] == 'yes') {
   
   ## replace old header and footer with the new one
   ## but only if there are untouched from the default, which seems fairly common
-  $oldPH = file_get_contents(dirname(__FILE__).'/ui/old_public_header.inc');
+  $oldPH = @file_get_contents(dirname(__FILE__).'/ui/old_public_header.inc');
   $oldPH2 = preg_replace("/\n/","\r\n",$oldPH); ## version with \r\n instead of \n
   
-  $oldPF = file_get_contents(dirname(__FILE__).'/ui/old_public_footer.inc');
+  $oldPF = @file_get_contents(dirname(__FILE__).'/ui/old_public_footer.inc');
   $oldPF2 = preg_replace("/\n/","\r\n",$oldPF); ## version with \r\n instead of \n
   Sql_Query(sprintf('update %s set value = "%s" where item = "pageheader" and (value = "%s" or value = "%s")',$tables['config'],sql_escape($defaultheader),addslashes($oldPH),addslashes($oldPH2)));
   Sql_Query(sprintf('update %s set value = "%s" where item = "pagefooter" and (value = "%s" or value = "%s")',$tables['config'],sql_escape($defaultfooter),addslashes($oldPF),addslashes($oldPF2)));
@@ -502,15 +515,23 @@ if (isset($_GET["doit"]) && $_GET["doit"] == 'yes') {
     }
   }
   
+  ## #17328 - remove list categories with quotes
+  Sql_Query(sprintf("update %s set category = replace(category,\"\\\\'\",\" \")",$tables['list']));
+
   # mark the database to be our current version
   if ($success) {
     SaveConfig("version",VERSION,0);
     # mark now to be the last time we checked for an update
     Sql_Query(sprintf('replace into %s (item,value,editable) values("updatelastcheck",current_timestamp,0)',
       $tables["config"]));
+    ## also clear any possible value for "updateavailable"
+    Sql_Query(sprintf('delete from %s where item = "updateavailable"',$tables["config"]));
+    
     Info(s('Success'),1);
     
     upgradePlugins(array_keys($GLOBALS['plugins']));
+
+    print subscribeToAnnouncementsForm();
     
 ##  check for old click track data
     $num = Sql_Fetch_Row_Query(sprintf('select count(*) from %s',$GLOBALS['tables']['linktrack']));
@@ -532,10 +553,8 @@ if (isset($_GET["doit"]) && $_GET["doit"] == 'yes') {
   }
 
 } else {
-
   print '<p>'.s('Your database requires upgrading, please make sure to create a backup of your database first.').'</p>';
   print '<p>'.s('If you have a large database, make sure you have sufficient diskspace available for upgrade.').'</p>';
   print '<p>'.s('When you are ready click %s Depending on the size of your database, this may take quite a while. Please make sure not to interrupt the process, once it started.',PageLinkButton("upgrade&doit=yes",s('Upgrade'))).'</p>';
-
 }
 

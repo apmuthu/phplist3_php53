@@ -1,4 +1,4 @@
-﻿<link rel="icon" href="./images/phplist.ico" type="image/x-icon" />
+<link rel="icon" href="./images/phplist.ico" type="image/x-icon" />
 <link rel="apple-touch-icon" href="./images/phplist-touch-icon.png" />
 <link rel="apple-touch-icon-precomposed" href="./images/phplist-touch-icon.png" />
 </head>

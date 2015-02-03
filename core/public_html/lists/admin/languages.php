@@ -41,8 +41,9 @@ while ($lancode = readdir($d)) {
       }
     }
     if (!isset($lan['gettext'])) $lan['gettext'] = $lancode;
+    if (!isset($lan['dir'])) $lan['dir'] = 'ltr';
     if (!empty($lan['name']) && !empty($lan['charset'])) {
-      $LANGUAGES[$lancode] = array($lan['name'],$lan['charset'],$lan['charset'],$lan['gettext']);
+      $LANGUAGES[$lancode] = array($lan['name'],$lan['charset'],$lan['charset'],$lan['gettext'],$lan['dir']);
     }
     
 #    print '<br/>'.$landir.'/'.$lancode;
@@ -75,6 +76,7 @@ if (isset($_POST['setlanguage']) && !empty($_POST['setlanguage']) && is_array($L
     "info" => $setlanguage,
     "iso" => $setlanguage,
     "charset" => $LANGUAGES[$setlanguage][1],
+    "dir" => $LANGUAGES[$setlanguage][4],
   );
 #  var_dump($_SESSION['adminlanguage'] );
 }
@@ -151,6 +153,7 @@ if (!isset($_SESSION['adminlanguage']) || !is_array($_SESSION['adminlanguage']))
     "info" => $detectlan,
     "iso" => $detectlan,
     "charset" => $LANGUAGES[$detectlan][1],
+    "dir" => $LANGUAGES[$detectlan][4],
   );
 }
 
@@ -168,6 +171,7 @@ class phplist_I18N {
   public $defaultlanguage = 'en';
   public $language = 'en';
   public $basedir = '';
+  public $dir = 'ltr';
   private $hasGettext = false;
   private $hasDB = false;
   private $lan = array();
@@ -179,6 +183,7 @@ class phplist_I18N {
     
     if (isset($_SESSION['adminlanguage']) && isset($GLOBALS['LANGUAGES'][$_SESSION['adminlanguage']['iso']])) {
       $this->language = $_SESSION['adminlanguage']['iso'];
+      $this->dir = $_SESSION['adminlanguage']['dir'];
     } else {
       unset($_SESSION['adminlanguage']);
       $this->language = $GLOBALS['default_system_language'];
@@ -293,9 +298,42 @@ class phplist_I18N {
     $gt = gettext($text);
     if ($gt && $gt != $text) return $gt;
   }
+  
+  function getCachedTranslation($text) {
+    if (!isset($_SESSION['translations']) || !is_array($_SESSION['translations'])) {
+      return false;
+    }
+    if (isset($_SESSION['translations'][$text])) {
+      $age = time() - $_SESSION['translations'][$text]['ts'];
+      if ($age < 3600) { ## timeout after a while
+        return $_SESSION['translations'][$text]['trans'];
+      } else {
+        unset($_SESSION['translations'][$text]);
+      }
+    }
+  }
+
+  function setCachedTranslation($text,$translation) {
+    if (!isset($_SESSION['translations']) || !is_array($_SESSION['translations'])) {
+      $_SESSION['translations'] = array();
+    }
+    $_SESSION['translations'][$text] = array(
+      'trans' => $translation,
+      'ts' => time(),
+    );
+  }
+  
+  function resetCache() {
+    unset($_SESSION['translations']);
+  }
 
   function databaseTranslation($text) {
     if (!$this->hasDB) return '';
+    if (empty($GLOBALS['database_connection'])) return '';
+    if ($cache = $this->getCachedTranslation($text)) {
+      return $cache;
+    }
+
     $tr = Sql_Fetch_Row_Query(sprintf('select translation from '.$GLOBALS['tables']['i18n'].' where original = "%s" and lan = "%s"',
       sql_escape(trim($text)),$this->language),1);
     if (empty($tr[0])) {
@@ -306,6 +344,7 @@ class phplist_I18N {
       $tr = Sql_Fetch_Row_Query(sprintf('select translation from '.$GLOBALS['tables']['i18n'].' where original = "%s" and lan = "%s"',
         sql_escape(str_replace('"','\"',$text)),$this->language),1);
     }
+    $this->setCachedTranslation($text,stripslashes($tr[0]));
     return stripslashes($tr[0]);
   }
 
@@ -320,6 +359,8 @@ class phplist_I18N {
     $page_title = '';
     $dbTitle = $this->databaseTranslation('pagetitle:'.$page);
     if ($dbTitle) {
+      ## quite a few translators keep the pagetitle: in the translation
+      $dbTitle = str_ireplace('pagetitle:','',$dbTitle);
       $page_title = $dbTitle;
     } elseif (is_file(dirname(__FILE__).'/locale/'.$this->language.'/pagetitles.php')) {
       include dirname(__FILE__).'/locale/'.$this->language.'/pagetitles.php';
@@ -346,6 +387,7 @@ class phplist_I18N {
     $hoverText = '';
     $dbTitle = $this->databaseTranslation('pagetitlehover:'.$page);
     if ($dbTitle) {
+      $dbTitle = str_ireplace('pagetitlehover:','',$dbTitle);
       $hoverText = $dbTitle;
     } else {
       $hoverText = $this->pageTitle($page);
@@ -477,6 +519,7 @@ $lan = array(
         Sql_Replace($GLOBALS['tables']['i18n'],array('lan' => $language,'original' => $orig,'translation' => $trans),'');
       }
     }
+    $this->resetCache();
     saveConfig('lastlanguageupdate-'.$language,$time,0);
   }
   
@@ -491,7 +534,7 @@ $lan = array(
        if (function_exists('getConfig')) {
           $lastUpdate = getConfig('lastlanguageupdate-'.$this->language);
           $thisUpdate = filemtime(dirname(__FILE__).'/locale/'.$this->language.'/phplist.po');
-          if ($thisUpdate > $lastUpdate && !empty($_SESSION['adminloggedin'])) {
+          if (LANGUAGE_AUTO_UPDATE && $thisUpdate > $lastUpdate && !empty($_SESSION['adminloggedin'])) {
             ## we can't translate this, as it'll be recursive
             $GLOBALS['pagefooter']['transupdate'] = '<script type="text/javascript">initialiseTranslation("Initialising phpList in your language, please wait.");</script>';
           }
@@ -580,6 +623,9 @@ function getTranslationUpdates() {
 }
 
 $I18N = new phplist_I18N();
+if (!empty($setlanguage)) {
+  $I18N->resetCache();
+}
 
 /* add a shortcut that seems common in other apps 
  * function s($text)

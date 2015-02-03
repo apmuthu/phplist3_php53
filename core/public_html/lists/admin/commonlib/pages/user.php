@@ -52,7 +52,8 @@ if (!empty($_POST["change"]) && ($access == "owner"|| $access == "all")) {
   if (!$error_exist && !empty($email)){
      if (!$id) {
        $id = addNewUser($email);
-       $newuser = 1;
+       Redirect("user&id=$id");
+       exit;
      }
    
      if (!$id) {
@@ -254,6 +255,7 @@ if (!empty($_POST["change"]) && ($access == "owner"|| $access == "all")) {
 }
    
    if (isset($delete) && $delete && $access != "view") {
+     verifyCsrfGetToken();
      # delete the index in delete
      $_SESSION['action_result'] = s('Deleting')." $delete ..\n";
      if ($require_login && !isSuperUser()) {
@@ -261,6 +263,7 @@ if (!empty($_POST["change"]) && ($access == "owner"|| $access == "all")) {
        while ($lst = Sql_fetch_array($lists))
          Sql_query("delete from {$tables["listuser"]} where userid = $delete and listid = $lst[0]");
      } else {
+       ## this action is no longer visible, but can stay here.
        deleteUser($delete);
      }
      $_SESSION['action_result'] .= '..'.s('Done')."\n";
@@ -312,9 +315,13 @@ if ($id) {
     }
   }
 
-  if ($access != "view")
-  printf(" <a class=\"delete button\" href=\"javascript:deleteRec('%s');\">%s</a> %s<h3>%s</h3>",
-         PageURL2("user","","delete=$id&amp;$returnurl"),ucfirst(s('delete')),"<div class='note fright'>".$delete_message."</div>",htmlspecialchars($user["email"]));
+  if ($access == "all") {
+    $delete = new ConfirmButton(
+       htmlspecialchars(s('Are you sure you want to remove this subscriber from the system.')),
+       PageURL2("user&delete=$id&amp;$returnurl".addCsrfGetToken(),"button",s('remove subscriber')),
+       s('remove subscriber'));
+    print $delete->show();
+  }
 
   print '</div>';
 } else {
@@ -364,9 +371,9 @@ while (list ($key,$val) = each ($struct)) {
   } elseif ($key == "password") {
     $userdetailsHTML .= sprintf('<tr><td class="dataname">%s</td><td><input type="text" name="%s" value="%s" size="30" /></td></tr>'."\n",$val[1],$key,"");
   } elseif ($key == "blacklisted") {
-    $userdetailsHTML .= sprintf('<tr><td class="dataname">%s</td><td>%s',$GLOBALS['I18N']->get($b),isBlackListed($user['email'])?s('Yes'):s('No'));
+    $userdetailsHTML .= sprintf('<tr><td class="dataname">%s</td><td>%s',$GLOBALS['I18N']->get($b),$user[$key] || isBlackListed($user['email'])?s('Yes'):s('No'));
     
-    if (!isBlackListed($user['email'])) {
+    if (!($user[$key] || isBlackListed($user['email']))) {
       $userdetailsHTML .= '<span class="fright button">'.PageLinkAjax('user&blacklist=1&id='.$user['id'],s('Add to blacklist')).'</span>';
     } elseif (UNBLACKLIST_IN_PROFILE) {
       $userdetailsHTML .= '<span class="fright button">'.PageLinkAjax('user&unblacklist=1&id='.$user['id'],s('Remove from blacklist')).'</span>';

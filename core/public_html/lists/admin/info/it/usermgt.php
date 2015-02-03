@@ -1,1 +1,3 @@
-<p>Queste sono le opzioni di amministrazione degli utenti. Puoi elencare, cercare, importare ed esportare utenti.<br>Per vedere gli utenti iscritti ad una lista andare in &quot;liste&quot; e selezionare &quot;vedi membri&quot;.</p>
+
+<p>Queste sono le opzioni di gestione degli utenti. Potete elencare, cercare, importare ed esportare utenti.</p>
+<p>Per vedere gli utenti iscritti ad una lista andate in &quot;liste&quot; e selezionate &quot;vedi utenti&quot;</p>

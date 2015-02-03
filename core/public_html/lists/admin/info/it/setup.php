@@ -1,2 +1,2 @@
-<h1>Questa pagina visualizza una lista veloce di controllo delle impostazioni da settare in modo che <?php echo NAME?> funzioni correttamente.</h1>
+<p>Questa pagina mostra un elenco delle cose da impostare affinché <?php echo NAME?> funzioni correttamente.</p>
 

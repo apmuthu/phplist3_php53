@@ -211,7 +211,7 @@ if (isset($_POST["subscribe"]) && is_email($_POST["email"]) && $listsok && $allt
 
     $userid = $old_data["id"];
     $old_data = array_merge($old_data,getUserAttributeValues('',$userid));
-    $history_entry = 'http://'.getConfig("website").$GLOBALS["adminpages"].'/?page=user&amp;id='.$userid."\n\n";
+    $history_entry = '';#http://'.getConfig("website").$GLOBALS["adminpages"].'/?page=user&amp;id='.$userid."\n\n";
 
     $query = sprintf('update %s set email = "%s",htmlemail = %d,subscribepage = %d where id = %d',$GLOBALS["tables"]["user"],addslashes($email),$htmlemail,$id,$userid);
     $result = Sql_query($query);
@@ -263,14 +263,14 @@ if (isset($_POST["subscribe"]) && is_email($_POST["email"]) && $listsok && $allt
       if ( !array_key_exists( $fieldname, $_POST) ) continue; 
       $value = $_POST[$fieldname];
   #    if ($value != "") {
-        if (is_array($value)) {
+        if ($row["type"] == "date") {
+          $value = $date->getDate($fieldname);
+        } elseif (is_array($value)) {
           $newval = array();
           foreach ($value as $val) {
             array_push($newval,sprintf('%0'.$checkboxgroup_storesize.'d',$val));
           }
           $value = join(",",$newval);
-        } elseif ($row["type"] == "date") {
-          $value = $date->getDate($fieldname);
         } elseif ($row['type'] != 'textarea') {
           if (preg_match("/(.*)\n/U",$value,$regs)) {
             $value = $regs[1];
@@ -311,7 +311,7 @@ if (isset($_POST["subscribe"]) && is_email($_POST["email"]) && $listsok && $allt
    print '<title>'.$GLOBALS["strSubscribeTitle"].'</title>';
    print $subscribepagedata["header"];
 
-   if (isset($_SESSION["adminloggedin"]) && $_SESSION["adminloggedin"]) {
+   if (isset($_SESSION["adminloggedin"]) && $_SESSION["adminloggedin"] && !(isset($_GET['p']) && $_GET['p'] == 'asubscribe')) {
       print '<p class="information"><b>You are logged in as '.$_SESSION["logindetails"]["adminname"].'</b></p>';
       print '<p><a href="'.$adminpages.'" class="button">Back to the main admin page</a></p>';
 
@@ -456,7 +456,7 @@ elseif (isset($_POST["update"]) && $_POST["update"] && is_email($_POST["email"])
   # read the current values to compare changes
   $old_data = Sql_Fetch_Array_Query(sprintf('select * from %s where id = %d',$GLOBALS["tables"]["user"],$userid));
   $old_data = array_merge($old_data,getUserAttributeValues('',$userid));
-  $history_entry = 'http://'.getConfig("website").$GLOBALS["adminpages"].'/?page=user&amp;id='.$userid."\n\n";
+  $history_entry = '';#'http://'.getConfig("website").$GLOBALS["adminpages"].'/?page=user&amp;id='.$userid."\n\n";
 
   if (ASKFORPASSWORD && $_POST["password"]) {
     if (ENCRYPTPASSWORD) {
@@ -546,17 +546,21 @@ elseif (isset($_POST["update"]) && $_POST["update"] && is_email($_POST["email"])
     $res = Sql_Query("select * from ".$GLOBALS["tables"]["attribute"] ." where id in ($attids)");
     while ($attribute = Sql_Fetch_Array($res)) {
       $fieldname = "attribute" .$attribute["id"];
-      $value = $_POST[$fieldname];
+      if (isset($_POST[$fieldname])) {
+        $value = $_POST[$fieldname]; ## is being sanitised below, depending on attribute type
+      } else {
+        $value = "";
+      }
       $replace = 1;#isset($_POST[$fieldname]);
-      if (is_array($value)) {
+      if ($attribute["type"] == "date") {
+        $value = $date->getDate($fieldname);
+      } elseif (is_array($value)) {
         $values = array();
         foreach ($value as $val) {
           array_push($values,sprintf('%0'.$checkboxgroup_storesize.'d',$val));
         }
         $value = join(",",$values);
-      } elseif ($attribute["type"] == "date") {
-        $value = $date->getDate($fieldname);
-      } elseif ($row['type'] != 'textarea') {
+      } elseif ($attribute['type'] != 'textarea') {
         if (preg_match("/(.*)\n/U",$value,$regs)) {
           $value = $regs[1];
         }
@@ -613,17 +617,12 @@ elseif (isset($_POST["update"]) && $_POST["update"] && is_email($_POST["email"])
         $ok = 0;
       }
     } else {
-      if ( $_GET["p"] == "preferences" ) {
-        #0013134: turn off the confirmation email when an existing subscriber changes preference.
+      if ( sendMail($email, getConfig("updatesubject"), $message, system_messageheaders($email),$envelope)) {
         $ok = 1;
-      } else { 
-        if ( sendMail($email, getConfig("updatesubject"), $message, system_messageheaders($email),$envelope)) {
-          $ok = 1;
-          sendAdminCopy("Lists information changed","\n".$data["email"] . " has changed their information\n\n$history_entry",$subscriptions);
-          addUserHistory($email,"Change",$history_entry);
-        } else {
-          $ok = 0;
-        }
+        sendAdminCopy("Lists information changed","\n".$data["email"] . " has changed their information\n\n$history_entry",$subscriptions);
+        addUserHistory($email,"Change",$history_entry);
+      } else {
+        $ok = 0;
       }
     }
   } else {
@@ -723,7 +722,7 @@ function ListAvailableLists($userid = 0,$lists_to_show = "") {
   if (!$some) {
     global $strNotAvailable;
     return '<p class="information">'.$strNotAvailable.'</p>';
-  } elseif ($some == 1 && $hidesinglelist == "true") {
+  } elseif ($some == 1 && ($hidesinglelist == "true" || $hidesinglelist === true || $hidesinglelist === "1")) {
     return $singlelisthtml;
   } else {
     global $strPleaseSelect;
@@ -831,7 +830,7 @@ $html .= sprintf('
       break;
     case "checkfortext":
       if (!isset($htmlemail))
-        $htmlemail = 0;
+        $htmlemail = 1;
       $html .= sprintf('<tr><td colspan="2">
       <span class="attributeinput">
       <input type="checkbox" name="textemail" value="1" %s /></span>
@@ -867,7 +866,7 @@ $html .= sprintf('
     case "checkforhtml":
     default:
       if (!isset($htmlemail))
-        $htmlemail = 0;
+        $htmlemail = 1;
       $html .= sprintf('<tr><td colspan="2">
         <span class="attributeinput"><input type="checkbox" name="htmlemail" value="1" %s /></span>
         <span class="attributename">%s</span></td></tr>',$htmlemail ? 'checked="checked"':'',$strPreferHTMLEmail);
@@ -919,8 +918,8 @@ $html .= sprintf('
               $checked = $data[$attr["id"]] == $value["id"] ? 'checked="checked"':'';
             else
               $checked = $attr["default_value"] == $value["name"] ? 'checked="checked"':'';
-            $output[$attr["id"]] .= sprintf('&nbsp;%s&nbsp;<input type="radio"  class="attributeinput" name="%s" value="%s" %s />',
-              $value["name"],$fieldname,$value["id"],$checked);
+            $output[$attr["id"]] .= sprintf('<input type="radio"  class="attributeinput" name="%s" value="%s" %s />&nbsp;%s&nbsp;',
+              $fieldname,$value["id"],$checked,$value["name"]);
           }
           if ($attr["required"])
             $output[$attr["id"]] .= sprintf('<script language="Javascript" type="text/javascript">addGroupToCheck("%s","%s");</script>',$fieldname,$attr["name"]);
@@ -930,12 +929,17 @@ $html .= sprintf('
           $values_request = Sql_Query("select * from $table_prefix"."listattr_".$attr["tablename"]." order by listorder,name");
           $output[$attr["id"]] .= sprintf('</td><td class="attributeinput"><!--%d--><select name="%s" class="attributeinput">',$data[$attr["id"]],$fieldname);
           while ($value = Sql_Fetch_array($values_request)) {
-            if (!empty($_POST[$fieldname]))
+            if (!empty($_POST[$fieldname])) {
               $selected = $_POST[$fieldname] == $value["id"] ? 'selected="selected"' : '';
-            elseif ($data[$attr["id"]])
+            } elseif ($data[$attr["id"]]) {
               $selected = $data[$attr["id"]] == $value["id"] ? 'selected="selected"':'';
-            else
-              $selected = $attr["default_value"] == $value["name"] ? 'selected="selected"':'';
+            } elseif (!empty($attr["default_value"])) {
+              $selected = strtolower($attr["default_value"]) == strtolower($value["name"]) ? 'selected="selected"':'';
+            } elseif (strtolower($attr['name']) == 'country' && !empty($_SERVER['GEOIP_COUNTRY_NAME'])) {
+              $selected = strtolower($_SERVER['GEOIP_COUNTRY_NAME']) == strtolower($value["name"]) ? 'selected="selected"':'';
+            } else {
+              $selected = '';
+            }
             if (preg_match('/^'.preg_quote(EMPTY_VALUE_PREFIX).'/i',$value['name'])) {
               $value['id'] = '';
             }
@@ -944,9 +948,10 @@ $html .= sprintf('
           $output[$attr["id"]] .= "</select>";
           break;
         case "checkboxgroup":
-          $output[$attr["id"]] .= sprintf("\n".'<tr><td colspan="2"><div class="%s">%s</div>',$attr["required"] ? 'required' : 'attributename',stripslashes($attr["name"]));
+          $output[$attr["id"]] .= sprintf("\n".'<tr><td><div class="%s">%s</div>',$attr["required"] ? 'required' : 'attributename',stripslashes($attr["name"]));
           $values_request = Sql_Query("select * from $table_prefix"."listattr_".$attr["tablename"]." order by listorder,name");
-          $output[$attr["id"]] .= sprintf('</td></tr>');
+          $output[$attr["id"]] .= sprintf('</td>');
+		  $first_td = 0;
           while ($value = Sql_Fetch_array($values_request)) {
           	$selected = '';
             if (is_array($_POST[$fieldname])) {
@@ -955,9 +960,17 @@ $html .= sprintf('
               $selection = explode(",",$data[$attr["id"]]);
               $selected = in_array($value["id"],$selection) ? 'checked="checked"':'';
             }
-            $output[$attr["id"]] .= sprintf('<tr><td colspan="2" class="attributeinput"><input type="checkbox" name="%s[]"  class="attributeinput" value="%s" %s /> %s</td></tr>',
-              $fieldname, $value["id"], $selected, stripslashes( $value["name"]) );
+			if($first_td == 0) {
+		        $output[$attr["id"]] .= sprintf('<td class="attributeinput"><input type="checkbox" name="%s[]"  class="attributeinput" value="%s" %s /> %s</td>',
+		          $fieldname, $value["id"], $selected, stripslashes( $value["name"]) );
+				$output[$attr["id"]] .= sprintf('</tr>');
+			} else {
+				$output[$attr["id"]] .= sprintf('<tr><td><div></div></td><td class="attributeinput"><input type="checkbox" name="%s[]"  class="attributeinput" value="%s" %s /> %s</td></tr>',
+		          $fieldname, $value["id"], $selected, stripslashes( $value["name"]) );
+			}
+			++$first_td;
           }
+		  $first_td = 0;
           break;
         case "textline":
           $output[$attr["id"]] .= sprintf("\n".'<tr><td><div class="%s">%s</div>',$attr["required"] ? 'required' : 'attributename',$attr["name"]);

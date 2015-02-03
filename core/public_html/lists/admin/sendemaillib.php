@@ -115,7 +115,17 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
         #      $remote_content = includeStyles($remote_content);
 
         if ($remote_content) {
-          $content = str_replace($regs[0],$remote_content,$content);
+          ## @TODO, work out a nice way to do this: ##17197
+          ## collecting different remote URLS only works if they do not have html and body tags. 
+          ## but if we strip them here, that might affect specially crafted ones, eg <body class="xx">
+          if (0) {
+            $remote_content = preg_replace('/<html[^>]*>/','',$remote_content);
+            $remote_content = preg_replace('/<body[^>]*>/','',$remote_content);
+            $remote_content = preg_replace('/<\/html[^>]*>/','',$remote_content);
+            $remote_content = preg_replace('/<\/body[^>]*>/','',$remote_content);
+          }
+          
+          $content = str_replace($regs[0],'<!--'.$url.'-->'.$remote_content,$content);
           $cached[$messageid]["htmlformatted"] = strip_tags($content) != $content;
         } else {
           logEvent("Error fetching URL: $regs[1] to send to $email");
@@ -175,16 +185,26 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
   $url = getConfig("forwardurl");
 
   # make sure there are no newlines, otherwise they get turned into <br/>s
-  $html["forwardform"] = sprintf('<form method="get" action="%s" name="forwardform" class="forwardform"><input type="hidden" name="uid" value="%s" /><input type="hidden" name="mid" value="%d" /><input type="hidden" name="p" value="forward" /><input type=text name="email" value="" class="forwardinput" /><input name="Send" type="submit" value="%s" class="forwardsubmit"/></form>',$url,$hash,$messageid,$GLOBALS['strForward']);
+  $html["forwardform"] = '';#sprintf('<form method="get" action="%s" name="forwardform" class="forwardform"><input type="hidden" name="uid" value="%s" /><input type="hidden" name="mid" value="%d" /><input type="hidden" name="p" value="forward" /><input type=text name="email" value="" class="forwardinput" /><input name="Send" type="submit" value="%s" class="forwardsubmit"/></form>',$url,$hash,$messageid,$GLOBALS['strForward']);
   $text["signature"] = "\n\n-- powered by phpList, www.phplist.com --\n\n";
   $url = getConfig("preferencesurl");$sep = strpos($url,'?') === false ? '?':'&';
   $html["preferences"] = sprintf('<a href="%s%suid=%s">%s</a>',$url,htmlspecialchars($sep),$hash,$strThisLink);
   $text["preferences"] = sprintf('%s%suid=%s',$url,$sep,$hash);
   $html["preferencesurl"] = sprintf('%s%suid=%s',$url,htmlspecialchars($sep),$hash);
   $text["preferencesurl"] = sprintf('%s%suid=%s',$url,$sep,$hash);
+
+  $url = getConfig("confirmationurl");$sep = strpos($url,'?') === false ? '?':'&';
+  $html["confirmationurl"] = sprintf('%s%suid=%s',$url,htmlspecialchars($sep),$hash);
+  $text["confirmationurl"] = sprintf('%s%suid=%s',$url,$sep,$hash);
+
   #historical, not sure it's still used
   $html["userid"] = $hash;
   $text["userid"] = $hash;
+  
+  $html['website'] = $GLOBALS['website']; # Your website's address, e.g. www.yourdomain.com
+  $text['website'] = $GLOBALS['website'];
+  $html['domain'] = $GLOBALS['domain'];   # Your domain, e.g. yourdomain.com
+  $text['domain'] = $GLOBALS['domain'];
 
   if ($hash != 'forwarded') {
     $text['footer'] = $cached[$messageid]["textfooter"];
@@ -364,17 +384,18 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
 
   if (ALWAYS_ADD_USERTRACK) {
     if (stripos($htmlmessage,'</body>')) {
-      $htmlmessage = str_replace('</body>','<img src="'.$GLOBALS['public_scheme'].'://'.$website.$GLOBALS["pageroot"].'/ut.php?u='.$hash.'&m='.$messageid.'" width="1" height="1" border="0" /></body>',$htmlmessage);
+      $htmlmessage = str_replace('</body>','<img src="'.$GLOBALS['public_scheme'].'://'.$website.$GLOBALS["pageroot"].'/ut.php?u='.$hash.'&amp;m='.$messageid.'" width="1" height="1" border="0" alt="" /></body>',$htmlmessage);
     } else {
-      $htmlmessage .= '<img src="'.$GLOBALS['public_scheme'].'://'.$website.$GLOBALS["pageroot"].'/ut.php?u='.$hash.'&m='.$messageid.'" width="1" height="1" border="0" />';
+      $htmlmessage .= '<img src="'.$GLOBALS['public_scheme'].'://'.$website.$GLOBALS["pageroot"].'/ut.php?u='.$hash.'&amp;m='.$messageid.'" width="1" height="1" border="0" alt="" />';
     }
   } else {
     ## can't use str_replace or str_ireplace, because those replace all, and we only want to replace one
-    $htmlmessage = preg_replace( '/\[USERTRACK\]/i','<img src="'.$GLOBALS['public_scheme'].'://'.$website.$GLOBALS["pageroot"].'/ut.php?u='.$hash.'&m='.$messageid.'" width="1" height="1" border="0" />',$htmlmessage,1);
+    $htmlmessage = preg_replace( '/\[USERTRACK\]/i','<img src="'.$GLOBALS['public_scheme'].'://'.$website.$GLOBALS["pageroot"].'/ut.php?u='.$hash.'&amp;m='.$messageid.'" width="1" height="1" border="0" alt="" />',$htmlmessage,1);
   }
   # make sure to only include usertrack once, otherwise the stats would go silly
   $htmlmessage = str_ireplace('[USERTRACK]','',$htmlmessage);
-
+  $textmessage = str_ireplace('[USERTRACK]','',$textmessage);
+   
   $html['subject'] = $cached[$messageid]["subject"];
   $text['subject'] = $cached[$messageid]["subject"];
   
@@ -591,16 +612,25 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
       $link = str_replace('"','',$link);  
       ## http://www.google.com/support/analytics/bin/answer.py?hl=en&answer=55578
 
-      $trackingcode = 'utm_source=emailcampaign'.$messageid.'&utm_medium=phpList&utm_content=HTMLemail&utm_campaign='.urlencode($cached[$messageid]["subject"]);
+      $trackingcode = 'utm_source=phplist'.$messageid.'&utm_medium=email&utm_content=HTML&utm_campaign='.urlencode($cached[$messageid]["subject"]);
       ## take off existing tracking code, if found
       if (strpos($link,'utm_medium') !== false) {
         $link = preg_replace('/utm_(\w+)\=[^&]+&/U','',$link);
       }
+      ## 16894 make sure to keep the fragment value at the end of the URL
+      if (strpos($link,'#')) {
+        list($tmplink,$fragment) = explode('#',$link);
+        $link = $tmplink;
+        unset($tmplink);
+        $fragment = '#'.$fragment;
+      } else {
+        $fragment = '';
+      }
         
       if (strpos($link,'?')) {
-        $newurl = $link.'&'.$trackingcode;
+        $newurl = $link.'&'.$trackingcode.$fragment;
       } else {
-        $newurl = $link.'?'.$trackingcode;
+        $newurl = $link.'?'.$trackingcode.$fragment;
       }
    #   print $link. ' '.$newurl.' <br/>';
       $newlink = sprintf('<a %shref="%s" %s>%s</a>',$links[1][$i],$newurl,$links[3][$i],$links[4][$i]);
@@ -619,15 +649,25 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
   
       if (preg_match('/^http|ftp/',$link) && (stripos($link, 'www.phplist.com') !== 0)  ) {# && !strpos($link,$clicktrack_root)) {
         $url = cleanUrl($link,array('PHPSESSID','uid'));
-        $trackingcode = 'utm_source=emailcampaign'.$messageid.'&utm_medium=phpList&utm_content=textemail&utm_campaign='.urlencode($cached[$messageid]["subject"]);
+        //@alpha1: maybe source should be message id?
+        $trackingcode = 'utm_source=phplist'.$messageid.'&utm_medium=email&utm_content=text&utm_campaign='.urlencode($cached[$messageid]["subject"]);
         ## take off existing tracking code, if found
         if (strpos($link,'utm_medium') !== false) {
           $link = preg_replace('/utm_(\w+)\=[^&]+/','',$link);
         }
-        if (strpos($link,'?')) {
-          $newurl = $link.'&'.$trackingcode;
+        ## 16894 make sure to keep the fragment value at the end of the URL
+        if (strpos($link,'#')) {
+          list($tmplink,$fragment) = explode('#',$link);
+          $link = $tmplink;
+          unset($tmplink);
+          $fragment = '#'.$fragment;
         } else {
-          $newurl = $link.'?'.$trackingcode;
+          $fragment = '';
+        }
+        if (strpos($link,'?')) {
+          $newurl = $link.'&'.$trackingcode.$fragment;
+        } else {
+          $newurl = $link.'?'.$trackingcode.$fragment;
         }
 
         $newlinks[$i] = $newurl;
@@ -767,12 +807,16 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
               "application/pdf");
           }
         }
-        addAttachments($messageid,$mail,"HTML");
+        if (!addAttachments($messageid,$mail,"HTML")) {
+          return 0;
+        }
       } else {
         if (!$isTestMail) 
           Sql_Query("update {$GLOBALS["tables"]["message"]} set astext = astext + 1 where id = $messageid");
         $mail->add_text($textmessage);
-        addAttachments($messageid,$mail,"text");
+        if (!addAttachments($messageid,$mail,"text")) {
+          return 0;
+        }
       }
       break;
     case "text and PDF":
@@ -806,12 +850,16 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
               "application/pdf");
           }
         }
-        addAttachments($messageid,$mail,"HTML");
+        if (!addAttachments($messageid,$mail,"HTML")) {
+          return 0;
+        }
       } else {
         if (!$isTestMail) 
           Sql_Query("update {$GLOBALS["tables"]["message"]} set astext = astext + 1 where id = $messageid");
         $mail->add_text($textmessage);
-        addAttachments($messageid,$mail,"text");
+        if (!addAttachments($messageid,$mail,"text")) {
+          return 0;
+        }
       }
       break;
     case "text":
@@ -822,7 +870,9 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
       if (!$isTestMail) 
         Sql_Query("update {$GLOBALS["tables"]["message"]} set astext = astext + 1 where id = $messageid");
       $mail->add_text($textmessage);
-      addAttachments($messageid,$mail,"text");
+      if (!addAttachments($messageid,$mail,"text")) {
+        return 0;
+      }
       break;
     case "both":
     case "text and HTML":
@@ -854,7 +904,9 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
             $htmlmessage = wordwrap($htmlmessage, WORDWRAP_HTML, "\r\n");
           }
           $mail->add_html($htmlmessage,$textmessage,$cached[$messageid]["templateid"]);
-          addAttachments($messageid,$mail,"HTML");
+          if (!addAttachments($messageid,$mail,"HTML")) {
+            return 0;
+          }
         } else {
           if (!$isTestMail) 
             Sql_Query("update {$GLOBALS["tables"]["message"]} set astext = astext + 1 where id = $messageid");
@@ -864,20 +916,14 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
           $mail->add_text($textmessage);
 #          $mail->setText($textmessage);
 #          $mail->Encoding = TEXTEMAIL_ENCODING;
-          addAttachments($messageid,$mail,"text");
+          if (!addAttachments($messageid,$mail,"text")) {
+            return 0;
+          }
         }
       } 
       break;
   }
 #  print htmlspecialchars($htmlmessage);exit;
-
-  $mail->build_message(
-      array(
-        "html_charset" => $cached[$messageid]["html_charset"],
-        "html_encoding" => HTMLEMAIL_ENCODING,
-        "text_charset" => $cached[$messageid]["text_charset"],
-        "text_encoding" => TEXTEMAIL_ENCODING)
-      );
 
   if (!TEST) {
     if ($hash != 'forwarded' || !sizeof($forwardedby)) {
@@ -900,44 +946,81 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
       $destinationemail = $GLOBALS['developer_email'];
     }
     
+    $sendOK = false;
+   
     if (!$mail->compatSend("", $destinationemail, $fromname, $fromemail, $subject)) {
-#    if (!$mail->send(array($destinationemail),'spool')) {
+      foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
+        $plugin->processSendFailed($messageid, $userdata, $isTestMail);
+      }
       output(sprintf(s('Error sending message %d (%d/%d) to %s (%s) '),
-        $messageid,$counters['batch_count'],$counters['batch_total'],$email,$destinationemail));
-      logEvent("Error sending message $messageid to $email ($destinationemail)");
-      return 0;
+        $messageid,$counters['batch_count'],$counters['batch_total'],$email,$destinationemail),0);
     } else {
-      ## only save the estimated size of the message when sending a test message
-      if ($getspeedstats) output('send End '.$GLOBALS['processqueue_timer']->interval(1));
-      if (!isset($GLOBALS['send_process_id'])) {
-        if (!empty($mail->mailsize)) {
-          $name = $htmlpref ? 'htmlsize' : 'textsize';
-          Sql_Replace($GLOBALS['tables']['messagedata'], array('id' => $messageid, 'name' => $name, 'data' => $mail->mailsize), array('name', 'id'));
+      $sendOK = true;
+      foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
+        $plugin->processSendSuccess($messageid, $userdata, $isTestMail);
+      }
+    }
+    if ($getspeedstats) output('send End '.$GLOBALS['processqueue_timer']->interval(1));
+    if (!empty($mail->mailsize)) {
+      $sizename = $htmlpref ? 'htmlsize' : 'textsize';
+      if (empty($cached[$messageid][$sizename])) {
+        Sql_Replace($GLOBALS['tables']['messagedata'], array('id' => $messageid, 'name' => $sizename, 'data' => $mail->mailsize), array('name', 'id'));
+        $cached[$messageid][$sizename] = $mail->mailsize;
+        if (isset($cached[$messageid]['htmlsize'])) {
+          output(sprintf(s('Size of HTML email: %s ',formatBytes($cached[$messageid]['htmlsize']))),0,'progress');
+        }
+        if (isset($cached[$messageid]['textsize'])) {
+          output(sprintf(s('Size of Text email: %s ',formatBytes($cached[$messageid]['textsize']))),0,'progress');
         }
       }
-      $sqlCount = $GLOBALS["pagestats"]["number_of_queries"] - $sqlCountStart;
-      if ($getspeedstats) output('It took '.$sqlCount.'  queries to send this message');
-#exit;
-   #   logEvent("Sent message $messageid to $email ($destinationemail)");
-      return 1;
     }
+    if (defined('MAX_MAILSIZE') && isset($cached[$messageid]['htmlsize']) && $cached[$messageid]['htmlsize'] > MAX_MAILSIZE) {
+      logEvent(s('Message too large (%s is over %s), suspending',$cached[$messageid]['htmlsize'],MAX_MAILSIZE));
+      if ($isTestMail) {
+        $_SESSION['action_result'] = s('Warning: the final message exceeds the sending limit, this campaign will fail sending. Reduce the size by removing attachments or images');
+      } else {
+        Sql_Query(sprintf('update %s set status = "suspended" where id = %d',$GLOBALS['tables']['message'],$messageid));
+        logEvent(s('Campaign %d suspended. Message too large',$messageid));
+        foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
+          $plugin->processError(s('Campaign %d suspended, message too large',$messageid));
+        }
+      }
+    }
+    
+    $sqlCount = $GLOBALS["pagestats"]["number_of_queries"] - $sqlCountStart;
+    if ($getspeedstats) output('It took '.$sqlCount.'  queries to send this message');
+
+    return $sendOK;
+
   }
   return 0;
 }
 
 function addAttachments($msgid,&$mail,$type) {
   global $attachment_repository,$website;
+  $hasError = false;
+  $totalSize = 0;
+  $memlimit = phpcfgsize2bytes(ini_get('memory_limit'));
+    
   if (ALLOW_ATTACHMENTS) {
     $req = Sql_Query("select * from {$GLOBALS["tables"]["message_attachment"]},{$GLOBALS["tables"]["attachment"]}
       where {$GLOBALS["tables"]["message_attachment"]}.attachmentid = {$GLOBALS["tables"]["attachment"]}.id and
       {$GLOBALS["tables"]["message_attachment"]}.messageid = $msgid");
     if (!Sql_Affected_Rows())
-      return;
+      return true;
     if ($type == "text") {
       $mail->append_text($GLOBALS["strAttachmentIntro"]."\n");
     }
 
     while ($att = Sql_Fetch_array($req)) {
+      $totalSize += $att['size'];
+      if ($memlimit > 0 && (3 * $totalSize) > $memlimit) {  ## the 3 is roughly the size increase to encode the string
+     #   $_SESSION['action_result'] = s('Insufficient memory to add attachment');
+        logEvent(s("Insufficient memory to add attachment to campaign %d %d - %d",$msgid,$totalSize,$memlimit));
+        $hasError = true;
+      }
+      
+      if (!$hasError)
       switch ($type) {
         case "HTML":
           if (is_file($GLOBALS["attachment_repository"]."/".$att["filename"]) && filesize($GLOBALS["attachment_repository"]."/".$att["filename"])) {
@@ -974,20 +1057,24 @@ function addAttachments($msgid,&$mail,$type) {
                 # now this one could be sent many times, so send only once per run
                 if (!isset($GLOBALS[$att["remotefile"]."_warned"])) {
                   logEvent("Unable to make a copy of attachment ".$att["remotefile"]." in repository");
-                  $msg = "Error, when trying to send message $msgid the filesystem attachment
-                    ".$att["remotefile"]." could not be copied to the repository. Check for permissions.";
-                  sendMail(getConfig("report_address"),"Mail list error",$msg,"");
+                  $msg = s("Error, when trying to send campaign %d the attachment (%s) could not be copied to the repository. Check for permissions.",$msgid,$att["remotefile"]);
+                  sendMail(getConfig("report_address"),s("phpList system error"),$msg,"");
                   $GLOBALS[$att["remotefile"]."_warned"] = time();
                 }
               }
             } else {
-              logEvent("failed to open attachment ".$att["remotefile"]." to add to message $msgid ");
+              logEvent(s("failed to open attachment (%s) to add to campaign %d",$att["remotefile"],$msgid));
+              $hasError = true;
             }
           } else {
-            logEvent("Attachment ".$att["remotefile"]." does not exist");
-            $msg = "Error, when trying to send message $msgid the attachment
-              ".$att["remotefile"]." could not be found";
-            sendMail(getConfig("report_address"),"Mail list error",$msg,"");
+            ## as above, avoid sending it many times
+            if (!isset($GLOBALS[$att["remotefile"]."_warned"])) {
+              logEvent(s("Attachment %s does not exist",$att["remotefile"]));
+              $msg = s("Error, when trying to send campaign %d the attachment (%s) could not be found in the repository",$msgid,$att["remotefile"]);
+              sendMail(getConfig("report_address"),s("phpList system error"),$msg,"");
+              $GLOBALS[$att["remotefile"]."_warned"] = time();
+            }
+            $hasError = true;
           }
            break;
 
@@ -998,6 +1085,20 @@ function addAttachments($msgid,&$mail,$type) {
       }
     }
   }
+  
+  ## keep track of an error count, when sending the queue
+  if ($GLOBALS['counters']['add attachment error'] > 20) {
+    Sql_Query(sprintf('update %s set status = "suspended" where id = %d',$GLOBALS['tables']['message'],$msgid));
+    logEvent(s('Campaign %d suspended for too many errors with attachments',$msgid));
+    foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
+      $plugin->processError(s('Campaign %d suspended for too many errors with attachments',$msgid));
+    }
+  }
+  if ($hasError) {
+    $GLOBALS['counters']['add attachment error']++;
+  }
+  
+  return !$hasError;
 }
 
 function createPDF($text) {
@@ -1177,38 +1278,6 @@ function clickTrackLinkId($messageid,$userid,$url,$link) {
   return $fwdid;
 }
  
-function parsePlaceHolders($content,$array = array()) {
-  ## the editor turns all non-ascii chars into the html equivalent so do that as well
-  foreach ($array as $key => $val) {
-    $array[strtoupper($key)] = $val;
-    $array[htmlentities(strtoupper($key),ENT_QUOTES,'UTF-8')] = $val;
-    $array[str_ireplace(' ','&nbsp;',strtoupper($key))] = $val;
-  }
-
-  foreach ($array as $key => $val) {
-    if (PHP5) {  ## the help only lists attributes with strlen($name) < 20
-    #  print '<br/>'.$key.' '.$val.'<hr/>'.htmlspecialchars($content).'<hr/>';
-      if (stripos($content,'['.$key.']') !== false) {
-        $content = str_ireplace('['.$key.']',$val,$content);
-      } 
-      if (preg_match('/\['.$key.'%%([^\]]+)\]/i',$content,$regs)) { ## @@todo, check for quoting */ etc
-    #    var_dump($regs);
-        if (!empty($val)) {
-          $content = str_ireplace($regs[0],$val,$content);
-        } else {
-          $content = str_ireplace($regs[0],$regs[1],$content);
-        }
-      }
-    } else { 
-      $key = str_replace('/','\/',$key);
-      if (preg_match('/\['.$key.'\]/i',$content,$match)) {
-        $content = str_replace($match[0],$val,$content);
-      }
-    }
-  }
-  return $content;
-}
-
 function parseText($text) {
   # bug in PHP? get rid of newlines at the beginning of text
   $text = ltrim($text);
@@ -1270,8 +1339,8 @@ function parseText($text) {
 }
 
 function addHTMLFooter($message,$footer) {
-  if (preg_match('#</body>#imUx',$message)) {
-    $message = preg_replace('#</body>#',$footer.'</body>',$message);
+  if (preg_match('#</body>#i',$message)) {
+    $message = preg_replace('#</body>#i',$footer.'</body>',$message);
   } else {
     $message .= $footer;
   }
@@ -1380,6 +1449,10 @@ function precacheMessage($messageid,$forwardContent = 0) {
         $cached[$messageid]['content'] = str_replace($regs[0],$remote_content,$cached[$messageid]['content']);
       #  $cached[$messageid]['content'] = $remote_content;
         $cached[$messageid]["htmlformatted"] = strip_tags($remote_content) != $remote_content;
+
+        ## 17086 - disregard any template settings when we have a valid remote URL
+        $cached[$messageid]["template"] = NULL;
+        $cached[$messageid]["templateid"] = NULL;
       } else {
         #print Error(s('unable to fetch web page for sending'));
         logEvent("Error fetching URL: ".$message['sendurl']. ' cannot proceed');
@@ -1429,7 +1502,12 @@ exit;
   if (VERBOSE && !empty($GLOBALS['getspeedstats'])) {
     output('parse config end');
   }
-  foreach($message as $key => $val) {
+  
+
+  ## ##17233 not that many fields are actually useful, so don't blatantly use all
+#  foreach($message as $key => $val) {
+  foreach (array('subject','id', 'fromname','fromemail') as $key) {
+    $val = $message[$key];
     if (!is_array($val)) {
       $cached[$messageid]['content'] = str_ireplace("[$key]",$val,$cached[$messageid]['content']);
       $cached[$messageid]["textcontent"] = str_ireplace("[$key]",$val,$cached[$messageid]["textcontent"]);

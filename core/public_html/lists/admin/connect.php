@@ -2,17 +2,12 @@
 
 
 
-define("CODEREVISION",'$Rev$');
-if (preg_match('/Rev: (\d+)/','$Rev$',$match)) {
-  define('REVISION',$match[1]);
-}
-
 if (!defined('VERSION')) {
-  if (is_dir(dirname(__FILE__).'/../../../.svn')) {
-    define("VERSION","3.0.0");
+  if (!ini_get('open_basedir') && is_dir(dirname(__FILE__).'/../../../.git')) {
+    define("VERSION","3.0.12");
     define('DEVVERSION',true);
   } else {
-    define("VERSION","3.0.0");
+    define("VERSION","3.0.12");
     define('DEVVERSION',false);
   }
 } else {
@@ -47,6 +42,13 @@ if (empty($xormask)) {
   SaveConfig("xormask",$xormask,0,1);
 }
 define('XORmask',$xormask);
+if (empty($_SESSION['csrf_token'])) {
+  $_SESSION['csrf_token'] = substr(md5(uniqid(mt_rand(), true)),rand(0,32),rand(0,32));
+}
+if (isset($_SESSION['lastactivity'])) {
+  $_SESSION['session_age'] = time() - $_SESSION['lastactivity'];
+}
+$_SESSION['lastactivity'] = time();
 
 $GLOBALS["img_tick"] = '<span class="yes">Yes</span>';
 $GLOBALS["img_cross"] = '<span class="no">No</span>';
@@ -209,14 +211,14 @@ function SaveConfig($item,$value,$editable=1,$ignore_errors = 0) {
 
   You can configure your PoweredBy options in your config file
 
-  Michiel Dethmers, phpList Ltd 2001-2013
+  Michiel Dethmers, phpList Ltd 2001-2014
 */
 if (DEVVERSION)
   $v = "dev";
 else
   $v = VERSION;
 if (REGISTER) {
-  $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl'.$v.'&amp;utm_medium=poweredhostedimg&amp;utm_campaign=phpList" title="visit the phpList website" ><img src="http://powered.phplist.com/images/'.$v.'/power-phplist.png" width="70" height="30" title="powered by phpList version '.$v.', &copy; phpList ltd" alt="powered by phpList '.$v.', &copy; phpList ltd" border="0" /></a></p>';
+  $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl'.$v.'&amp;utm_medium=poweredhostedimg&amp;utm_campaign=phpList" title="visit the phpList website" ><img src="'.PHPLIST_POWEREDBY_URLROOT.'/'.$v.'/power-phplist.png" width="70" height="30" title="powered by phpList version '.$v.', &copy; phpList ltd" alt="powered by phpList '.$v.', &copy; phpList ltd" border="0" /></a></p>';
 } else {
   $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl'.$v.'&amp;utm_medium=poweredlocalimg&amp;utm_campaign=phpList" title="visit the phpList website"><img src="images/power-phplist.png" width="70" height="30" title="powered by phpList version '.$v.', &copy; phpList ltd" alt="powered by phpList '.$v.', &copy; phpList ltd" border="0"/></a></p>';
 }
@@ -294,6 +296,8 @@ function checkAccess($page) {
   return 1;
 }
 
+
+//@@TODO centralise the reporting and who gets what
 function sendReport($subject,$message) {
   $report_addresses = explode(",",getConfig("report_address"));
   foreach ($report_addresses as $address) {
@@ -734,7 +738,7 @@ function contextMenu() {
   $spb = '<li class="shade0">';
 #  $spb = '<li class="shade2">';
   $spe = '</li>';
-  $nm = strtolower(NAME);
+  $nm = mb_strtolower(NAME);
   if ($nm != "phplist") {
     $GLOBALS["context_menu"]["community"] = "";
   }
@@ -835,13 +839,25 @@ function contextMenu() {
 
 function recentlyVisited() {
   $html = '';
+  if (!isset($_SESSION['browsetrail']) || !is_array($_SESSION['browsetrail'])) {
+    $_SESSION['browsetrail'] = array();
+  }
   if (empty($_SESSION['adminloggedin'])) return '';
   if (isset($_SESSION['browsetrail']) && is_array($_SESSION['browsetrail'])) {
+    
+    if (!empty($_COOKIE['browsetrail'])) {
+#      if (!in_array($_COOKIE['browsetrail'],$_SESSION['browsetrail'])) {
+        array_unshift($_SESSION['browsetrail'],$_COOKIE['browsetrail']);
+#      }
+    }
+
     $shade = 0;
     $html .= '<h3>'.$GLOBALS['I18N']->get('Recently visited').'</h3><ul class="recentlyvisited">';
     $browsetrail = array_unique($_SESSION['browsetrail']);
-    $browsetrail = array_reverse($browsetrail);
+   
+#    $browsetrail = array_reverse($browsetrail);
     $browsetaildone = array();
+    $num = 0;
     foreach ($browsetrail as $pageid => $visitedpage) {
       if (strpos($visitedpage,'SEP')) { ## old method, store page title in cookie. However, that breaks on multibyte languages
         list($pageurl,$pagetitle) = explode('SEP',$visitedpage);
@@ -870,20 +886,29 @@ function recentlyVisited() {
           if (!empty($urlparams['id'])) {
             $url .= '&id='.$urlparams['id'];
           }
-          
-          $title = $GLOBALS['I18N']->pageTitle($p);
-          $titlehover = $GLOBALS['I18N']->pageTitleHover($p);
+          ## check for plugin
+          if (isset($urlparams['pi']) && isset($GLOBALS['plugins'][$urlparams['pi']])) {
+            $url .= '&pi='.$urlparams['pi'];
+            $title = $GLOBALS['plugins'][$urlparams['pi']]->pageTitle($p);
+            $titlehover = $GLOBALS['plugins'][$urlparams['pi']]->pageTitleHover($p);
+          } else {
+            unset($urlparams['pi']);
+            $title = $GLOBALS['I18N']->pageTitle($p);
+            $titlehover = $GLOBALS['I18N']->pageTitleHover($p);
+          }
           if (!empty($p) && !empty($title) && !in_array($url,$browsetaildone)) {
             $html .= '<li class="shade'.$shade.'"><a href="./?'.htmlspecialchars($url).'" title="'.htmlspecialchars($titlehover).'"><!--'.$pageid.'-->'.$title.'</a></li>';
             $shade = !$shade;
             $browsetaildone[] = $url;
+            $num++;
           }
         }
       }
+      if ($num >= 6) break;
     }
    
     $html .= '</ul>';
-    $_SESSION['browsetrail'] = array_slice($_SESSION['browsetrail'],0,6);
+    $_SESSION['browsetrail'] = array_slice($_SESSION['browsetrail'],0,20);
   }
   return $html;
 }
@@ -895,9 +920,9 @@ function topMenu() {
   if ($_SESSION["logindetails"]['superuser']) { // we don't have a system yet to distinguish access to plugins
     if (sizeof($GLOBALS["plugins"])) {
       foreach ($GLOBALS["plugins"] as $pluginName => $plugin) {
-        //if (isset($GLOBALS['pagecategories']['plugins'])) {
-          //array_push($GLOBALS['pagecategories']['plugins']['menulinks'],'main&pi='.$pluginName);
-        //}
+          //if (isset($GLOBALS['pagecategories']['plugins'])) {
+            //array_push($GLOBALS['pagecategories']['plugins']['menulinks'],'main&pi='.$pluginName);
+          //}
         $menulinks = $plugin->topMenuLinks;
         foreach ($menulinks as $link => $linkDetails) {
           if (isset($GLOBALS['pagecategories'][$linkDetails['category']])) {
@@ -905,8 +930,8 @@ function topMenu() {
           }
         }
       }
-    } 
-  }
+    }
+  } 
 
   $topmenu = '';
   $topmenu .= '<div id="menuTop">';
@@ -952,8 +977,9 @@ function topMenu() {
 ### hmm, these really should become objects
 function PageLink2($name,$desc="",$url="",$no_plugin = false,$title = '') {
   $plugin = '';
-  if ($url)
+  if ($url) {
     $url = "&amp;".$url;
+  }
 
   if (in_array($name,$GLOBALS['disallowpages'])) return '';
   if (strpos($name,'&') !== false) {
@@ -989,8 +1015,11 @@ function PageLink2($name,$desc="",$url="",$no_plugin = false,$title = '') {
     }
   }
   
+  $pqChoice = getConfig('pqchoice');
+  $hideProcessQueue = !MANUALLY_PROCESS_QUEUE || $pqChoice == 'phplistdotcom';
+  
   if ($access == "owner" || $access == "all" || $access == "view") {
-    if ($name == "processqueue" && !MANUALLY_PROCESS_QUEUE)
+    if ($name == "processqueue" && $hideProcessQueue)
       return "";#'<!-- '.$desc.'-->';
     elseif ($name == "processbounces" && !MANUALLY_PROCESS_BOUNCES) return ""; #'<!-- '.$desc.'-->';
     else {
@@ -999,12 +1028,18 @@ function PageLink2($name,$desc="",$url="",$no_plugin = false,$title = '') {
       } else {
         $pi = "";
       }
-      $linktext = ucfirst(strtolower($desc));
+      
+      if (!empty($_SESSION['csrf_token'])) {
+        $token = '&tk='.$_SESSION['csrf_token'];
+      } else {
+        $token = '';
+      }
+      $linktext = $desc;
       $linktext = str_ireplace('phplist','phpList',$linktext);
-      return sprintf('<a href="./?page=%s%s%s" title="%s">%s</a>',$name,$url,$pi,htmlspecialchars($title),$linktext);
+      return sprintf('<a href="./?page=%s%s%s%s" title="%s">%s</a>',$name,$url,$pi,$token,htmlspecialchars(strip_tags($title)),$linktext);
     }
-  } else
-    return "";
+  } 
+  return "";
 #    return "\n<!--$name disabled $access -->\n";
 #    return "\n$name disabled $access\n";
 }
@@ -1024,7 +1059,7 @@ function PageLinkDialogOnly ($name,$desc="",$url="",$extraclass = '') {
   ## as PageLink2, but add the option to ajax it in a popover window
   $link = PageLink2($name,$desc,$url);
   if ($link) {
-    $link = str_replace('<a ','<a class="opendialog '.$extraclass.'"',$link);
+    $link = str_replace('<a ','<a class="opendialog '.$extraclass.'" ',$link);
     $link .= '';
   }
   return $link;
@@ -1034,7 +1069,7 @@ function PageLinkAjax ($name,$desc="",$url="",$extraclass = '') {
   ## as PageLink2, but add the option to ajax it in a popover window
   $link = PageLink2($name,$desc,$url);
   if ($link) {
-    $link = str_replace('<a ','<a class="ajaxable '.$extraclass.'"',$link);
+    $link = str_replace('<a ','<a class="ajaxable '.$extraclass.'" ',$link);
     $link .= '';
   }
   return $link;
@@ -1075,7 +1110,7 @@ function SidebarLink($name,$desc,$url="") {
       return '<!-- '.$desc.'-->';
     elseif ($name == "processbounces" && !MANUALLY_PROCESS_BOUNCES) return '<!-- ' . $desc . '-->';
     else
-      return sprintf('<a href="./?page=%s%s" target="phplistwindow">%s</a>',$name,$url,strtolower($desc));
+      return sprintf('<a href="./?page=%s%s" target="phplistwindow">%s</a>',$name,$url,mb_strtolower($desc));
   } else
     return "\n<!--$name disabled $access -->\n";
 #    return "\n$name disabled $access\n";
@@ -1092,7 +1127,7 @@ function PageURL2($name,$desc = "",$url="",$no_plugin = false) {
     } else {
       $pi = "";
     }
-    return sprintf('./?page=%s%s%s',$name,$url,$pi);
+    return sprintf('./?page=%s%s%s%s',$name,$url,$pi,addCsrfGetToken());
   } else {
     return '';
   }
@@ -1110,13 +1145,13 @@ function ListofLists($current,$fieldname,$subselect) {
   if (!empty($current["all"])) {
     $categoryhtml['all'] .= "checked";
   }
-  $categoryhtml['all'].= ' />'.$GLOBALS['I18N']->get('All Lists').'</li>';
+  $categoryhtml['all'].= ' />'.s('All Lists').'</li>';
 
   $categoryhtml['all'] .= '<li><input type="checkbox" name="'.$fieldname.'[allactive]"';
   if (!empty($current["allactive"])) {
     $categoryhtml['all'] .= 'checked="checked"';
   }
-  $categoryhtml['all'] .= ' />'.$GLOBALS['I18N']->get('All Active Lists').'</li>';
+  $categoryhtml['all'] .= ' />'.s('All Public Lists').'</li>';
 
   ## need a better way to suppress this
   if ($_GET['page'] != 'send') {
@@ -1259,7 +1294,7 @@ function formatBytes ($value) {
 
 function phpcfgsize2bytes($val) {
   $val = trim($val);
-  $last = strtolower($val{strlen($val)-1});
+  $last = mb_strtolower($val{strlen($val)-1});
   switch($last) {
     case 'g':
         $val *= 1024;
@@ -1353,10 +1388,14 @@ function PageData($id) {
     return $data;
   }
   while ($row = Sql_Fetch_Array($req)) {
-    $data[$row["name"]] = preg_replace('/<\?=VERSION\?>/i', VERSION, $row["data"]);
-    $data[$row["name"]] = str_ireplace('[organisation_name]', $GLOBALS['organisation_name'], $row["data"]);
+    if (in_array($row['name'],array("title","language_file","intro","header","footer","thankyoupage","button","htmlchoice","emaildoubleentry",'ajax_subscribeconfirmation'))) { 
+      $data[$row['name']] = stripslashes($row['data']);
+    } else {
+      $data[$row['name']] = $row['data'];
+    }
+    $data[$row["name"]] = preg_replace('/<\?=VERSION\?>/i', VERSION, $data[$row['name']]);
+    $data[$row["name"]] = str_ireplace('[organisation_name]', $GLOBALS['organisation_name'], $data[$row['name']]);
   }
-
   if (!isset ($data['lists']))
     $data['lists'] = '';
   if (!isset ($data['emaildoubleentry']))
@@ -1426,6 +1465,11 @@ $newpoweredimage = 'iVBORw0KGgoAAAANSUhEUgAAAEsAAAAhCAYAAACRIVbWAAAABHNCSVQICAgI
 function FileNotFound($msg = '') {
   ob_end_clean();
   header("HTTP/1.0 404 File Not Found");
+  if (defined('ERROR404PAGE') && is_file($_SERVER['DOCUMENT_ROOT'].'/'.ERROR404PAGE)) {
+    print file_get_contents($_SERVER['DOCUMENT_ROOT'].'/'.ERROR404PAGE);
+    exit;
+  }
+  
   printf('<html><head><title>404 Not Found</title></head><body><h1>Not Found</h1>The requested document was not found on this server<br/>%s<br/>Please contact the <a href="mailto:%s?subject=File not Found: %s">Administrator</a><p><hr><address><a href="http://phplist.com" target="_phplist">phpList</a> version %s</address></body></html>', $msg,getConfig("admin_address"),
   strip_tags($_SERVER["REQUEST_URI"]), VERSION);
   exit;
@@ -1597,6 +1641,9 @@ function repeatMessage($msgid) {
   logEvent("Message $msgid was successfully rescheduled as message $newid");
   ## remember we duplicated, in order to avoid doing it again (eg when requeuing)
   setMessageData($msgid,'repeatedid',$newid);
+  if (getConfig('pqchoice') == 'phplistdotcom') {
+     activateRemoteQueue();
+  }
 }
 
 function versionCompare($thisversion,$latestversion) {

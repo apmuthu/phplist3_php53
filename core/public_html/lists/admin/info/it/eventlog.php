@@ -1,2 +1,2 @@
-<p>Questa pagina elenca gli eventi importanti che sono accaduti in <?php echo NAME?>.<br>
+<p>Questa pagina elenca gli eventi avvenuti in <?php echo NAME?> che potrebbe essere interessante conoscere.
 L'elenco &egrave; visualizzato in ordine cronologico inverso.</p>

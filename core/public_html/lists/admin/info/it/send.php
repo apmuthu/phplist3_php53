@@ -1,1 +1,3 @@
-<p>Da questa pagina potete inviare i messaggi. Il requisito minimo per poter inviare un messaggio è completare la scheda &quot;Contenuto&quot;. Assicurarsi di salvare le modifiche prima di passare ad una nuova scheda, altrimenti i dati andrannno persi.</p><p></p>Per completare e inviare il tuo messaggio apri la scheda &quot;Liste&quot;, seleziona le liste a cui inviare il messaggio e clicca sul pulsante &quot;Manda il messaggio alle liste selezionate&quot;.</p>
+<p class="information">Per inviare un messaggip inserire le informazioni richieste qui sotto. Il requisito minimo per poter inviare un messaggio &egrave; completare la scheda &quot;Contenuto&quot; e quella delle &quot;liste&quot;.<br/>
+Per provare il messaggio prima di inviarlo, utilizzate la funzione "Invia prova" sulla destra.<br/>
+Per completare il messaggio ed inviarlo agli iscritti, cliccate sul tasto "Fine" e poi su quello "Invia messaggio".</p> 

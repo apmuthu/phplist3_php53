@@ -45,9 +45,14 @@ print '<div class="actions">';
   //'&amp;uid='.$user["uniqid"],$GLOBALS['I18N']->get('update page'));
 //printf('<a href="%s" class="button">%s</a>',getConfig("unsubscribeurl").'&amp;uid='.$user["uniqid"],$GLOBALS['I18N']->get('unsubscribe page'));
 print PageLinkButton("user&amp;id=$id",$GLOBALS['I18N']->get('Details'));
-if ($access != "view")
-printf( "<a class=\"delete button\" href=\"javascript:deleteRec('%s');\">" . $GLOBALS['I18N']->get('delete') . "</a>",
-  PageURL2("user","","delete=$id"));
+if ($access == "all") {
+  $delete = new ConfirmButton(
+     htmlspecialchars(s('Are you sure you want to remove this subscriber from the system.')),
+     PageURL2("user&delete=$id&amp;".addCsrfGetToken(),"button",s('remove subscriber')),
+     s('remove subscriber'));
+  print $delete->show();
+}
+
 print '</div>';
 
 $bouncels = new WebblerListing($GLOBALS['I18N']->get('Bounces'));
@@ -67,7 +72,7 @@ if (Sql_Affected_Rows()) {
 $ls = new WebblerListing($GLOBALS['I18N']->get('Messages'));
 if (Sql_Table_Exists($tables["usermessage"])) {
   $msgs = Sql_Query(sprintf('select messageid,entered,viewed,(viewed = 0 or viewed is null) as notviewed,
-    abs(unix_timestamp(entered) - unix_timestamp(viewed)) as responsetime from %s where userid = %d and status = "sent"',$tables["usermessage"],$user["id"]));
+    abs(unix_timestamp(entered) - unix_timestamp(viewed)) as responsetime from %s where userid = %d and status = "sent" order by entered desc',$tables["usermessage"],$user["id"]));
   $num = Sql_Affected_Rows();
 } else {
   $num = 0;
@@ -80,7 +85,7 @@ if ($num) {
     $ls->addElement($msg["messageid"],PageURL2("message",$GLOBALS['I18N']->get('view'),"id=".$msg["messageid"]));
     if (defined('CLICKTRACK') && CLICKTRACK) {
       $clicksreq = Sql_Fetch_Row_Query(sprintf('select sum(clicked) as numclicks from %s where userid = %s and messageid = %s',
-        $GLOBALS['tables']['linktrack'],$user['id'],$msg['messageid']));
+        $GLOBALS['tables']['linktrack_uml_click'],$user['id'],$msg['messageid']));
       $clicks = sprintf('%d',$clicksreq[0]);
       if ($clicks) {
         $ls->addColumn($msg["messageid"],$GLOBALS['I18N']->get('clicks'),
@@ -159,7 +164,7 @@ if (isBlackListed($user["email"])) {
 
 
 $ls = new WebblerListing($GLOBALS['I18N']->get('Subscription History'));
-$req = Sql_Query(sprintf('select * from %s where userid = %d order by date desc',$tables["user_history"],$user["id"]));
+$req = Sql_Query(sprintf('select * from %s where userid = %d order by id desc',$tables["user_history"],$user["id"]));
 if (!Sql_Affected_Rows())
   print $GLOBALS['I18N']->get('no details found');
 while ($row = Sql_Fetch_Array($req)) {

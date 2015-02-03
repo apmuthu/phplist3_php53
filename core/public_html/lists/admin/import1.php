@@ -8,15 +8,9 @@ if (!ALLOW_IMPORT) {
   return;
 }
 
-#print '<script language="Javascript" src="js/progressbar.js" type="text/javascript"></script>';
-
 ignore_user_abort();
 set_time_limit(500);
 ob_end_flush();
-?>
-<p class="information">
-
-<?php
 
 if (!isset($GLOBALS["tmpdir"])) {
   $GLOBALS["tmpdir"] = ini_get("upload_tmp_dir");
@@ -31,9 +25,7 @@ if (!is_dir($GLOBALS["tmpdir"]) || !is_writable($GLOBALS["tmpdir"])) {
 
 $import_lists = getSelectedLists('importlists');
 $_POST['importlists'] = $import_lists;
-//var_dump($_POST);
-//var_dump($import_lists);
-//exit;
+
 if(isset($_REQUEST['import'])) {
   
   if (!verifyToken()) {
@@ -55,12 +47,14 @@ if(isset($_REQUEST['import'])) {
     Fatal_Error($GLOBALS['I18N']->get('File too big, please split it up into smaller ones'));
     return;
   }
-/*
-  if( !preg_match("/^[0-9A-Za-z_\.\-\/\s \(\)]+$/", $_FILES["import_file"]["name"]) ) {
-    Fatal_Error($GLOBALS['I18N']->get('Use of wrong characters: ').$_FILES["import_file"]["name"]);
+
+  ## disallow some extensions. Won't avoid all problems, but will help with the most common ones.
+  $extension = strtolower(pathinfo($_FILES["import_file"]["name"], PATHINFO_EXTENSION));
+  if (in_array($extension, array('xls','ods','ots','fods', 'xlsx', 'xlt' , 'dif', 'dbf', 'html', 'slk'))) {
+    Fatal_Error(s('Please upload a plain text file only. You cannot use a spreadsheet. You can only upload a plain text file with one email address per line.'));
     return;
   }
-*/
+
   # don't send notification, but use processqueue instead
   $_POST['notify'] = 'no'; 
   if (!$_POST["notify"] && !$test_import) {
@@ -158,17 +152,15 @@ if(isset($_REQUEST['import'])) {
     print '<h3>'.s('Importing %d subscribers to %d lists, please wait',sizeof($email_list),sizeof($import_lists)).'</h3>';
     print $GLOBALS['img_busy'];
     print '<div id="progresscount" style="width: 200; height: 50;">Progress</div>';
-    print '<br/> <iframe id="import1" src="./?page=pageaction&action=import1&ajaxed=true&file='.urlencode(basename($newfile)).'" scrolling="no" height="50"></iframe>';
+    print '<br/> <iframe id="import1" src="./?page=pageaction&action=import1&ajaxed=true&file='.urlencode(basename($newfile)).addCsrfGetToken().'" scrolling="no" height="50"></iframe>';
   }; // end else
  # print '<p class="button">'.PageLink2("import1",$GLOBALS['I18N']->get('Import some more emails')).'</p>';
 
 
 } else {
-?>
 
-
-<?php echo FormStart(' enctype="multipart/form-data" name="import"')?>
-<?php
+  echo FormStart(' enctype="multipart/form-data" name="import"');
+   
 if ($GLOBALS["require_login"] && !isSuperUser()) {
   $access = accessLevel("import1");
   switch ($access) {
@@ -211,7 +203,7 @@ function addFieldToCheck(value,name) {
 <tr><td colspan="2"><?php echo $GLOBALS['I18N']->get('The file you upload will need to contain the emails you want to add to these lists. Anything after the email will be added as attribute "Info" of the Subscriber. You can specify the rest of the attributes of these subscribers below. Warning: the file needs to be plain text. Do not upload binary files like a Word Document.'); ?></td></tr>
 <tr><td><?php echo $GLOBALS['I18N']->get('File containing emails:'); ?></td><td><input type="file" name="import_file"></td></tr>
 <tr><td colspan="2"><?php echo $GLOBALS['I18N']->get('If you check "Test Output", you will get the list of parsed emails on screen, and the database will not be filled with the information. This is useful to find out whether the format of your file is correct. It will only show the first 50 records.'); ?></td></tr>
-<tr><td><?php echo $GLOBALS['I18N']->get('Test output:'); ?></td><td><input type="checkbox" name="import_test" value="yes"></td></tr>
+<tr><td><?php echo $GLOBALS['I18N']->get('Test output:'); ?></td><td><input type="checkbox" name="import_test" value="yes" checked="checked" /></td></tr>
 <!--tr><td colspan="2"><?php echo $GLOBALS['I18N']->get('If you choose "send notification email" the subscribers you are adding will be sent the request for confirmation of subscription to which they will have to reply. This is recommended, because it will identify invalid emails.'); ?></td></tr>
 <tr><td><?php echo $GLOBALS['I18N']->get('Send Notification email'); ?><input type="radio" name="notify" value="yes"></td><td><?php echo $GLOBALS['I18N']->get('Make confirmed immediately'); ?><input type="radio" name="notify" value="no"></td></tr>
 <tr><td colspan="2"><?php echo $GLOBALS['I18N']->get('If you are going to send notification to users, you may want to add a little delay between messages')?></td></tr>

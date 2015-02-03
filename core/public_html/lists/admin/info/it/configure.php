@@ -1,15 +1,16 @@
-<p>Qu&igrave; devi specificare i corretti valori del tuo sito internet.<br/>Puoi usare predefiniti <b>Segnaposto</b> nei tuoi valori. Segnaposto del tipo <b>[SOMETEXT]</b>, dove <i>SOMETEXT</i> pu&ograve; essere differente.
-Alcuni segnaposto utili sono:</p>
+<p class="information">Qu&igrave; dovete specificare i valori corretti del vostro sito internet.<br/>Potete usare i <b>Segnalibri</b> nei valori. I segnalibri appaiono cos&igrave <b>[SOMETEXT]</b>, dove <i>SOMETEXT</i> pu&ograve; variare.
+Alcuni segnalibri utili sono:</p>
+<div class="placeholders">
 <ul>
-<li>WEBSITE - l\'indirizzo che hai specificato per il tuo sito</li>
-<li>DOMAIN - Il testo che hai specificato per il tuo dominio</li>
-<li>SUBSCRIBEURL - la pagina di sottoscrizione</li>
-<li>UNSUBSCRIBEURL - la pagina di cancellazione sottoscrizione</li>
+<li>WEBSITE - l\'indirizzo del vostro sito</li>
+<li>DOMAIN - il testo del vostro dominio</li>
+<li>SUBSCRIBEURL - la pagina per iscriversi alle liste</li>
+<li>UNSUBSCRIBEURL - la pagina per cancellare l'iscrizione</li>
 <li>BLACKLISTURL - la pagina dove gli utenti non registrati possono cancellarsi per non ricevere pi&ugrave; alcuna comunicazione</li>
-<li>PREFERENCESURL - la posizione della pagina dove gli utenti possono aggiornare i propri dettagli</li>
-<li>CONFIRMATIONURL - la posizione della pagina dove gli utenti possono confermare la loro sottoscrizione</li>
+<li>PREFERENCESURL - la pagina dove gli utenti possono aggiornare i propri dettagli</li>
+<li>CONFIRMATIONURL - la pagina dove gli utenti possono confermare la loro iscrizione</li>
 </ul>
-<!--For the header and the footer you can use the following code to include external documents:
+</div>
+<!--Per l'intestazione ed il pi&egrave di pagina potete usare il codice seguente per includere documenti esterni:
 <br/>
-<b>[URL:&lt;Full URL of page to load&gt;]</b>-->
-</p>
+<b>[URL:&lt;URL intero della pagina da caricare&gt;]</b>-->
