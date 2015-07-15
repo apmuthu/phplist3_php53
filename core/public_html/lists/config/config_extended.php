@@ -338,6 +338,13 @@ define ("MANUALLY_PROCESS_QUEUE",1);
 # if there are multiple messages in the queue, set a maximum to work on
 define('MAX_PROCESS_MESSAGE',999);
 
+# process parallel
+# if there are multiple messages in the queue, divide the max batch across them
+# instead of sending them one by one.
+# this only works if you use batch processing. It will divide the batch between the 
+# campaigns that need sending.
+#define('PROCESSCAMPAIGNS_PARALLEL',true);
+
 # define the amount of emails you want to send per period. If 0, batch processing
 # is disabled and messages are sent out as fast as possible
 define("MAILQUEUE_BATCH_SIZE",0); 
@@ -416,11 +423,6 @@ $default_system_language = 'en';
 # see also https://mantis.phplist.com/view.php?id=16688
 #define('USE_PRECEDENCE_HEADER',false);
 
-# the number of criterias you want to be able to select when sending a message.
-# Useful is is to make it the same as the number of selectable attributes you enter in the
-# system, but that is up to you (selectable = select, radio or checkbox)
-define ("NUMCRITERIAS",2);
-
 # if you do not require users to actually sign up to lists, but only want to
 # use the subscribe page as a kind of registration system, you can set this to 1 and
 # users will not receive an error when they do not check a list to subscribe to
@@ -464,6 +466,14 @@ define('EMPTY_VALUE_PREFIX','--');
 # otherwise it will default to the values set in the configure page that identify
 # the From for system messages
 define('USE_ADMIN_DETAILS_FOR_MESSAGES',1);
+
+# attribute value reorder limit
+# for selectable attributes, like "select" and "radio" you can manage the order of the values
+# by adding a number for each of them. After a certain number of values, this will disappear
+# and it will automatically order alphabetically. This "certain number" is controlled here
+# and it defaults to 100
+# if you want to use this, uncomment this line and change the value
+# define('ATTRIBUTEVALUE_REORDER_LIMIT',100);
 
 # test emails
 # if you send a test email, phplist will by default send you two emails, one in HTML format
@@ -660,16 +670,6 @@ define("PLUGIN_ROOTDIR","plugins");
 # your website document root)
 $attachment_repository = '/tmp';
 
-# if you want to be able to send your messages as PDF attachments, you need to install
-# FPDF (http://www.fpdf.org) and set these variables accordingly
-
-# define('FPDF_FONTPATH','/home/pdf/font/');
-# require('fpdf.php');
-# define("USE_PDF",1);
-# $pdf_font = 'Times';
-# $pdf_fontstyle = '';
-# $pdf_fontsize = 14;
-
 # the mime type for the export files. You can try changing this to
 # application/vnd.ms-excel to make it open automatically in excel
 # or text/tsv
@@ -749,6 +749,10 @@ define("EMAIL_ADDRESS_VALIDATION_LEVEL",2);
 
 # define('SYSTEM_TIMEZONE','Europe/London');
 
+# HTTP_HOST
+# In some systems (eg behind load balancing proxies) you may need to set the HOST to be something else
+# then the system identifies. If you do, you can set it here. 
+#define('HTTP_HOST','your.website.com');
 
 # list exclude will add the option to send a message to users who are on a list
 # except when they are on another list.
@@ -779,24 +783,6 @@ define('MESSAGEQUEUE_PREPARE',0);
 # or
 #$admin_auth_module = '/usr/local/etc/auth.inc';
 
-# stacked attribute selection
-# this is a new method of making a selection of attributes to send your messages to
-# to start with, it doesn't seem to work very well in Internet Explorer, but it works fine
-# using Mozilla, Firefox, Opera (haven't tried any other browsers)
-# so if you use IE, you may not want to try this.
-
-# stacked attribute selection allows you to continuously add a selection of attributes
-# to your message. This is quite a bit more powerful than the old method, but it can also
-# cause very complex queries to be constructed that may take too long to calculate
-# If you want to try this, set the value to 1, and give us feedback on how it's going
-
-# if you want to use dates for attribute selections, you need to use this one
-
-
-## this functionality has been dropped from the core phpList system, but will be added
-## using plugin functionality. 
-define("STACKED_ATTRIBUTE_SELECTION",0);
-
 
 # Public protocol
 # phpList will automatically use the protocol you run the admin interface on for clicktrack links and 
@@ -813,7 +799,6 @@ define("STACKED_ATTRIBUTE_SELECTION",0);
 # mail systems
 # if you use this, you will need to teach your system regularly about patterns in new bounces
 define('USE_ADVANCED_BOUNCEHANDLING',0);
-
 
 # When forwarding ('to a friend') the message will be using the attributes of the destination email by default.
 # This often means the message gets stripped of al its attributes. 
@@ -837,15 +822,4 @@ define("FORWARD_PERSONAL_NOTE_SIZE",0);
 # Allow admin to enter a different message that will be sent when forwarding 'to a friend'
 # This will show an extra tab in the message dialog. 
 define("FORWARD_ALTERNATIVE_CONTENT",0);
-
-# there is now support for the use of ADOdb http://php.weblogs.com/ADODB
-# this is still experimental, and any findings should be reported in the
-# bugtracker
-# in order to use it, define the following settings:
-#$database_module = 'adodb.inc';
-#$adodb_inc_file = '/path/to/adodb_inc.php';
-#$adodb_driver = 'mysql';
-#$adodb_inc_file = '/usr/share/php/adodb/adodb.inc.php';
-$adodb_driver = 'mysql';  // not really a site variable
-
 

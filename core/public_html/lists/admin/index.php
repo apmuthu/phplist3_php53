@@ -11,8 +11,16 @@ if (isset($_REQUEST['_SERVER'])) { exit; }
 $cline = array();
 $GLOBALS['commandline'] = 0;
 
-require_once dirname(__FILE__) .'/commonlib/lib/unregister_globals.php';
-require_once dirname(__FILE__) .'/commonlib/lib/magic_quotes.php';
+require_once dirname(__FILE__) .'/inc/unregister_globals.php';
+require_once dirname(__FILE__) .'/inc/magic_quotes.php';
+
+/* no idea why it wouldn't be there (no dependencies are mentioned on php.net/mb_strtolower), but
+ * found a system missing it. We need it from the start */
+if (!function_exists('mb_strtolower')) {
+  function mb_strtolower($string) {
+    return strtolower($string);
+  }
+}
 
 # setup commandline
 #if (php_sapi_name() == "cli") {
@@ -84,11 +92,11 @@ require_once dirname(__FILE__)."/defaultconfig.php";
 
 require_once dirname(__FILE__).'/connect.php';
 include_once dirname(__FILE__)."/lib.php";
-if (INTERFACELIB == 2 && is_file(dirname(__FILE__).'/interfacelib.php')) {
-  require_once dirname(__FILE__)."/interfacelib.php";
-} else {
-  require_once dirname(__FILE__)."/commonlib/lib/interfacelib.php";
-}
+require_once dirname(__FILE__)."/inc/netlib.php";
+require_once dirname(__FILE__)."/inc/interfacelib.php";
+
+// do a loose check, if the token is there, it needs to be valid.
+verifyCsrfGetToken(false);
 
 if (!empty($_SESSION['hasconf']) || Sql_Table_exists($tables["config"],1)) {
   $_SESSION['hasconf'] = true;
@@ -98,7 +106,7 @@ if (!empty($_SESSION['hasconf']) || Sql_Table_exists($tables["config"],1)) {
     //$plugin->activate();
   //}
 }
-if (!empty($_GET['page']) && $_GET['page'] == 'logout') {
+if (!empty($_GET['page']) && $_GET['page'] == 'logout' && empty($_GET['err'])) {
   foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
     $plugin->logout();
   }
@@ -151,12 +159,14 @@ if ($GLOBALS["commandline"]) {
     } elseif (isset($cline['p'])) {
       $_GET['page'] = $cline['p'];
     }
+    cl_processtitle('core-'.$_GET['page']);
   } elseif ($cline['p'] && $IsCommandlinePlugin) {
     if (empty($GLOBALS['developer_email']) && isset($cline['p']) && !in_array($cline['p'],$commandlinePluginPages[$cline['m']])) {
       clineError($cline['p']." does not process commandline");
     } elseif (isset($cline['p'])) {
       $_GET['page'] = $cline['p'];
       $_GET['pi'] = $cline['m'];
+      cl_processtitle($_GET['pi'].'-'.$_GET['page']);
     }
   } else {
     clineUsage(" [other parameters]");
@@ -166,7 +176,8 @@ if ($GLOBALS["commandline"]) {
   if (CHECK_REFERRER && isset($_SERVER['HTTP_REFERER'])) {
     ## do a crude check on referrer. Won't solve everything, as it can be faked, but shouldn't hurt
     $ref = parse_url($_SERVER['HTTP_REFERER']);
-    if ($ref['host'] != $_SERVER['HTTP_HOST'] && !in_array($ref['host'],$allowed_referrers)) {
+    $parts = explode(':', $_SERVER['HTTP_HOST']);
+    if ($ref['host'] != $parts[0] && !in_array($ref['host'],$allowed_referrers)) {
       print 'Access denied';exit;
     }
   }
@@ -213,6 +224,8 @@ if (isset($GLOBALS["installation_name"])) {
 print "$page_title</title>";
 
 if (!empty($GLOBALS["require_login"])) {
+  #bth 7.1.2015 to support x-forwarded-for
+  $remoteAddr = getClientIP();
   if ($GLOBALS["admin_auth_module"] && is_file("auth/".$GLOBALS["admin_auth_module"])) {
     require_once "auth/".$GLOBALS["admin_auth_module"];
   } elseif ($GLOBALS["admin_auth_module"] && is_file($GLOBALS["admin_auth_module"])) {
@@ -236,10 +249,10 @@ if (!empty($GLOBALS["require_login"])) {
       $_SESSION["adminloggedin"] = "";
       $_SESSION["logindetails"] = "";
       $page = "login";
-      logEvent(sprintf($GLOBALS['I18N']->get('invalid login from %s, tried logging in as %s'),$_SERVER['REMOTE_ADDR'],$_REQUEST["login"]));
+      logEvent(sprintf($GLOBALS['I18N']->get('invalid login from %s, tried logging in as %s'),$remoteAddr,$_REQUEST["login"]));
       $msg = $loginresult[1];
     } else {
-      $_SESSION["adminloggedin"] = $_SERVER["REMOTE_ADDR"];
+      $_SESSION["adminloggedin"] = $remoteAddr;
       $_SESSION["logindetails"] = array(
         "adminname" => $_REQUEST["login"],
         "id" => $loginresult[0],
@@ -271,7 +284,7 @@ if (!empty($GLOBALS["require_login"])) {
       exit;
     }
     
-    $_SESSION["adminloggedin"] = $_SERVER["REMOTE_ADDR"];
+    $_SESSION["adminloggedin"] = $remoteAddr;
     $_SESSION["logindetails"] = array(
       "adminname" => 'remotecall',
       "id" => 0,
@@ -282,8 +295,8 @@ if (!empty($GLOBALS["require_login"])) {
   } elseif (!isset($_SESSION["adminloggedin"]) || !$_SESSION["adminloggedin"]) {
     #$msg = 'Not logged in';
     $page = "login";
-  } elseif (CHECK_SESSIONIP && $_SESSION["adminloggedin"] && $_SESSION["adminloggedin"] != $_SERVER["REMOTE_ADDR"]) {
-    logEvent(sprintf($GLOBALS['I18N']->get('login ip invalid from %s for %s (was %s)'),$_SERVER['REMOTE_ADDR'],$_SESSION["logindetails"]['adminname'],$_SESSION["adminloggedin"]));
+  } elseif (CHECK_SESSIONIP && $_SESSION["adminloggedin"] && $_SESSION["adminloggedin"] != $remoteAddr) {
+    logEvent(sprintf($GLOBALS['I18N']->get('login ip invalid from %s for %s (was %s)'),$remoteAddr,$_SESSION["logindetails"]['adminname'],$_SESSION["adminloggedin"]));
     $msg = $GLOBALS['I18N']->get('Your IP address has changed. For security reasons, please login again');
     $_SESSION["adminloggedin"] = "";
     $_SESSION["logindetails"] = "";
@@ -291,7 +304,7 @@ if (!empty($GLOBALS["require_login"])) {
   } elseif ($_SESSION["adminloggedin"] && $_SESSION["logindetails"]) {
     $validate = $GLOBALS["admin_auth"]->validateAccount($_SESSION["logindetails"]["id"]);
     if (!$validate[0]) {
-      logEvent(sprintf($GLOBALS['I18N']->get('invalidated login from %s for %s (error %s)'),$_SERVER['REMOTE_ADDR'],$_SESSION["logindetails"]['adminname'],$validate[1]));
+      logEvent(sprintf($GLOBALS['I18N']->get('invalidated login from %s for %s (error %s)'),$remoteAddr,$_SESSION["logindetails"]['adminname'],$validate[1]));
       $_SESSION["adminloggedin"] = "";
       $_SESSION["logindetails"] = "";
       $page = "login";
@@ -450,7 +463,7 @@ if (isset($_GET['page']) && $_GET['page'] == 'about') {
 }
 print $pageinfo->show();
 
-if (!empty($_GET['action']) && $_GET['page'] != 'pageaction') {
+if (!empty($_GET['action']) && $_GET['page'] != 'pageaction' && !empty($_SESSION["adminloggedin"])) {
   $action = basename($_GET['action']);
   if (is_file(dirname(__FILE__).'/actions/'.$action.'.php')) {
     $status = '';
@@ -482,8 +495,8 @@ if (preg_match("#(.*?)/admin?$#i",$this_doc,$regs)) {
 }
 
 clearstatcache();
-if (checkAccess($page,"") || $page == 'about') {
-  if (empty($_GET['pi']) && (is_file($include) || is_link($include))) {
+if (empty($_GET['pi']) && (is_file($include) || is_link($include))) {
+  if (checkAccess($page) || $page == 'about') {
     # check whether there is a language file to include
     if (is_file("lan/".$_SESSION['adminlanguage']['iso']."/".$include)) {
       include "lan/".$_SESSION['adminlanguage']['iso']."/".$include;
@@ -517,35 +530,39 @@ if (checkAccess($page,"") || $page == 'about') {
         @include $include;
       }
     }
-  #  print "End of inclusion<br/>";
-  } elseif (!empty($_GET['pi']) && isset($GLOBALS['plugins']) && is_array($GLOBALS['plugins']) && isset($GLOBALS['plugins'][$_GET['pi']]) && is_object($GLOBALS['plugins'][$_GET['pi']])) {
-    $plugin = $GLOBALS["plugins"][$_GET["pi"]];
-    $menu = $plugin->adminmenu(); 
-    if (is_file($plugin->coderoot . $include)) {
-      include ($plugin->coderoot . $include);
-    } elseif ($include == 'main.php' || $_GET['page'] == 'home') {
-      print '<h3>'.$plugin->name.'</h3><ul>';
-      foreach ($menu as $page => $desc) {
-        print '<li>'.PageLink2($page,$desc).'</li>';
-      }
-      print '</ul>';
-    } elseif ($page != 'login') {
-      print '<br/>'."$page -&gt; ".s('Sorry this page was not found in the plugin').'<br/>';#.' '.$plugin->coderoot.$include.'<br/>';
-      cl_output("$page -> ".s('Sorry this page was not found in the plugin'));#. ' '.$plugin->coderoot . "$include");
-    }
   } else {
-    if ($GLOBALS["commandline"]) {
-      clineError(s('Sorry, that module does not exist'));
-      exit;
-    }
-    if (is_file('ui/'.$GLOBALS['ui'].'/pages/'.$include)) {
-      include ('ui/'.$GLOBALS['ui'].'/pages/'.$include);
-    } else {
-      print "$page -&gt; ".$GLOBALS['I18N']->get('Sorry, not implemented yet');
-    }
+    Error(s('Access Denied'));
+  }
+#  print "End of inclusion<br/>";
+} elseif (!empty($_GET['pi']) && isset($GLOBALS['plugins']) && is_array($GLOBALS['plugins']) && isset($GLOBALS['plugins'][$_GET['pi']]) && is_object($GLOBALS['plugins'][$_GET['pi']])) {
+  $plugin = $GLOBALS["plugins"][$_GET["pi"]];
+  $menu = $plugin->adminmenu(); 
+  if (checkAccess($page,$_GET['pi'])) {
+      if (is_file($plugin->coderoot . $include)) {
+        include ($plugin->coderoot . $include);
+      } elseif ($include == 'main.php' || $page == 'home') {
+        print '<h3>'.$plugin->name.'</h3><ul>';
+        foreach ($menu as $page => $desc) {
+          print '<li>'.PageLink2($page,$desc).'</li>';
+        }
+        print '</ul>';
+      } elseif ($page != 'login') {
+        print '<br/>'."$page -&gt; ".s('Sorry this page was not found in the plugin').'<br/>';#.' '.$plugin->coderoot.$include.'<br/>';
+        cl_output("$page -> ".s('Sorry this page was not found in the plugin'));#. ' '.$plugin->coderoot . "$include"); 
+      }
+  } else {
+    Error(s('Access Denied'));
   }
 } else {
-  Error($GLOBALS['I18N']->get('Access Denied'));
+    if ($GLOBALS["commandline"]) {
+        clineError(s('Sorry, that module does not exist'));
+        exit;
+    }
+    if (is_file('ui/'.$GLOBALS['ui'].'/pages/'.$include)) {
+        include ('ui/'.$GLOBALS['ui'].'/pages/'.$include);
+    } else {
+        print "$page -&gt; ".$GLOBALS['I18N']->get('Sorry, not implemented yet');
+    }
 }
 
 # some debugging stuff
@@ -621,12 +638,4 @@ function parseCline() {
   }
   ob_start();*/
   return $res;
-}
-
-/* no idea why it wouldn't be there (no dependencies are mentioned on php.net/mb_strtolower), but
- * found a system missing it. We need it from the start */
-if (!function_exists('mb_strtolower')) {
-  function mb_strtolower($string) {
-    return strtolower($string);
-  }
 }
