@@ -510,7 +510,7 @@ class PHPlistMailer extends PHPMailer {
       $aws_signature = base64_encode(hash_hmac('sha256',$date,AWS_SECRETKEY,true));
       
       $requestheader = array(
-        'Host: email.us-east-1.amazonaws.com',
+        'Host: '.parse_url(AWS_POSTURL, PHP_URL_HOST),
         'Content-Type: application/x-www-form-urlencoded',
         'Date: '. $date,
         'X-Amzn-Authorization: AWS3-HTTPS AWSAccessKeyId='.AWS_ACCESSKEYID.',Algorithm=HMACSHA256,Signature='.$aws_signature,
@@ -533,6 +533,7 @@ class PHPlistMailer extends PHPMailer {
 
       $requestdata = array(
         'Action' => 'SendRawEmail',
+        'Source' => $GLOBALS["message_envelope"],
         'Destinations.member.1' => $this->destinationemail,
         'RawMessage.Data' => $rawmessage,
       );

@@ -7,6 +7,20 @@
  */
 define('PHPLISTINIT',true);
 
+
+
+if (!defined('VERSION')) {
+  if (!ini_get('open_basedir') && is_dir(dirname(__FILE__).'/../../../.git')) {
+    define("VERSION","3.2.0");
+    define('DEVVERSION',true);
+  } else {
+    define("VERSION","3.2.0");
+    define('DEVVERSION',false);
+  }
+} else {
+  define(   'DEVVERSION'    ,false);
+}
+
 if (empty($GLOBALS["commandline"]) && isset($GLOBALS["developer_email"]) && $_SERVER['HTTP_HOST'] != 'dev.phplist.com' && !empty($GLOBALS['show_dev_errors'])) {
   error_reporting(E_ALL);
   ini_set('display_errors',1);
@@ -23,10 +37,16 @@ $GLOBALS["pagestats"] = array();
 $GLOBALS["pagestats"]["time_start"] = $now["sec"] * 1000000 + $now["usec"];
 $GLOBALS["pagestats"]["number_of_queries"] = 0;
 
-if (function_exists('iconv_set_encoding')) {
-  iconv_set_encoding("input_encoding", "UTF-8");
-  iconv_set_encoding("internal_encoding", "UTF-8");
-  iconv_set_encoding("output_encoding", "UTF-8");
+// taken from Joomla, prepare for PHP5.6 and up
+// see https://github.com/phpList/phplist3/pull/3
+if (function_exists('iconv') || ((!strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && dl('iconv.so')))) {
+  if (version_compare(PHP_VERSION, '5.6', '>='))	{
+	@ini_set('default_charset', 'UTF-8');
+  } elseif (function_exists('iconv_set_encoding')) {
+    iconv_set_encoding("input_encoding", "UTF-8");
+    iconv_set_encoding("internal_encoding", "UTF-8");
+    iconv_set_encoding("output_encoding", "UTF-8");
+  }
 }
 
 if (function_exists('mb_internal_encoding')) {
@@ -123,7 +143,11 @@ if (!isset($database_connection_ssl))
 ## set it on the fly, although that will probably only work with Apache
 ## we need to save this in the DB, so that it'll work on commandline
 $GLOBALS['scheme'] = (isset($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) == 'on')) ? 'https' : 'http';
-$GLOBALS['admin_scheme'] = $GLOBALS['scheme'];
+if (defined('ADMIN_PROTOCOL')) {
+   $GLOBALS['admin_scheme'] = ADMIN_PROTOCOL;
+} else {
+    $GLOBALS['admin_scheme'] = $GLOBALS['scheme'];
+}
 if (defined('PUBLIC_PROTOCOL')) {
   $GLOBALS['public_scheme'] = PUBLIC_PROTOCOL;
 } else {
@@ -164,10 +188,9 @@ define('TLD_AUTH_LIST','https://www.phplist.com/files/tlds-alpha-by-domain.txt')
 define('TLD_AUTH_MD5','https://www.phplist.com/files/tlds-alpha-by-domain.txt.md5');
 define('TLD_REFETCH_TIMEOUT',15552000); ## 180 days, about 6 months
 define('PQAPI_URL','https://pqapi.phplist.com/1/t/pqapi');
-if (!defined('SHOW_PQCHOICE')) define('SHOW_PQCHOICE',true);
+if (!defined('SHOW_PQCHOICE')) define('SHOW_PQCHOICE',false);
+if (!defined('PHPLISTNEWSROOT')) define('PHPLISTNEWSROOT','https://www.phplist.com/downloadnews/');
 
-// obsolete by rssmanager plugin
-// if (!defined("ENABLE_RSS")) define("ENABLE_RSS",0);
 if (!defined("ALLOW_ATTACHMENTS")) define("ALLOW_ATTACHMENTS",0);
 if (!defined("EMAILTEXTCREDITS")) define("EMAILTEXTCREDITS",0);
 if (!defined("PAGETEXTCREDITS")) define("PAGETEXTCREDITS",0);
@@ -330,7 +353,7 @@ if (!defined('PHPLIST_POWEREDBY_URLROOT')) define('PHPLIST_POWEREDBY_URLROOT','h
 if (!isset($allowed_referrers) || !is_array($allowed_referrers)) {
   $allowed_referrers = array();
 }
-if (!defined('ACCESS_CONTROL_ALLOW_ORIGIN')) define('ACCESS_CONTROL_ALLOW_ORIGIN','http://'.$_SERVER['HTTP_HOST']);
+if (!defined('ACCESS_CONTROL_ALLOW_ORIGIN')) define('ACCESS_CONTROL_ALLOW_ORIGIN',$GLOBALS['scheme'].'://'.$_SERVER['HTTP_HOST']);
 
 if (!defined('PREFERENCEPAGE_SHOW_PRIVATE_LISTS')) define('PREFERENCEPAGE_SHOW_PRIVATE_LISTS',false);
 #https://mantis.phplist.com/view.php?id=15603
@@ -431,7 +454,8 @@ if (!isset($GLOBALS['pagefooter']) || !is_array($GLOBALS['pagefooter'])) $GLOBAL
 if (!isset($GLOBALS['check_for_host'])) $GLOBALS['check_for_host'] = 0;
 
 ## experimental, use minified JS and CSS
-if (!defined('USE_MINIFIED_ASSETS')) define('USE_MINIFIED_ASSETS',false);
+if (!defined('USE_MINIFIED_ASSETS')) define('USE_MINIFIED_ASSETS',true);
+$firstInstallButton = '';
 
 ## set up a memcached global object, and test it
 $GLOBALS['MC'] = null;

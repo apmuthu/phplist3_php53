@@ -1,19 +1,5 @@
 <?php
 
-
-
-if (!defined('VERSION')) {
-  if (!ini_get('open_basedir') && is_dir(dirname(__FILE__).'/../../../.git')) {
-    define("VERSION","3.1.2");
-    define('DEVVERSION',true);
-  } else {
-    define("VERSION","3.1.2");
-    define('DEVVERSION',false);
-  }
-} else {
-  define(   'DEVVERSION'    ,false);
-}
-
 require_once dirname(__FILE__)."/inc/userlib.php";
 include_once dirname(__FILE__)."/inc/maillib.php";
 
@@ -428,6 +414,14 @@ function join_clean($sep,$array) {
 }
 
 function Fatal_Error($msg,$documentationURL = '') {
+  if (empty($_SESSION['fatalerror'])) $_SESSION['fatalerror'] = 0;
+  $_SESSION['fatalerror']++;
+  header('Fatal error',true,509);
+  if ($_SESSION['fatalerror'] > 5) {
+    $_SESSION['logout_error'] = s('Too many errors, please login again');
+    Redirect('logout&err=2');
+  }
+  
   if ($GLOBALS['commandline']) {
     @ob_end_clean();
     print "\n".$GLOBALS["I18N"]->get("fatalerror").": ".strip_tags($msg)."\n";
@@ -1030,7 +1024,7 @@ function PageLink2($name,$desc="",$url="",$no_plugin = false,$title = '') {
       }
       
       if (!empty($_SESSION['csrf_token'])) {
-        $token = '&tk='.$_SESSION['csrf_token'];
+        $token = '&amp;tk='.$_SESSION['csrf_token'];
       } else {
         $token = '';
       }
@@ -1133,8 +1127,9 @@ function PageURL2($name,$desc = "",$url="",$no_plugin = false) {
   }
 }
 
-#function ListofLists($messagedata,$fieldname,$subselect) {
 function ListofLists($current,$fieldname,$subselect) {
+  ## @@TODO, this is slow on more than 150 lists. We should add caching or optimise
+  $GLOBALS['systemTimer']->interval();
   $categoryhtml = array();
   ## add a hidden field, so that all checkboxes can be unchecked while keeping the field in POST to process it
  # $categoryhtml['unselect'] = '<input type="hidden" name="'.$fieldname.'[unselect]" value="1" />';
@@ -1158,14 +1153,15 @@ function ListofLists($current,$fieldname,$subselect) {
     $categoryhtml['all'] .= '<li>'.PageLinkDialog('addlist',s('Add a list')).'</li>';
   }
   
-  $result = Sql_query('select * from '.$GLOBALS['tables']['list']. $subselect.' order by category, name ');
+  $result = Sql_query('select * from '.$GLOBALS['tables']['list']. $subselect.' order by category, name');
   $numLists = Sql_Affected_Rows();
+  
   while ($list = Sql_fetch_array($result)) {
     if (empty($list['category'])) {
       if ($numLists < 5) { ## for a small number of lists, add them to the @ tab
         $list['category'] = 'all';
       } else {
-        $list['category'] = $GLOBALS['I18N']->get('Uncategorised');
+        $list['category'] = s('Uncategorised');
       }
     }
     if (!isset($categoryhtml[$list['category']])) {
@@ -1174,7 +1170,7 @@ function ListofLists($current,$fieldname,$subselect) {
     if (isset($current[$list["id"]]) && $current[$list["id"]]) {
       $list['category'] = 'selected';
     }
-    $categoryhtml[$list['category']] .= sprintf('<li><input type=checkbox name="'.$fieldname.'[%d]" value="%d" ',$list["id"],$list["id"]);
+    $categoryhtml[$list['category']] .= sprintf('<li><input type="checkbox" name="'.$fieldname.'[%d]" value="%d" ',$list["id"],$list["id"]);
     # check whether this message has been marked to send to a list (when editing)
     if (isset($current[$list["id"]]) && $current[$list["id"]]) {
       $categoryhtml[$list['category']] .= "checked";
@@ -1194,10 +1190,12 @@ function ListofLists($current,$fieldname,$subselect) {
     $some = 1;
   }
   if (empty($categoryhtml['selected'])) unset($categoryhtml['selected']);
+#  file_put_contents('/tmp/timer.log','ListOfLists '.$GLOBALS['systemTimer']->interval(). "\n",FILE_APPEND);
   return $categoryhtml;
 }
 
 function listSelectHTML ($current,$fieldname,$subselect,$alltab = '') {
+  $GLOBALS['systemTimer']->interval();
   $categoryhtml = ListofLists($current,$fieldname,$subselect);
 
   $tabno = 1;
@@ -1216,7 +1214,15 @@ function listSelectHTML ($current,$fieldname,$subselect,$alltab = '') {
       if ($some > 1) { ## don't show tabs, when there's just one
         $listindex .= sprintf('<li><a href="#%s%d">%s</a></li>',$fieldname,$tabno,$category);
       }
-      $listhtml .= sprintf('<div id="%s%d"><ul>%s</ul></div>',$fieldname,$tabno,$content);
+      if ($fieldname == 'targetlist') {
+          // Add select all checkbox in every category to select all lists in that category.
+          if ($category == 'selected') {
+             $content = sprintf('<li class="selectallcategory"><input type="checkbox" name="all-lists-'.$fieldname.'-cat-' . str_replace(' ', '-', strtolower($category)) . '" checked="checked">'.s('Select all').'</li>') . $content;
+          } elseif ($category != '@') {
+             $content = sprintf('<li class="selectallcategory"><input type="checkbox" name="all-lists-'.$fieldname.'-cat-' . str_replace(' ', '-', strtolower($category)) . '">'.s('Select all').'</li>') . $content;
+          }
+      }
+      $listhtml .= sprintf('<div class="%s" id="%s%d"><ul>%s</ul></div>', str_replace(' ', '-', strtolower($category)), $fieldname,$tabno,$content);
       $tabno++;
     }
   }
@@ -1228,6 +1234,7 @@ function listSelectHTML ($current,$fieldname,$subselect,$alltab = '') {
   if (!$some) {
     $html = s('There are no lists available');
   }
+# file_put_contents('/tmp/timer.log','ListSelectHTML '.$GLOBALS['systemTimer']->interval(). "\n",FILE_APPEND);
   return $html;
 }
 
@@ -1737,13 +1744,13 @@ function phplist_shutdown () {
     if (is_array($_SERVER))
     while (list($key,$val) = each ($_SERVER)) {
       if (stripos($key,"password") === false) {
-        $message .= $key . "=" . $val . "\n";
+        $message .= $key . "=" . serialize($val) . "\n";
       }
     }
     foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
       $plugin->processError($message);
     }
-#    sendMail(getConfig("report_address"),$GLOBALS["installation_name"]." Mail list error",,"");
+#   sendMail(getConfig("report_address"),$GLOBALS["installation_name"]." Mail list error",$message);
   }
 
 #  print "Phplist shutdown $status";

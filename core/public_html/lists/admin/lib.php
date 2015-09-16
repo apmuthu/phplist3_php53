@@ -213,6 +213,14 @@ function loadMessageData($msgid) {
     $messagedata["fromemail"] = $default['from'];
     $messagedata["fromname"] = $messagedata["fromfield"] ;
   }
+  // disallow an email address in the name
+  if (preg_match("/([^ ]+@[^ ]+)/",$messagedata["fromname"],$regs)) {
+    $messagedata["fromname"] = str_replace($regs[0],"",$messagedata["fromname"]);
+  }
+  // clean up
+  $messagedata["fromemail"] = str_replace(',','',$messagedata['fromemail']);
+  $messagedata["fromname"] = str_replace(',','',$messagedata['fromname']);
+  
   $messagedata["fromname"] = trim($messagedata["fromname"]);
 
   # erase double spacing 
@@ -801,7 +809,7 @@ function setPageCache($url,$lastmodified = 0,$content) {
 #  if (isset($GLOBALS['developer_email'])) return;
   Sql_Query(sprintf('delete from %s where url = "%s"',$GLOBALS["tables"]["urlcache"],$url));
   Sql_Query(sprintf('insert into %s (url,lastmodified,added,content)
-    values("%s",%d,now(),"%s")',$GLOBALS["tables"]["urlcache"],$url,$lastmodified,addslashes($content)));
+    values("%s",%d,now(),"%s")',$GLOBALS["tables"]["urlcache"],$url,$lastmodified,sql_escape($content)));
 }
 
 function clearPageCache () {
@@ -1062,7 +1070,11 @@ function fetchUrlCurl($url,$request_parameters) {
     curl_close($curl);
     if (VERBOSE) logEvent('fetched '.$url.' status '.$status);
 #    var_dump($status); exit;
-    return $raw_result;
+    if ($status == 200) {
+        return $raw_result;
+    } else {
+        return "";
+    }
 }
 
 function fetchUrlPear($url,$request_parameters) {
@@ -1509,6 +1521,11 @@ function listCategories() {
  */
 
 function shortenTextDisplay($text,$max = 30) {
+  ## use mb_ version if possible, see https://github.com/phpList/phplist3/pull/10
+  if (function_exists('mb_strlen')) {
+      return mb_shortenTextDisplay($text,$max);
+  }
+   
   $text = str_replace('http://','',$text);
   if (strlen($text) > $max) {
     if ($max < 30) {
@@ -1525,6 +1542,25 @@ function shortenTextDisplay($text,$max = 30) {
   
   return sprintf('<span title="%s" ondblclick="alert(\'%s\');">%s</span>',htmlspecialchars($text),htmlspecialchars($text),$display);
 }
+
+function mb_shortenTextDisplay($text,$max = 30) {
+  $text = str_replace('http://','',$text);
+  if (mb_strlen($text) > $max) {
+    if ($max < 30) {
+      $display = mb_substr($text,0,$max - 4).' ... ';
+    } else {
+      $display = mb_substr($text,0,20).' ... '.mb_substr($text,-10);
+    }
+      
+  } else {
+    $display = $text;
+  }
+  $display = str_replace('/','/&#x200b;',$display);
+  $display = str_replace('@','@&#x200b;',$display);
+  
+  return sprintf('<span title="%s" ondblclick="alert(\'%s\');">%s</span>',htmlspecialchars($text),htmlspecialchars($text),$display);
+}
+
 
 if (!function_exists('getnicebacktrace')) {
 function getNiceBackTrace( $bTrace = false ) {
@@ -1654,7 +1690,7 @@ function quoteEnclosed($value,$col_delim = "\t",$row_delim = "\n") {
 
 function activateRemoteQueue() {
   $result = '';
-  $activated = file_get_contents(PQAPI_URL.'&cmd=start&key='.getConfig('PQAPIkey').'&s='.urlencode(getConfig('remote_processing_secret')).'&u='.base64_encode($_SERVER['REQUEST_SCHEME'].'://'.hostName().dirname($_SERVER['REQUEST_URI'])));
+  $activated = file_get_contents(PQAPI_URL.'&cmd=start&key='.getConfig('PQAPIkey').'&s='.urlencode(getConfig('remote_processing_secret')).'&u='.base64_encode($GLOBALS['admin_scheme'].'://'.hostName().dirname($_SERVER['REQUEST_URI'])));
   if ($activated == 'OK') {
     $result .= '<h3>'.s('Remote queue processing has been activated successfully').'</h3>';
     $result .= '<p>'.PageLinkButton("messages&tab=active",$GLOBALS['I18N']->get("view progress")).'</p>';
