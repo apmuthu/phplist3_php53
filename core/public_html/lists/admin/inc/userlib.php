@@ -504,12 +504,21 @@ function userGroups($loginname) {
 }
 
 function is_email($email) {
+   if (function_exists('idn_to_ascii') && mb_strlen($email) != strlen($email)) { 
+      $elements = explode('@',strrev($email),2);
+      if (!empty($elements[0]) && !empty($elements[1])) {
+         $email = strrev($elements[1]).'@'.idn_to_ascii(strrev($elements[0]));
+      }
+      unset($elements);
+   }
 
   #@@ dont_require_validemail should be replaced by EMAIL_ADDRESS_VALIDATION_LEVEL
   if (isset($GLOBALS['config']) && isset($GLOBALS["config"]["dont_require_validemail"]) && $GLOBALS["config"]["dont_require_validemail"])
     return 1;
 
   $email = trim($email);
+  ## remove XN-- before matching
+  $email = preg_replace('/@XN--/i','@',$email);
 
   ## do some basic validation first
   # quite often emails have two @ signs

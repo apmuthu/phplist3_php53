@@ -40,9 +40,7 @@ function messageStatusUpdate(msgid) {
 function getServerTime() {
    $('#servertime').load('./?page=pageaction&ajaxed=true&action=getservertime',"",function() {
    });
-   setTimeout("getServerTime()",60100); // just over a minute
 }
-
 function autoSave() {
   // in the future, do an auto-save, for now, we want to keep the session alive
   $("#autosave").load('./?page=pageaction&ajaxed=true&action=keepalive');
@@ -106,17 +104,6 @@ function totalSentUpdate(msgid) {
 $(document).ready(function() {
   $(".note .hide").click(function() {
     $(this).parents('.note').hide();
-  });
-
-  $(".dontsavebutton").click(function() {
-     item = $(this).attr('id');
-     item = item.replace(/dontsave/,''); 
-     // alert(item);
-     
-     // it would be nicer to restore the original content, but that
-     // would takes a while to accomplish
-     $("#"+item).html('<strong>editing cancelled</strong>');
-    // console.log($("#"+item).html());
   });
 
   $("a.ajaxable").click(function() {
@@ -352,9 +339,8 @@ $(document).ready(function() {
   var docurl = document.location.search;
   document.cookie="browsetrail="+escape(docurl);
 
-  setTimeout("autoSave();",120000); // once every two minutes should suffice
-  //setTimeout("autoSave();",500); // for testing
-
+  setInterval("autoSave();",120000); // once every two minutes should suffice
+  
     // tick all the boxes in a category.
     $('li.selectallcategory').on('click', function(){
       if($(this).find('input[type=checkbox]').attr('id').match('all-lists')) {
@@ -365,6 +351,8 @@ $(document).ready(function() {
       }
     });
 
+    // @TODO, only set when needed
+    setInterval(getServerTime,30000);
 
 /* future dev
   $("#listinvalid").load("./?page=pageaction&action=listinvalid&ajaxed=true",function() {

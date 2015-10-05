@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-13 05:49+0000\n"
+"POT-Creation-Date: 2015-10-04 05:48+0000\n"
 "PO-Revision-Date: 2013-12-25 18:22+0000\n"
 "Last-Translator: gregor <gregor@suhi.si>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,12 +18,12 @@ msgstr ""
 "X-POOTLE-MTIME: 1387995761.000000\n"
 "X-Poedit-KeywordsList: _;gettext;gettext_noop;get;s\n"
 
-#: public_html/lists/index.php:607
+#: public_html/lists/index.php:617
 #, php-format
 msgid "You are logged in as administrator (%s) of this phpList system"
 msgstr "V sistem ste vpisani kot administrator (%s)"
 
-#: public_html/lists/index.php:608
+#: public_html/lists/index.php:618
 msgid ""
 "You are therefore offered the following choice, which your subscribers will "
 "not see when they load this page."
@@ -31,64 +31,64 @@ msgstr ""
 "Ta dodatna možnost izbire je vidna samo vam, kot Administratorju sistema, "
 "ostali uporabniki je ne vidijo."
 
-#: public_html/lists/index.php:609
+#: public_html/lists/index.php:619
 msgid "Go back to admin area"
 msgstr "Nazaj na Administracijo"
 
-#: public_html/lists/index.php:610
+#: public_html/lists/index.php:620
 msgid "Please choose"
 msgstr "Izberite"
 
-#: public_html/lists/index.php:610
+#: public_html/lists/index.php:620
 msgid "Make this subscriber confirmed immediately"
 msgstr "Vnešenega uporabika takoj potrdi"
 
-#: public_html/lists/index.php:611
+#: public_html/lists/index.php:621
 msgid "Send this subscriber a request for confirmation email"
 msgstr "Pošlji vnešenemu uporabniku potrditveno sporočilo"
 
-#: public_html/lists/index.php:678
+#: public_html/lists/index.php:688
 msgid ""
 "Subscriber removed from Blacklist for manual confirmation of subscription"
 msgstr ""
 
-#: public_html/lists/index.php:694
+#: public_html/lists/index.php:704
 msgid "Subscriber has been removed from blacklist"
 msgstr "Uporabnik je bil odstranjen s črne liste"
 
-#: public_html/lists/index.php:780
+#: public_html/lists/index.php:790
 msgid "Forwarded receiver requested blacklist"
 msgstr "Posredovani prejemnik je zahteval, da se ga doda na črno listo"
 
-#: public_html/lists/index.php:788
+#: public_html/lists/index.php:798
 msgid "\"Jump off\" used by subscriber, reason not requested"
 msgstr "\"Jump off\" uporabljen od uporabnika, razlog ni naveden"
 
-#: public_html/lists/index.php:790
+#: public_html/lists/index.php:800
 msgid "\"Jump off\" set, reason not requested"
 msgstr "\"Jump off\" je nastavljen, razlog ni zahtevan"
 
-#: public_html/lists/index.php:966
+#: public_html/lists/index.php:976
 msgid ""
 "When testing the phpList forward functionality, you need to be logged in as "
 "an administrator."
 msgstr "Ko testiraš funkcijo posredovanja, moraš biti vpisan kot administrator."
 
-#: public_html/lists/index.php:1052 public_html/lists/index.php:1059
+#: public_html/lists/index.php:1062 public_html/lists/index.php:1069
 msgid "Message Forwarded"
 msgstr "Sporočilo je bilo posredovano"
 
-#: public_html/lists/index.php:1052
+#: public_html/lists/index.php:1062
 #, php-format
 msgid "%s has forwarded message %d to %s"
 msgstr "%s je posredoval sporočilo %d za %s"
 
-#: public_html/lists/index.php:1059
+#: public_html/lists/index.php:1069
 #, php-format
 msgid "%s tried forwarding message %d to %s but failed"
 msgstr "%s je poskušal posredovati sporočilo %d za %s, vendaj je spodletelo"
 
-#: public_html/lists/index.php:1075
+#: public_html/lists/index.php:1085
 #, php-format
 msgid "Forward request from invalid user ID: %s"
 msgstr "Zahteva za posredovanje od napačne ID uporabnika: %s"
@@ -187,7 +187,7 @@ msgid "age"
 msgstr "starost"
 
 #: public_html/lists/admin/send.php:108 public_html/lists/admin/spage.php:69
-#: public_html/lists/admin/send_core.php:882
+#: public_html/lists/admin/send_core.php:879
 #: public_html/lists/admin/eventlog.php:112
 #: public_html/lists/admin/admins.php:103
 #: public_html/lists/admin/bouncerules.php:101
@@ -335,7 +335,7 @@ msgstr "Ogled, urejanje in dodajanje kategorij za uporabnike"
 
 #: public_html/lists/admin/home.php:136
 #: public_html/lists/admin/import4.php:106
-#: public_html/lists/admin/users.php:389
+#: public_html/lists/admin/users.php:393
 msgid "users"
 msgstr "Uporabniki"
 
@@ -590,13 +590,13 @@ msgid "ETA"
 msgstr "ETA"
 
 #: public_html/lists/admin/msgstatus.php:28
-#: public_html/lists/admin/statsoverview.php:96
+#: public_html/lists/admin/statsoverview.php:102
 #: public_html/lists/admin/messages.php:82
 #: public_html/lists/admin/actions/msgstatus.php:72
 #: public_html/lists/admin/userhistory.php:99
-#: public_html/lists/admin/uclicks.php:117
-#: public_html/lists/admin/mviews.php:83
-#: public_html/lists/admin/mviews.php:192 public_html/databasestructure.php:63
+#: public_html/lists/admin/uclicks.php:120
+#: public_html/lists/admin/mviews.php:87
+#: public_html/lists/admin/mviews.php:196 public_html/databasestructure.php:63
 msgid "sent"
 msgstr "Poslano"
 
@@ -683,7 +683,7 @@ msgstr "Zasebna kategorija"
 
 #: public_html/lists/admin/connect.php:1220
 #: public_html/lists/admin/connect.php:1222
-#: public_html/lists/admin/export.php:111
+#: public_html/lists/admin/export.php:118
 msgid "Select all"
 msgstr ""
 
@@ -888,7 +888,7 @@ msgstr ""
 #: public_html/lists/admin/plugins.php:27
 #: public_html/lists/admin/configure.php:69
 #: public_html/lists/admin/import2.php:61
-#: public_html/lists/admin/import1.php:32 public_html/lists/admin/user.php:95
+#: public_html/lists/admin/import1.php:32 public_html/lists/admin/user.php:65
 #: public_html/lists/admin/spageedit.php:28
 msgid "Invalid security token, please reload the page and try again"
 msgstr ""
@@ -946,7 +946,7 @@ msgstr ""
 #: public_html/lists/admin/import2.php:47
 #: public_html/lists/admin/import2.php:364
 #: public_html/lists/admin/import3.php:264
-#: public_html/lists/admin/user.php:359
+#: public_html/lists/admin/user.php:329
 #: public_html/lists/admin/initialise.php:56
 msgid "Continue"
 msgstr "Naprej"
@@ -1276,12 +1276,12 @@ msgid "You do not have access to this page"
 msgstr "Nimate dostopa do te strani"
 
 #: public_html/lists/admin/statsoverview.php:62
-#: public_html/lists/admin/mclicks.php:93
+#: public_html/lists/admin/mclicks.php:98
 #: public_html/lists/admin/domainstats.php:35
 #: public_html/lists/admin/uclicks.php:65
 #: public_html/lists/admin/uclicks.php:73
 #: public_html/lists/admin/mviews.php:53
-#: public_html/lists/admin/mviews.php:119
+#: public_html/lists/admin/mviews.php:123
 msgid "Download as CSV file"
 msgstr "Prenesi kot CSV datoteko"
 
@@ -1289,119 +1289,121 @@ msgstr "Prenesi kot CSV datoteko"
 msgid "There are currently no campaigns to view"
 msgstr ""
 
-#: public_html/lists/admin/statsoverview.php:97
-#: public_html/lists/admin/users.php:447
+#: public_html/lists/admin/statsoverview.php:103
+#: public_html/lists/admin/users.php:452
 msgid "bncs"
 msgstr "odboji"
 
-#: public_html/lists/admin/statsoverview.php:98
+#: public_html/lists/admin/statsoverview.php:104
 msgid "fwds"
 msgstr ""
 
-#: public_html/lists/admin/statsoverview.php:99
-#: public_html/lists/admin/statsoverview.php:114
-#: public_html/lists/admin/mviews.php:85 public_html/lists/admin/mviews.php:99
-#: public_html/lists/admin/mviews.php:196
+#: public_html/lists/admin/statsoverview.php:105
+#: public_html/lists/admin/statsoverview.php:120
+#: public_html/lists/admin/mviews.php:89
+#: public_html/lists/admin/mviews.php:103
+#: public_html/lists/admin/mviews.php:200
 msgid "views"
 msgstr "ogledi"
 
-#: public_html/lists/admin/statsoverview.php:103
-#: public_html/lists/admin/userclicks.php:175
-#: public_html/lists/admin/mclicks.php:163
-#: public_html/lists/admin/mclicks.php:189
+#: public_html/lists/admin/statsoverview.php:109
+#: public_html/lists/admin/userclicks.php:187
+#: public_html/lists/admin/mclicks.php:85
+#: public_html/lists/admin/mclicks.php:168
+#: public_html/lists/admin/mclicks.php:190
 #: public_html/lists/admin/userhistory.php:92
 #: public_html/lists/admin/userhistory.php:95
 #: public_html/lists/admin/uclicks.php:57
-#: public_html/lists/admin/uclicks.php:123
-#: public_html/lists/admin/uclicks.php:136
+#: public_html/lists/admin/uclicks.php:126
+#: public_html/lists/admin/uclicks.php:139
 msgid "clicks"
 msgstr "kliki"
 
-#: public_html/lists/admin/statsoverview.php:105
-#: public_html/lists/admin/statsoverview.php:116
-#: public_html/lists/admin/mviews.php:87
-#: public_html/lists/admin/mviews.php:101
+#: public_html/lists/admin/statsoverview.php:111
+#: public_html/lists/admin/statsoverview.php:122
+#: public_html/lists/admin/mviews.php:91
+#: public_html/lists/admin/mviews.php:105
 msgid "rate"
 msgstr "razmerje"
 
-#: public_html/lists/admin/statsoverview.php:106
+#: public_html/lists/admin/statsoverview.php:112
 #: public_html/lists/admin/eventlog.php:110
 #: public_html/lists/admin/userhistory.php:175
 #: public_html/lists/admin/bounces.php:162
-#: public_html/lists/admin/mviews.php:79 public_html/lists/admin/mviews.php:81
+#: public_html/lists/admin/mviews.php:83 public_html/lists/admin/mviews.php:85
 msgid "date"
 msgstr "Datum"
 
-#: public_html/lists/admin/statsoverview.php:112
-#: public_html/lists/admin/mviews.php:97
+#: public_html/lists/admin/statsoverview.php:118
+#: public_html/lists/admin/mviews.php:101
 msgid "Comparison to other admins"
 msgstr ""
 
-#: public_html/lists/admin/statsoverview.php:128
+#: public_html/lists/admin/statsoverview.php:134
 msgid "View all campaigns"
 msgstr "Oglej si vse projekte"
 
-#: public_html/lists/admin/statsoverview.php:134
+#: public_html/lists/admin/statsoverview.php:140
 msgid "Campaign not found"
 msgstr ""
 
-#: public_html/lists/admin/statsoverview.php:142
+#: public_html/lists/admin/statsoverview.php:148
 #: public_html/lists/admin/messages.php:11
 #: public_html/lists/admin/messages.php:12
 #: public_html/lists/admin/send_core.php:686
-#: public_html/lists/admin/userclicks.php:77
-#: public_html/lists/admin/userclicks.php:91
-#: public_html/lists/admin/userclicks.php:109
-#: public_html/lists/admin/mclicks.php:116
+#: public_html/lists/admin/userclicks.php:81
+#: public_html/lists/admin/userclicks.php:99
+#: public_html/lists/admin/userclicks.php:121
+#: public_html/lists/admin/mclicks.php:121
 #: public_html/lists/admin/spageedit.php:250
 #: public_html/lists/admin/spageedit.php:257
 #: public_html/lists/admin/spageedit.php:264
-#: public_html/lists/admin/mviews.php:125
+#: public_html/lists/admin/mviews.php:129
 msgid "Subject"
 msgstr "Zadeva"
 
-#: public_html/lists/admin/statsoverview.php:146
+#: public_html/lists/admin/statsoverview.php:152
 msgid "Date entered"
 msgstr ""
 
-#: public_html/lists/admin/statsoverview.php:150
-#: public_html/lists/admin/mclicks.php:118
+#: public_html/lists/admin/statsoverview.php:156
+#: public_html/lists/admin/mclicks.php:123
 msgid "Date sent"
 msgstr ""
 
-#: public_html/lists/admin/statsoverview.php:154
+#: public_html/lists/admin/statsoverview.php:160
 #: public_html/databasestructure.php:69
 msgid "Sent as HTML"
 msgstr "Pošlji kot HTML"
 
-#: public_html/lists/admin/statsoverview.php:158
+#: public_html/lists/admin/statsoverview.php:164
 #: public_html/databasestructure.php:68
 msgid "Sent as text"
 msgstr "Pošlji kot Text"
 
-#: public_html/lists/admin/statsoverview.php:179
+#: public_html/lists/admin/statsoverview.php:185
 #: public_html/lists/admin/messages.php:387
-#: public_html/lists/admin/mclicks.php:121
+#: public_html/lists/admin/mclicks.php:126
 msgid "Bounced"
 msgstr "Odboji"
 
-#: public_html/lists/admin/statsoverview.php:185
+#: public_html/lists/admin/statsoverview.php:191
 msgid "Opened"
 msgstr "Odprto"
 
-#: public_html/lists/admin/statsoverview.php:190
+#: public_html/lists/admin/statsoverview.php:196
 msgid "% Opened"
 msgstr "% Odprto"
 
-#: public_html/lists/admin/statsoverview.php:195
+#: public_html/lists/admin/statsoverview.php:201
 msgid "Clicked"
 msgstr "Kliknjeno"
 
-#: public_html/lists/admin/statsoverview.php:200
+#: public_html/lists/admin/statsoverview.php:206
 msgid "% Clicked"
 msgstr "% Kliknjeno"
 
-#: public_html/lists/admin/statsoverview.php:205
+#: public_html/lists/admin/statsoverview.php:211
 msgid "Forwarded"
 msgstr "Poslano naprej"
 
@@ -1597,7 +1599,7 @@ msgstr ""
 #: public_html/lists/admin/import4.php:113
 #: public_html/lists/admin/actions/import1.php:214
 #: public_html/lists/admin/import3.php:472
-#: public_html/lists/admin/users.php:427
+#: public_html/lists/admin/users.php:431
 msgid "lists"
 msgstr "Kategorije uporabnikov"
 
@@ -1650,8 +1652,8 @@ msgstr ""
 #: public_html/lists/admin/messages.php:225
 #: public_html/lists/admin/messages.php:235
 #: public_html/lists/admin/eventlog.php:38 public_html/lists/admin/list.php:68
-#: public_html/lists/admin/user.php:302 public_html/lists/admin/admins.php:33
-#: public_html/lists/admin/admin.php:121 public_html/lists/admin/users.php:226
+#: public_html/lists/admin/user.php:272 public_html/lists/admin/admins.php:33
+#: public_html/lists/admin/admin.php:121 public_html/lists/admin/users.php:227
 msgid "Done"
 msgstr "Končano"
 
@@ -2135,12 +2137,13 @@ msgid "entries apply"
 msgstr "vnosov ustreza"
 
 #: public_html/lists/admin/reconcileusers.php:369
-#: public_html/lists/admin/users.php:171 public_html/lists/admin/users.php:209
+#: public_html/lists/admin/users.php:172 public_html/lists/admin/users.php:210
 msgid "Delete will delete user and all listmemberships"
 msgstr "Izbriši bo izbrisal uporabnika in vse naročnine na kategorije"
 
 #: public_html/lists/admin/reconcileusers.php:396
 #: public_html/lists/admin/members.php:254
+#: public_html/lists/admin/mclicks.php:82
 msgid "subscribers"
 msgstr "uporabniki"
 
@@ -2392,8 +2395,8 @@ msgstr "Preveri, da obstajajo vse zunanje slike"
 #: public_html/lists/admin/template.php:322
 #: public_html/lists/admin/adminattributes.php:5
 #: public_html/lists/admin/adminattributes.php:110
-#: public_html/lists/admin/list.php:285 public_html/lists/admin/user.php:467
-#: public_html/lists/admin/user.php:496
+#: public_html/lists/admin/list.php:285 public_html/lists/admin/user.php:437
+#: public_html/lists/admin/user.php:466
 #: public_html/lists/admin/bouncerule.php:71
 #: public_html/lists/admin/admin.php:254
 #: public_html/lists/admin/attributes.php:382
@@ -2414,14 +2417,14 @@ msgid "to email addresses"
 msgstr "na e-poštne naslove"
 
 #: public_html/lists/admin/template.php:332
-#: public_html/lists/admin/send_core.php:926
+#: public_html/lists/admin/send_core.php:923
 #: public_html/lists/admin/spageedit.php:276
 msgid "(comma separate addresses - all must be existing subscribers)"
 msgstr "(e-naslove ločite z vejico - vsi morajo biti obstoječi uporabniki)"
 
 #: public_html/lists/admin/template.php:333
-#: public_html/lists/admin/send_core.php:925
-#: public_html/lists/admin/send_core.php:1212
+#: public_html/lists/admin/send_core.php:922
+#: public_html/lists/admin/send_core.php:1210
 #: public_html/lists/admin/spageedit.php:277
 msgid "Send Test"
 msgstr "Pošlji Testno"
@@ -2438,7 +2441,7 @@ msgstr "Neuspešno"
 #: public_html/lists/admin/templates.php:7
 #: public_html/lists/admin/messages.php:146
 #: public_html/lists/admin/eventlog.php:33 public_html/lists/admin/list.php:61
-#: public_html/lists/admin/user.php:293 public_html/lists/admin/admins.php:29
+#: public_html/lists/admin/user.php:263 public_html/lists/admin/admins.php:29
 #: public_html/lists/admin/admin.php:117
 msgid "Deleting"
 msgstr "Brišem"
@@ -2564,7 +2567,7 @@ msgid "cannot be empty"
 msgstr "Ne more biti prazno"
 
 #: public_html/lists/admin/configure.php:91
-#: public_html/lists/admin/user.php:281 public_html/lists/admin/admin.php:107
+#: public_html/lists/admin/user.php:251 public_html/lists/admin/admin.php:107
 #: public_html/lists/admin/editlist.php:87
 msgid "Changes saved"
 msgstr "Spremembe shranjene"
@@ -2584,7 +2587,7 @@ msgstr ""
 
 #: public_html/lists/admin/configure.php:134
 #: public_html/lists/admin/actions/configure.php:61
-#: public_html/lists/admin/user.php:393
+#: public_html/lists/admin/user.php:363
 #: public_html/lists/admin/bouncerule.php:35
 #: public_html/lists/admin/admin.php:182 public_html/lists/admin/admin.php:199
 msgid "Yes"
@@ -2592,7 +2595,7 @@ msgstr "Da"
 
 #: public_html/lists/admin/configure.php:136
 #: public_html/lists/admin/actions/configure.php:68
-#: public_html/lists/admin/user.php:393
+#: public_html/lists/admin/user.php:363
 #: public_html/lists/admin/bouncerule.php:36
 #: public_html/lists/admin/admin.php:182 public_html/lists/admin/admin.php:200
 msgid "No"
@@ -2731,7 +2734,7 @@ msgstr "Izberi sporočilo"
 #: public_html/lists/admin/msgbounces.php:10
 #: public_html/lists/admin/message.php:91
 #: public_html/lists/admin/eventlog.php:111
-#: public_html/lists/admin/userclicks.php:158
+#: public_html/lists/admin/userclicks.php:170
 msgid "message"
 msgstr "Sporočilo"
 
@@ -2775,9 +2778,9 @@ msgstr ""
 
 #: public_html/lists/admin/members.php:58
 #: public_html/lists/admin/members.php:69
-#: public_html/lists/admin/userclicks.php:81
-#: public_html/lists/admin/userclicks.php:101
-#: public_html/lists/admin/userclicks.php:114
+#: public_html/lists/admin/userclicks.php:85
+#: public_html/lists/admin/userclicks.php:109
+#: public_html/lists/admin/userclicks.php:126
 msgid "Download subscribers"
 msgstr ""
 
@@ -2824,7 +2827,7 @@ msgid "Inserting user"
 msgstr "Vnašam uporabnika"
 
 #: public_html/lists/admin/members.php:219
-#: public_html/lists/admin/users.php:246
+#: public_html/lists/admin/users.php:247
 msgid "User added"
 msgstr "Uporabik dodan"
 
@@ -3082,7 +3085,7 @@ msgid "Purpose"
 msgstr ""
 
 #: public_html/lists/admin/messages.php:10
-#: public_html/lists/admin/users.php:303
+#: public_html/lists/admin/users.php:304
 msgid "Sort by"
 msgstr "Razvrsti"
 
@@ -3103,11 +3106,11 @@ msgstr ""
 #: public_html/lists/admin/messages.php:13
 #: public_html/lists/admin/messages.php:14
 #: public_html/lists/admin/messages.php:354
-#: public_html/lists/admin/userclicks.php:78
-#: public_html/lists/admin/userclicks.php:92
-#: public_html/lists/admin/userclicks.php:110
-#: public_html/lists/admin/mclicks.php:117
-#: public_html/lists/admin/mviews.php:126 public_html/databasestructure.php:17
+#: public_html/lists/admin/userclicks.php:82
+#: public_html/lists/admin/userclicks.php:100
+#: public_html/lists/admin/userclicks.php:122
+#: public_html/lists/admin/mclicks.php:122
+#: public_html/lists/admin/mviews.php:130 public_html/databasestructure.php:17
 #: public_html/databasestructure.php:34 public_html/databasestructure.php:44
 #: public_html/databasestructure.php:54 public_html/databasestructure.php:83
 #: public_html/databasestructure.php:98
@@ -3123,10 +3126,10 @@ msgstr "Zakasnjeno:"
 #: public_html/lists/admin/messages.php:17
 #: public_html/lists/admin/messages.php:18
 #: public_html/lists/admin/messages.php:365
-#: public_html/lists/admin/userclicks.php:79
-#: public_html/lists/admin/userclicks.php:93
-#: public_html/lists/admin/userclicks.php:111
-#: public_html/lists/admin/mviews.php:127
+#: public_html/lists/admin/userclicks.php:83
+#: public_html/lists/admin/userclicks.php:101
+#: public_html/lists/admin/userclicks.php:123
+#: public_html/lists/admin/mviews.php:131
 msgid "Sent"
 msgstr "Poslano"
 
@@ -3139,8 +3142,8 @@ msgid "static"
 msgstr "Statičen"
 
 #: public_html/lists/admin/messages.php:130
-#: public_html/lists/admin/admins.php:97 public_html/lists/admin/users.php:306
-#: public_html/lists/admin/users.php:370
+#: public_html/lists/admin/admins.php:97 public_html/lists/admin/users.php:307
+#: public_html/lists/admin/users.php:374
 msgid "Go"
 msgstr "Pojdi"
 
@@ -3163,7 +3166,7 @@ msgid "Requeuing"
 msgstr "Ponovno v vrsto za pošiljanje"
 
 #: public_html/lists/admin/messages.php:178
-#: public_html/lists/admin/send_core.php:1159
+#: public_html/lists/admin/send_core.php:1156
 #: public_html/lists/admin/message.php:53
 msgid ""
 "This campaign is scheduled to stop sending in the past. No mails will be "
@@ -3172,8 +3175,8 @@ msgstr ""
 
 #: public_html/lists/admin/messages.php:179
 #: public_html/lists/admin/send_core.php:356
-#: public_html/lists/admin/send_core.php:1154
-#: public_html/lists/admin/send_core.php:1159
+#: public_html/lists/admin/send_core.php:1151
+#: public_html/lists/admin/send_core.php:1156
 #: public_html/lists/admin/message.php:54
 msgid "Review Scheduling"
 msgstr ""
@@ -3202,7 +3205,7 @@ msgstr "Projekti"
 
 #: public_html/lists/admin/messages.php:367
 #: public_html/lists/admin/bouncerule.php:62
-#: public_html/lists/admin/userclicks.php:171
+#: public_html/lists/admin/userclicks.php:183
 #: public_html/lists/admin/bounce.php:210 public_html/databasestructure.php:61
 msgid "Status"
 msgstr "Status"
@@ -3216,7 +3219,6 @@ msgid "Unique Views"
 msgstr "Unikatni ogledi"
 
 #: public_html/lists/admin/messages.php:384
-#: public_html/lists/admin/mclicks.php:125
 msgid "Clicks"
 msgstr "Kliki"
 
@@ -3225,25 +3227,25 @@ msgid "Time to send"
 msgstr "Čas za pošiljanje"
 
 #: public_html/lists/admin/messages.php:424
-#: public_html/lists/admin/uclicks.php:130
-#: public_html/lists/admin/uclicks.php:131
-#: public_html/lists/admin/uclicks.php:136
-#: public_html/lists/admin/uclicks.php:138
+#: public_html/lists/admin/uclicks.php:133
+#: public_html/lists/admin/uclicks.php:134
+#: public_html/lists/admin/uclicks.php:139
+#: public_html/lists/admin/uclicks.php:141
 msgid "total"
 msgstr "Skupaj"
 
 #: public_html/lists/admin/messages.php:424
-#: public_html/lists/admin/send_core.php:771
-#: public_html/lists/admin/userclicks.php:178
-#: public_html/lists/admin/mclicks.php:83
-#: public_html/lists/admin/mclicks.php:170
+#: public_html/lists/admin/send_core.php:768
+#: public_html/lists/admin/userclicks.php:190
+#: public_html/lists/admin/mclicks.php:88
+#: public_html/lists/admin/mclicks.php:175
 msgid "text"
 msgstr "tekst"
 
 #: public_html/lists/admin/messages.php:424
-#: public_html/lists/admin/send_core.php:768
-#: public_html/lists/admin/mclicks.php:83
-#: public_html/lists/admin/mclicks.php:169
+#: public_html/lists/admin/send_core.php:765
+#: public_html/lists/admin/mclicks.php:88
+#: public_html/lists/admin/mclicks.php:174
 msgid "html"
 msgstr "HTML"
 
@@ -3471,7 +3473,7 @@ msgid "Access Denied"
 msgstr "Dostop zavrnjen"
 
 #: public_html/lists/admin/send_core.php:114
-#: public_html/lists/admin/send_core.php:1195
+#: public_html/lists/admin/send_core.php:1192
 msgid "Send Campaign"
 msgstr "Pošlji projekt"
 
@@ -3525,7 +3527,7 @@ msgid "Campaign added"
 msgstr "Projekt dodan"
 
 #: public_html/lists/admin/send_core.php:355
-#: public_html/lists/admin/send_core.php:1154
+#: public_html/lists/admin/send_core.php:1151
 msgid ""
 "This campaign is scheduled to stop sending before the embargo time. No mails "
 "will be sent."
@@ -3629,7 +3631,7 @@ msgstr "Urnik"
 
 #: public_html/lists/admin/send_core.php:547
 #: public_html/lists/admin/list.php:147 public_html/lists/admin/list.php:158
-#: public_html/lists/admin/user.php:503
+#: public_html/lists/admin/user.php:473
 msgid "Lists"
 msgstr "Kategorije uporabnikov"
 
@@ -3654,8 +3656,8 @@ msgid "Send a Webpage"
 msgstr "Pošlji spletno stran"
 
 #: public_html/lists/admin/send_core.php:664
-#: public_html/lists/admin/send_core.php:811
-#: public_html/lists/admin/send_core.php:812
+#: public_html/lists/admin/send_core.php:808
+#: public_html/lists/admin/send_core.php:809
 msgid "Compose Message"
 msgstr "Sestavi sporočilo"
 
@@ -3685,245 +3687,245 @@ msgstr "Zakasnjeno do"
 msgid "Stop sending after"
 msgstr "Prenehaj pošiljanje po"
 
-#: public_html/lists/admin/send_core.php:712
+#: public_html/lists/admin/send_core.php:709
 msgid "Repeat campaign every"
 msgstr "Ponovi projekt dnevno"
 
-#: public_html/lists/admin/send_core.php:716
+#: public_html/lists/admin/send_core.php:713
 msgid "no repetition"
 msgstr "ni ponovitve"
 
-#: public_html/lists/admin/send_core.php:719
-#: public_html/lists/admin/send_core.php:748
+#: public_html/lists/admin/send_core.php:716
+#: public_html/lists/admin/send_core.php:745
 msgid "hour"
 msgstr "Uro"
 
-#: public_html/lists/admin/send_core.php:722
-#: public_html/lists/admin/send_core.php:751
+#: public_html/lists/admin/send_core.php:719
+#: public_html/lists/admin/send_core.php:748
 msgid "day"
 msgstr "Dan"
 
-#: public_html/lists/admin/send_core.php:725
-#: public_html/lists/admin/send_core.php:754
+#: public_html/lists/admin/send_core.php:722
+#: public_html/lists/admin/send_core.php:751
 msgid "week"
 msgstr "Teden"
 
-#: public_html/lists/admin/send_core.php:728
+#: public_html/lists/admin/send_core.php:725
 msgid "fortnight"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:732
+#: public_html/lists/admin/send_core.php:729
 msgid "four weeks"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:734
+#: public_html/lists/admin/send_core.php:731
 msgid "Repeat Until"
 msgstr "Ponavljaj do"
 
-#: public_html/lists/admin/send_core.php:741
+#: public_html/lists/admin/send_core.php:738
 msgid "Requeue every"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:745
+#: public_html/lists/admin/send_core.php:742
 msgid "do not requeue"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:757
+#: public_html/lists/admin/send_core.php:754
 msgid "Requeue Until"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:767
+#: public_html/lists/admin/send_core.php:764
 msgid "Send as"
 msgstr "Pošlji kot"
 
-#: public_html/lists/admin/send_core.php:797
+#: public_html/lists/admin/send_core.php:794
 msgid "Use Template"
 msgstr "Uporabi predlogo"
 
-#: public_html/lists/admin/send_core.php:798
+#: public_html/lists/admin/send_core.php:795
 msgid "select one"
 msgstr "izberi eno"
 
-#: public_html/lists/admin/send_core.php:799
+#: public_html/lists/admin/send_core.php:796
 msgid "No template"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:838
+#: public_html/lists/admin/send_core.php:835
 msgid "Plain text version of message"
 msgstr "Kot tekstovno sporočilo"
 
-#: public_html/lists/admin/send_core.php:839
+#: public_html/lists/admin/send_core.php:836
 msgid "generate from HTML"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:845
+#: public_html/lists/admin/send_core.php:842
 #: public_html/lists/admin/spageedit.php:194
 msgid "Footer"
 msgstr "Noga"
 
-#: public_html/lists/admin/send_core.php:847
+#: public_html/lists/admin/send_core.php:844
 msgid "forwardfooter"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:854
+#: public_html/lists/admin/send_core.php:851
 msgid "Add attachments to your campaign"
 msgstr "Dodaj priponke k projektu"
 
-#: public_html/lists/admin/send_core.php:856
+#: public_html/lists/admin/send_core.php:853
 msgid "The upload has the following limits set by the server"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:857
+#: public_html/lists/admin/send_core.php:854
 msgid "Maximum size of total data being sent to the server"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:858
+#: public_html/lists/admin/send_core.php:855
 msgid "Maximum size of each individual file"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:868
+#: public_html/lists/admin/send_core.php:865
 msgid "Current Attachments"
 msgstr "Trenutne priponke"
 
-#: public_html/lists/admin/send_core.php:872
+#: public_html/lists/admin/send_core.php:869
 msgid "filename"
 msgstr "datoteka"
 
-#: public_html/lists/admin/send_core.php:873
-#: public_html/lists/admin/users.php:304
+#: public_html/lists/admin/send_core.php:870
+#: public_html/lists/admin/users.php:305
 msgid "desc"
 msgstr "padajoče"
 
-#: public_html/lists/admin/send_core.php:874
+#: public_html/lists/admin/send_core.php:871
 msgid "size"
 msgstr "velikost"
 
-#: public_html/lists/admin/send_core.php:878
-#: public_html/lists/admin/send_core.php:880
+#: public_html/lists/admin/send_core.php:875
+#: public_html/lists/admin/send_core.php:877
 #: public_html/databasestructure.php:91
 msgid "file"
 msgstr "datoteka"
 
-#: public_html/lists/admin/send_core.php:884
+#: public_html/lists/admin/send_core.php:881
 msgid "Delete checked"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:888
+#: public_html/lists/admin/send_core.php:885
 msgid ""
 "The total size of attachments is very large. Sending this campaign may fail "
 "due to resource limits."
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:892
+#: public_html/lists/admin/send_core.php:889
 msgid "New Attachment"
 msgstr "Nova priponka"
 
-#: public_html/lists/admin/send_core.php:892
+#: public_html/lists/admin/send_core.php:889
 msgid "Add (and save)"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:894
+#: public_html/lists/admin/send_core.php:891
 msgid "or"
 msgstr "ali"
 
-#: public_html/lists/admin/send_core.php:894
+#: public_html/lists/admin/send_core.php:891
 msgid "Path to file on server"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:897
+#: public_html/lists/admin/send_core.php:894
 msgid "Description of attachment"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:925
+#: public_html/lists/admin/send_core.php:922
 msgid " to email address(es)"
 msgstr "  na e-poštne naslove"
 
-#: public_html/lists/admin/send_core.php:939
+#: public_html/lists/admin/send_core.php:936
 msgid "email to alert when sending of this message starts"
 msgstr "E-pošta za obvestilo, ko se bo pošiljanje tega sporočila začelo"
 
-#: public_html/lists/admin/send_core.php:940
-#: public_html/lists/admin/send_core.php:942
+#: public_html/lists/admin/send_core.php:937
+#: public_html/lists/admin/send_core.php:939
 msgid "separate multiple with a comma"
 msgstr "Več vnosov ločite z vejico"
 
-#: public_html/lists/admin/send_core.php:941
+#: public_html/lists/admin/send_core.php:938
 msgid "email to alert when sending of this message has finished"
 msgstr "E-pošta za obvestilo, ko se bo pošiljanje tega sporočila končalo"
 
-#: public_html/lists/admin/send_core.php:948
+#: public_html/lists/admin/send_core.php:945
 msgid "add Google Analytics tracking code"
 msgstr "dodaj Google Analytics kodo za sledenje"
 
-#: public_html/lists/admin/send_core.php:956
+#: public_html/lists/admin/send_core.php:953
 msgid "Reset click statistics"
 msgstr "Ponastavi klike uporabnikov"
 
-#: public_html/lists/admin/send_core.php:963
+#: public_html/lists/admin/send_core.php:960
 msgid "This is a test campaign"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:970
+#: public_html/lists/admin/send_core.php:967
 msgid "Estimated size of HTML email"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:973
+#: public_html/lists/admin/send_core.php:970
 msgid "Estimated size of text email"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:1015
+#: public_html/lists/admin/send_core.php:1012
 msgid "Estimated size of mailout"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:1018
+#: public_html/lists/admin/send_core.php:1015
 #, php-format
 msgid ""
 "About %d users to receive HTML and %s users to receive text version of email"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:1124
+#: public_html/lists/admin/send_core.php:1121
 msgid "subject missing"
 msgstr "manjka zadeva"
 
-#: public_html/lists/admin/send_core.php:1133
+#: public_html/lists/admin/send_core.php:1130
 msgid "message content missing"
 msgstr "manjka vsebina sporočila"
 
-#: public_html/lists/admin/send_core.php:1140
+#: public_html/lists/admin/send_core.php:1137
 msgid "From missing"
 msgstr "Manjka Od"
 
-#: public_html/lists/admin/send_core.php:1166
+#: public_html/lists/admin/send_core.php:1163
 msgid "destination lists missing"
 msgstr "manjka izbrana kategorija"
 
-#: public_html/lists/admin/send_core.php:1172
+#: public_html/lists/admin/send_core.php:1169
 msgid "Content contains click track links."
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:1190
+#: public_html/lists/admin/send_core.php:1187
 msgid "Place Campaign in Queue for Sending"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:1194
+#: public_html/lists/admin/send_core.php:1191
 msgid ""
 "Some required information is missing. The send button will be enabled when "
 "this is resolved."
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:1200
+#: public_html/lists/admin/send_core.php:1197
 msgid "Save as draft"
 msgstr "Shrani kot osnutek"
 
-#: public_html/lists/admin/send_core.php:1202
+#: public_html/lists/admin/send_core.php:1199
 msgid "Save and continue editing"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:1207
+#: public_html/lists/admin/send_core.php:1204
 msgid "Campaign Title"
 msgstr ""
 
-#: public_html/lists/admin/send_core.php:1210
+#: public_html/lists/admin/send_core.php:1207
 msgid "Meta data"
 msgstr ""
 
@@ -3944,13 +3946,13 @@ msgid "What is the type of information you want to check"
 msgstr ""
 
 #: public_html/lists/admin/usercheck.php:39
-#: public_html/lists/admin/users.php:363 public_html/databasestructure.php:27
+#: public_html/lists/admin/users.php:364 public_html/databasestructure.php:27
 #: public_html/databasestructure.php:28
 msgid "Foreign Key"
 msgstr "Tuj ključ"
 
 #: public_html/lists/admin/usercheck.php:40
-#: public_html/lists/admin/users.php:360 public_html/databasestructure.php:12
+#: public_html/lists/admin/users.php:361 public_html/databasestructure.php:12
 #: public_html/databasestructure.php:85 public_html/databasestructure.php:87
 #: public_html/databasestructure.php:132
 msgid "Email"
@@ -4127,6 +4129,10 @@ msgstr "Shrani spremembe"
 msgid "undo"
 msgstr ""
 
+#: public_html/lists/admin/actions/configure.php:97
+msgid "editing cancelled"
+msgstr ""
+
 #: public_html/lists/admin/actions/import2.php:9
 #: public_html/lists/admin/import2.php:167
 msgid "Reading emails from file ... "
@@ -4272,7 +4278,7 @@ msgid "Import of new subscriber"
 msgstr ""
 
 #: public_html/lists/admin/actions/import1.php:189
-#: public_html/lists/admin/user.php:269
+#: public_html/lists/admin/user.php:239
 msgid "No data changed"
 msgstr "Ni spremembe podatkov"
 
@@ -4358,21 +4364,26 @@ msgstr ""
 msgid "Network error updating language, please try again later"
 msgstr ""
 
-#: public_html/lists/admin/actions/export.php:56
+#: public_html/lists/admin/actions/export.php:13
+#: public_html/lists/admin/export.php:30
+msgid "That is not your list"
+msgstr ""
+
+#: public_html/lists/admin/actions/export.php:60
 #, php-format
 msgid "phpList Export on %s from %s to %s (%s).csv"
 msgstr ""
 
-#: public_html/lists/admin/actions/export.php:58
+#: public_html/lists/admin/actions/export.php:62
 #, php-format
 msgid "phpList Export from %s to %s (%s).csv"
 msgstr ""
 
-#: public_html/lists/admin/actions/export.php:139
+#: public_html/lists/admin/actions/export.php:143
 msgid "List Membership"
 msgstr "Seznam članov"
 
-#: public_html/lists/admin/actions/export.php:187
+#: public_html/lists/admin/actions/export.php:191
 #: public_html/lists/admin/actions/processqueue.php:292
 msgid "All done"
 msgstr "Vse narejeno"
@@ -5564,104 +5575,104 @@ msgstr ""
 msgid "No emails found"
 msgstr "No emails found"
 
-#: public_html/lists/admin/user.php:81
+#: public_html/lists/admin/user.php:43
 msgid ""
 "You only have privileges to view this page, not change any of the information"
 msgstr ""
 "Z vašimi pravicami lahko stran vidite, ne morete pa spreminjati njene vsebine"
 
-#: public_html/lists/admin/user.php:113
+#: public_html/lists/admin/user.php:83
 msgid "Error adding subscriber, please check that the subscriber exists"
 msgstr "Napaka pri dodajanju uporabnika, preveri ali uporabnik že obstaja"
 
-#: public_html/lists/admin/user.php:171
+#: public_html/lists/admin/user.php:141
 msgid "Uploaded avatar file too big"
 msgstr ""
 
-#: public_html/lists/admin/user.php:240 public_html/lists/admin/user.php:247
+#: public_html/lists/admin/user.php:210 public_html/lists/admin/user.php:217
 #, php-format
 msgid "Subscriber removed from list %s"
 msgstr "Uporabnik odstranjen iz kategorij %s"
 
-#: public_html/lists/admin/user.php:253
+#: public_html/lists/admin/user.php:223
 #, php-format
 msgid "Subscriber added to list %s"
 msgstr "Uporabnik dodan v kategorijo %s"
 
-#: public_html/lists/admin/user.php:264
+#: public_html/lists/admin/user.php:234
 msgid "(no data)"
 msgstr "(ni podatka)"
 
-#: public_html/lists/admin/user.php:265
+#: public_html/lists/admin/user.php:235
 msgid "changed from"
 msgstr "spremenjeno iz"
 
-#: public_html/lists/admin/user.php:273
+#: public_html/lists/admin/user.php:243
 #, php-format
 msgid "Subscribed to %s"
 msgstr "Naročen na %s"
 
-#: public_html/lists/admin/user.php:276
+#: public_html/lists/admin/user.php:246
 #, php-format
 msgid "Unsubscribed from %s"
 msgstr "Odjavljen iz %s"
 
-#: public_html/lists/admin/user.php:279
+#: public_html/lists/admin/user.php:249
 #, php-format
 msgid "Update by %s"
 msgstr ""
 
-#: public_html/lists/admin/user.php:314
+#: public_html/lists/admin/user.php:284
 msgid "No such subscriber"
 msgstr "Ni takega uporabnika"
 
-#: public_html/lists/admin/user.php:327
+#: public_html/lists/admin/user.php:297
 msgid "No Lists"
 msgstr "Ni kategorij"
 
-#: public_html/lists/admin/user.php:330
+#: public_html/lists/admin/user.php:300
 msgid "History"
 msgstr "Zgodovina"
 
-#: public_html/lists/admin/user.php:339
+#: public_html/lists/admin/user.php:309
 #: public_html/lists/admin/userhistory.php:51
 #, fuzzy
 msgid "Are you sure you want to remove this subscriber from the system."
 msgstr "Ali res želite izbrisati tega uporabnika iz ČRNE liste ?"
 
-#: public_html/lists/admin/user.php:340 public_html/lists/admin/user.php:341
+#: public_html/lists/admin/user.php:310 public_html/lists/admin/user.php:311
 #: public_html/lists/admin/userhistory.php:52
 #: public_html/lists/admin/userhistory.php:53
 #, fuzzy
 msgid "remove subscriber"
 msgstr "Izbriši uporabnika"
 
-#: public_html/lists/admin/user.php:355
+#: public_html/lists/admin/user.php:325
 msgid "Add a new subscriber"
 msgstr "Dodaj novega uporabnika"
 
-#: public_html/lists/admin/user.php:358
+#: public_html/lists/admin/user.php:328
 msgid "Email address"
 msgstr "E-naslov"
 
-#: public_html/lists/admin/user.php:396
+#: public_html/lists/admin/user.php:366
 msgid "Add to blacklist"
 msgstr "Dodaj na črno listo"
 
-#: public_html/lists/admin/user.php:398
+#: public_html/lists/admin/user.php:368
 msgid "Remove from blacklist"
 msgstr "Odstrani iz črne liste"
 
-#: public_html/lists/admin/user.php:471
+#: public_html/lists/admin/user.php:441
 msgid ""
 "Subscriber is blacklisted. No emails will be sent to this email address."
 msgstr "Uporabnik je na črni listi. Nobena e-pošta ne bo poslana na ta naslov."
 
-#: public_html/lists/admin/user.php:474
+#: public_html/lists/admin/user.php:444
 msgid "Mailinglist membership"
 msgstr "Naročnine na kategorije"
 
-#: public_html/lists/admin/user.php:502
+#: public_html/lists/admin/user.php:472
 #: public_html/lists/admin/userhistory.php:48
 msgid "Details"
 msgstr "Podrobnosti"
@@ -5779,61 +5790,61 @@ msgstr "Petek"
 msgid "Saturday"
 msgstr "Sobota"
 
-#: public_html/lists/admin/export.php:53
+#: public_html/lists/admin/export.php:60
 msgid "Invalid security token. Please reload the page and try again."
 msgstr ""
 
-#: public_html/lists/admin/export.php:64
+#: public_html/lists/admin/export.php:71
 msgid "Processing export, this may take a while. Please wait"
 msgstr ""
 
-#: public_html/lists/admin/export.php:72
+#: public_html/lists/admin/export.php:79
 #, php-format
 msgid "Export subscribers on %s"
 msgstr "Izvozi naročnike %s"
 
-#: public_html/lists/admin/export.php:83
+#: public_html/lists/admin/export.php:90
 msgid "What date needs to be used:"
 msgstr ""
 
-#: public_html/lists/admin/export.php:84
+#: public_html/lists/admin/export.php:91
 msgid "Any date"
 msgstr ""
 
-#: public_html/lists/admin/export.php:84
+#: public_html/lists/admin/export.php:91
 #, fuzzy
 msgid "Export all subscribers"
 msgstr "Izvozi uporabnike"
 
-#: public_html/lists/admin/export.php:85
+#: public_html/lists/admin/export.php:92
 msgid "When they signed up"
 msgstr ""
 
-#: public_html/lists/admin/export.php:86
+#: public_html/lists/admin/export.php:93
 msgid "When the record was changed"
 msgstr ""
 
-#: public_html/lists/admin/export.php:87
+#: public_html/lists/admin/export.php:94
 msgid "Based on changelog"
 msgstr ""
 
-#: public_html/lists/admin/export.php:88
+#: public_html/lists/admin/export.php:95
 msgid "When they subscribed to"
 msgstr "Ko so se prijavili na"
 
-#: public_html/lists/admin/export.php:105
+#: public_html/lists/admin/export.php:112
 msgid "Date From:"
 msgstr "Datum od:"
 
-#: public_html/lists/admin/export.php:106
+#: public_html/lists/admin/export.php:113
 msgid "Date To:"
 msgstr "Datum do:"
 
-#: public_html/lists/admin/export.php:110
+#: public_html/lists/admin/export.php:117
 msgid "Select the columns to include in the export"
 msgstr ""
 
-#: public_html/lists/admin/export.php:130
+#: public_html/lists/admin/export.php:137
 msgid "Export"
 msgstr "Izvozi"
 
@@ -5991,71 +6002,79 @@ msgstr "Napačna zahteva"
 msgid "Click statistics"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:72
+#: public_html/lists/admin/userclicks.php:73
 msgid "Subscriber clicks for a URL in a campaign"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:75
+#: public_html/lists/admin/userclicks.php:76
 #, php-format
 msgid ""
 "Subscribers who clicked on URL \"%s\" in the campaign with subject \"%s\", "
 "sent %s"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:87
+#: public_html/lists/admin/userclicks.php:79
+#: public_html/lists/admin/userclicks.php:96
+#: public_html/lists/admin/userclicks.php:118
+#: public_html/lists/admin/spageedit.php:162
+#: public_html/databasestructure.php:107 public_html/databasestructure.php:154
+msgid "Title"
+msgstr "Naslov"
+
+#: public_html/lists/admin/userclicks.php:91
 msgid "Subscriber clicks on a campaign"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:88
-#: public_html/lists/admin/userclicks.php:121
+#: public_html/lists/admin/userclicks.php:92
+#: public_html/lists/admin/userclicks.php:133
 msgid "Subscriber"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:99
+#: public_html/lists/admin/userclicks.php:107
 msgid "Subscribers who clicked a URL"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:100
+#: public_html/lists/admin/userclicks.php:108
 #, php-format
 msgid "Subscribers who clicked on the URL \"%s\" across all campaigns"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:107
+#: public_html/lists/admin/userclicks.php:115
 msgid "Subscribers who clicked a campaign"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:113
+#: public_html/lists/admin/userclicks.php:125
 #, php-format
 msgid "Subscribers who clicked on campaign with subject \"%s\", sent %s"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:120
+#: public_html/lists/admin/userclicks.php:132
 msgid "Clicks of a subscriber"
 msgstr ""
 
-#: public_html/lists/admin/userclicks.php:135
-#: public_html/lists/admin/mclicks.php:119
-#: public_html/lists/admin/users.php:337
+#: public_html/lists/admin/userclicks.php:147
+#: public_html/lists/admin/mclicks.php:124
+#: public_html/lists/admin/users.php:338
 msgid "Subscribers"
 msgstr "Uporabniki"
 
-#: public_html/lists/admin/userclicks.php:167
+#: public_html/lists/admin/userclicks.php:179
 msgid "view user"
 msgstr "poglej uporabnika"
 
-#: public_html/lists/admin/userclicks.php:173
-#: public_html/lists/admin/mclicks.php:173
-#: public_html/lists/admin/uclicks.php:115
+#: public_html/lists/admin/userclicks.php:185
+#: public_html/lists/admin/mclicks.php:178
+#: public_html/lists/admin/uclicks.php:118
 msgid "firstclick"
 msgstr "Prvi klik"
 
-#: public_html/lists/admin/userclicks.php:174
-#: public_html/lists/admin/mclicks.php:174
-#: public_html/lists/admin/uclicks.php:116
+#: public_html/lists/admin/userclicks.php:186
+#: public_html/lists/admin/mclicks.php:179
+#: public_html/lists/admin/uclicks.php:119
 msgid "latestclick"
 msgstr "Zadnji klik"
 
-#: public_html/lists/admin/userclicks.php:177
+#: public_html/lists/admin/userclicks.php:189
 msgid "HTML"
 msgstr ""
 
@@ -6174,48 +6193,44 @@ msgstr "Ni sporočil za ogled"
 msgid "Available Messages"
 msgstr "Sporočila na voljo"
 
-#: public_html/lists/admin/mclicks.php:65
-#: public_html/lists/admin/mclicks.php:113
+#: public_html/lists/admin/mclicks.php:66
+#: public_html/lists/admin/mclicks.php:118
 msgid "N/A"
 msgstr ""
 
-#: public_html/lists/admin/mclicks.php:75
+#: public_html/lists/admin/mclicks.php:80
 msgid "links"
 msgstr ""
 
-#: public_html/lists/admin/mclicks.php:77
-msgid "user clicks"
-msgstr ""
-
-#: public_html/lists/admin/mclicks.php:78
-#: public_html/lists/admin/mclicks.php:165
-#: public_html/lists/admin/mclicks.php:191
+#: public_html/lists/admin/mclicks.php:83
+#: public_html/lists/admin/mclicks.php:170
+#: public_html/lists/admin/mclicks.php:192
 msgid "clickrate"
 msgstr "Razmerje klikov"
 
-#: public_html/lists/admin/mclicks.php:80
-msgid "total clicks"
-msgstr ""
-
-#: public_html/lists/admin/mclicks.php:105
+#: public_html/lists/admin/mclicks.php:110
 msgid "Click Details for a Message"
 msgstr "Izberi podrobnosti za sporočilo"
 
-#: public_html/lists/admin/mclicks.php:119
+#: public_html/lists/admin/mclicks.php:124
 msgid "Sent to"
 msgstr ""
 
-#: public_html/lists/admin/mclicks.php:125
+#: public_html/lists/admin/mclicks.php:130
+msgid "Unique subscribers who clicked"
+msgstr ""
+
+#: public_html/lists/admin/mclicks.php:130
 #: public_html/lists/admin/uclicks.php:80
 msgid "View subscribers"
 msgstr ""
 
-#: public_html/lists/admin/mclicks.php:126
+#: public_html/lists/admin/mclicks.php:131
 #, fuzzy
 msgid "Click rate"
 msgstr "stopnja klikov"
 
-#: public_html/lists/admin/mclicks.php:129
+#: public_html/lists/admin/mclicks.php:134
 msgid "Campaign click statistics"
 msgstr ""
 
@@ -6292,7 +6307,7 @@ msgid "Converting %s from %s to %s"
 msgstr ""
 
 #: public_html/lists/admin/attributes.php:164
-#: public_html/lists/admin/users.php:223
+#: public_html/lists/admin/users.php:224
 msgid "deleting"
 msgstr "Brišem"
 
@@ -6787,77 +6802,81 @@ msgstr ""
 msgid "Top level domains"
 msgstr ""
 
-#: public_html/lists/admin/users.php:175
+#: public_html/lists/admin/users.php:176
 msgid "Your privileges for this page are insufficient"
 msgstr "Nimate pravic za dostop do te strani"
 
-#: public_html/lists/admin/users.php:178
+#: public_html/lists/admin/users.php:179
 msgid "Delete will delete user from the list"
 msgstr "Izbriši bo izbrisal uporabbnika iz kategorije"
 
-#: public_html/lists/admin/users.php:235
+#: public_html/lists/admin/users.php:236
 msgid "Sorry, only super users can delete users"
 msgstr ""
 
-#: public_html/lists/admin/users.php:249
+#: public_html/lists/admin/users.php:250
 #, php-format
 msgid "%s subscribers in total"
 msgstr ""
 
-#: public_html/lists/admin/users.php:250
+#: public_html/lists/admin/users.php:251
 msgid ""
 "Subscribers with a red icon are either unconfirmed or blacklisted or both"
 msgstr ""
 
-#: public_html/lists/admin/users.php:278
+#: public_html/lists/admin/users.php:279
 msgid "Show only unconfirmed users"
 msgstr "Pokaži samo nepotrjene uporabnike"
 
-#: public_html/lists/admin/users.php:280
+#: public_html/lists/admin/users.php:281
 msgid "Show only blacklisted users"
 msgstr "Pokaži samo uporabnike na ČRNI listi"
 
-#: public_html/lists/admin/users.php:305
+#: public_html/lists/admin/users.php:306
 msgid "asc"
 msgstr "naraščajoče"
 
-#: public_html/lists/admin/users.php:324 public_html/lists/admin/users.php:328
-#: public_html/lists/admin/mviews.php:143
-#: public_html/lists/admin/mviews.php:146
+#: public_html/lists/admin/users.php:325 public_html/lists/admin/users.php:329
+#: public_html/lists/admin/mviews.php:147
+#: public_html/lists/admin/mviews.php:150
 #, php-format
 msgid "Listing user %d to %d"
 msgstr "Prikazujem uporabnika %d do %d"
 
-#: public_html/lists/admin/users.php:351
+#: public_html/lists/admin/users.php:352
 msgid "Find a user"
 msgstr "Najdi uporabnika"
 
-#: public_html/lists/admin/users.php:370
+#: public_html/lists/admin/users.php:367 public_html/databasestructure.php:19
+msgid "Unique ID"
+msgstr ""
+
+#: public_html/lists/admin/users.php:374
 msgid "reset"
 msgstr "Ponastavi"
 
-#: public_html/lists/admin/users.php:378
+#: public_html/lists/admin/users.php:382
 msgid "Find subscribers"
 msgstr "Najdi uporabnike"
 
-#: public_html/lists/admin/users.php:383
+#: public_html/lists/admin/users.php:387
 msgid "Download all users as CSV file"
 msgstr "Prenesi vse uporabnike v CSV datoteko"
 
-#: public_html/lists/admin/users.php:384
+#: public_html/lists/admin/users.php:388
 msgid "Add a User"
 msgstr "Dodaj uporabnika"
 
-#: public_html/lists/admin/users.php:434
+#: public_html/lists/admin/users.php:438
 #: public_html/lists/admin/uclicks.php:55
 msgid "msgs"
 msgstr "msgs"
 
-#: public_html/lists/admin/users.php:454
+#: public_html/lists/admin/users.php:459
 msgid "no results"
 msgstr "ni zadetkov"
 
-#: public_html/lists/admin/users.php:454
+#: public_html/lists/admin/users.php:459
 msgid "No users apply"
 msgstr "Ni uporabnikov"
 
@@ -7346,7 +7365,7 @@ msgstr "Ogledan"
 
 #: public_html/lists/admin/userhistory.php:102
 #: public_html/lists/admin/userhistory.php:114
-#: public_html/lists/admin/mviews.php:199
+#: public_html/lists/admin/mviews.php:203
 msgid "responsetime"
 msgstr "Odzivni čas"
 
@@ -7837,12 +7856,12 @@ msgstr "Statistika klikov za URL"
 msgid "Click details for a URL"
 msgstr ""
 
-#: public_html/lists/admin/uclicks.php:123
+#: public_html/lists/admin/uclicks.php:126
 msgid "view subscribers who clicked"
 msgstr ""
 
-#: public_html/lists/admin/uclicks.php:125
-#: public_html/lists/admin/uclicks.php:138
+#: public_html/lists/admin/uclicks.php:128
+#: public_html/lists/admin/uclicks.php:141
 msgid "click rate"
 msgstr "stopnja klikov"
 
@@ -7928,11 +7947,6 @@ msgstr "Kako pogosto želite prejemati novice"
 #: public_html/lists/admin/spageedit.php:158
 msgid "General Information"
 msgstr "Splošne informacije"
-
-#: public_html/lists/admin/spageedit.php:162
-#: public_html/databasestructure.php:107 public_html/databasestructure.php:154
-msgid "Title"
-msgstr "Naslov"
 
 #: public_html/lists/admin/spageedit.php:185
 msgid "Language file to use"
@@ -8079,24 +8093,24 @@ msgstr ""
 msgid "save"
 msgstr "shrani"
 
-#: public_html/lists/admin/mviews.php:81
+#: public_html/lists/admin/mviews.php:85
 msgid "in progress"
 msgstr ""
 
-#: public_html/lists/admin/mviews.php:134
+#: public_html/lists/admin/mviews.php:138
 msgid "Open statistics"
 msgstr "Ogled statistike"
 
-#: public_html/lists/admin/mviews.php:168
+#: public_html/lists/admin/mviews.php:172
 msgid "Entries"
 msgstr "Zapisi"
 
-#: public_html/lists/admin/mviews.php:194
 #: public_html/lists/admin/mviews.php:198
+#: public_html/lists/admin/mviews.php:202
 msgid "firstview"
 msgstr "Prvi ogled"
 
-#: public_html/lists/admin/mviews.php:195
+#: public_html/lists/admin/mviews.php:199
 msgid "lastview"
 msgstr "Zadnji ogled"
 
@@ -8159,10 +8173,6 @@ msgstr ""
 #, fuzzy
 msgid "Last Modified"
 msgstr "Nazadnje spremenjeno"
-
-#: public_html/databasestructure.php:19
-msgid "Unique ID"
-msgstr ""
 
 #: public_html/databasestructure.php:20
 msgid "Send this subscriber HTML emails"

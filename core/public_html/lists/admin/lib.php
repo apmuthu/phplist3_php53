@@ -1358,9 +1358,13 @@ function flushClickTrackCache() {
 function resetMessageStatistics($messageid = 0) {
   ## remove the record of the links in the message, actual clicks of links, and the users sent to
   
-  Sql_Query(sprintf('delete from %s where messageid = %d',$GLOBALS['tables']['linktrack_ml'],$messageid));
-  Sql_Query(sprintf('delete from %s where messageid = %d',$GLOBALS['tables']['linktrack_uml_click'],$messageid));
-  Sql_Query(sprintf('delete from %s where messageid = %d',$GLOBALS['tables']['usermessage'],$messageid));
+  ## do not do this, if more than X have gone out
+  $numsent = Sql_Fetch_Row_Query(sprintf('select count(*) from %s where messageid = %d',$GLOBALS['tables']['usermessage'],$messageid));
+  if ($numsent[0] < RESETSTATS_MAX) {
+      Sql_Query(sprintf('delete from %s where messageid = %d',$GLOBALS['tables']['linktrack_ml'],$messageid));
+      Sql_Query(sprintf('delete from %s where messageid = %d',$GLOBALS['tables']['linktrack_uml_click'],$messageid));
+      Sql_Query(sprintf('delete from %s where messageid = %d',$GLOBALS['tables']['usermessage'],$messageid));
+  }
 }
 
 if (!function_exists('formatbytes')) {
@@ -1441,13 +1445,13 @@ function verifyToken() {
 function verifyCsrfGetToken($enforce = 1) { // enforce=0 allows checking "if exist"
   if (!defined('PHPLISTINIT')) die();
   if ($GLOBALS['commandline']) return true;
-  if (isset($_GET['tk']) && isset($_SESSION['csrf_token'])) {
-    if ($_GET['tk'] != $_SESSION['csrf_token']) {
+  if (isset($_GET['tk']) && isset($_SESSION[$GLOBALS['installation_name'].'_csrf_token'])) {
+    if ($_GET['tk'] != $_SESSION[$GLOBALS['installation_name'].'_csrf_token']) {
       $_SESSION['logout_error'] = s('Error, incorrect session token');
       Redirect('logout&err=1');
       exit;
     }
-  } elseif ($enforce && isset($_SESSION['csrf_token'])) {
+  } elseif ($enforce && isset($_SESSION[$GLOBALS['installation_name'].'_csrf_token'])) {
     $_SESSION['logout_error'] = s('Error, incorrect session token');
     Redirect('logout&err=1');
     exit;
@@ -1455,10 +1459,10 @@ function verifyCsrfGetToken($enforce = 1) { // enforce=0 allows checking "if exi
 }
 
 function addCsrfGetToken() {
-  if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = substr(md5(uniqid(mt_rand(), true)),rand(0,32),rand(0,32));
+  if (empty($_SESSION[$GLOBALS['installation_name'].'_csrf_token'])) {
+    $_SESSION[$GLOBALS['installation_name'].'_csrf_token'] = substr(md5(uniqid(mt_rand(), true)),rand(0,32),rand(0,32));
   }  
-  return '&tk='.$_SESSION['csrf_token'];
+  return '&tk='.$_SESSION[$GLOBALS['installation_name'].'_csrf_token'];
 }
 
 function refreshTlds($force = 0) {

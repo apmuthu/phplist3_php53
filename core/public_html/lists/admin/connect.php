@@ -28,8 +28,8 @@ if (empty($xormask)) {
   SaveConfig("xormask",$xormask,0,1);
 }
 define('XORmask',$xormask);
-if (empty($_SESSION['csrf_token'])) {
-  $_SESSION['csrf_token'] = substr(md5(uniqid(mt_rand(), true)),rand(0,32),rand(0,32));
+if (empty($_SESSION[$GLOBALS['installation_name'].'_csrf_token'])) {
+  $_SESSION[$GLOBALS['installation_name'].'_csrf_token'] = substr(md5(uniqid(mt_rand(), true)),rand(0,32),rand(0,32));
 }
 if (isset($_SESSION['lastactivity'])) {
   $_SESSION['session_age'] = time() - $_SESSION['lastactivity'];
@@ -136,7 +136,7 @@ function SaveConfig($item,$value,$editable=1,$ignore_errors = 0) {
       if ($value > $configInfo['max']) $value = $configInfo['max'];
       break;
     case 'email':
-      if (!is_email($value)) {
+      if (!empty($value) && !is_email($value)) {
         ## hmm, this is displayed only later
        # $_SESSION['action_result'] = s('Invalid value for email address');
         return $configInfo['description'].': '.s('Invalid value for email address');
@@ -190,7 +190,7 @@ function SaveConfig($item,$value,$editable=1,$ignore_errors = 0) {
 
   You can configure your PoweredBy options in your config file
 
-  Michiel Dethmers, phpList Ltd 2001-2014
+  Michiel Dethmers, phpList Ltd 2001-2015
 */
 if (DEVVERSION)
   $v = "dev";
@@ -331,9 +331,9 @@ function sendMessageStats($msgid) {
         $msg .= "\n".$item.' => '.$data[$item];
     }
     if ($stats_collection_address == 'phplist-stats@phplist.com' && $data["processed"] > 500) {
-      mail($stats_collection_address,"PHPlist stats",$msg);
+      mail($stats_collection_address,"phpList stats",$msg);
     } else {
-      mail($stats_collection_address,"PHPlist stats",$msg);
+      mail($stats_collection_address,"phpList stats",$msg);
     }
   }
 }
@@ -1023,8 +1023,8 @@ function PageLink2($name,$desc="",$url="",$no_plugin = false,$title = '') {
         $pi = "";
       }
       
-      if (!empty($_SESSION['csrf_token'])) {
-        $token = '&amp;tk='.$_SESSION['csrf_token'];
+      if (!empty($_SESSION[$GLOBALS['installation_name'].'_csrf_token'])) {
+        $token = '&amp;tk='.$_SESSION[$GLOBALS['installation_name'].'_csrf_token'];
       } else {
         $token = '';
       }

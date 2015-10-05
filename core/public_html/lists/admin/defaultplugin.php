@@ -459,6 +459,17 @@ class phplistPlugin {
     return '';
   }
   
+  /* 
+   * Allows plugins to modify the fields of the loaded campaign.
+   * Those fields will then be customised for each subscriber
+   *
+   * @param integer $messageid: ID of the message
+   * @param array   &$message: associative array of message data
+   * @return void
+   */
+  public function processPrecachedCampaign($messageid, array &$message)
+  {
+  }
   
   /* 
    * parseOutgoingTextMessage

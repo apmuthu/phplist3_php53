@@ -355,6 +355,10 @@ if ($send || $sendtest || $prepare || $save || $savedraft) {
         print Warn(s('This campaign is scheduled to stop sending before the embargo time. No mails will be sent.'));
         print PageLinkButton('send&amp;id='.$messagedata['id'].'&amp;tab=Scheduling',s('Review Scheduling'));
       }
+      ## reset any queued messages, as the selection may have changed
+      if (defined('MESSAGEQUEUE_PREPARE') && MESSAGEQUEUE_PREPARE) {
+        $query = sprintf('delete from '.$tables['usermessage'].' where messageid = %d and status = "todo"',$messagedata['id']);
+      }
       
       print "<h3>".$GLOBALS['I18N']->get("Campaign queued")."</h3>";
       foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
@@ -694,16 +698,13 @@ if (!$done) {
     <div class="field">'.s('phpList operates in the time zone "%s"',SYSTEM_TIMEZONE).'</div>';
   } else {
     $scheduling_content .= '
-    <div class="field">'.s('Dates and times are relative to the Server Time').'<br/>'.s('Current Server Time is').' <span id="servertime">'.$currentTime[0].'</span>'.'</div>';
+    <div class="field">'.s('Dates and times are relative to the Server Time').'<br/>'.s('Current Server Time is').' <span id="servertime">'.substr($currentTime[0],0,-3).'</span>'.'</div>';
   }
   
   $scheduling_content .= '  <div class="field"><label for="embargo">'.$GLOBALS['I18N']->get("Embargoed Until").Help('embargo').'</label>'.'
     '.$embargo->showInput('embargo',"",$messagedata['embargo']).'</div>
   <div class="field"><label for="finishsending">'.$GLOBALS['I18N']->get("Stop sending after").Help('finishsending').'</label>'.'
-    '.$embargo->showInput('finishsending',"",$messagedata['finishsending']).'</div>
-    <script type="text/javascript">
-    getServerTime();
-    </script>';
+    '.$embargo->showInput('finishsending',"",$messagedata['finishsending']).'</div>';
 
   if (USE_REPETITION) {
     $repeatinterval = $messagedata["repeatinterval"];
@@ -948,13 +949,17 @@ if (!$done) {
      Help("googletrack").' '.s('add Google Analytics tracking code'),
      !empty($messagedata['google_track']) ? 'checked="checked"':'');
 
-  ## @@TODO, maybe add a check on "sent" for this campaign and suppress this once it's over a threshold
-  $send_content .= sprintf('
-    <div class="resetStatistics">
-    <label for"cb[resetstats]">%s</label><input type="hidden" name="cb[resetstats]" value="1" /><input type="checkbox" name="resetstats" id="resetstats" value="1" %s />
-    </div>',
-     Help("resetstats").' '.s('Reset click statistics'),
-     !empty($messagedata['resetstats']) ? 'checked="checked"':'');
+  $numsent = Sql_Fetch_Row_Query(sprintf('select count(*) from %s where messageid = %d',$GLOBALS['tables']['usermessage'],$messagedata['id']));
+  if ($numsent[0] < RESETSTATS_MAX) {
+      $send_content .= sprintf('
+        <div class="resetStatistics">
+        <label for"cb[resetstats]">%s</label><input type="hidden" name="cb[resetstats]" value="1" /><input type="checkbox" name="resetstats" id="resetstats" value="1" %s />
+        </div>',
+         Help("resetstats").' '.s('Reset click statistics'),
+         !empty($messagedata['resetstats']) ? 'checked="checked"':'');
+  } else {
+      $send_content .= '<input type="hidden" name="resetstats" value="0" />';
+  }
 
   $send_content .= sprintf('
     <div class="isTestCampaign">
