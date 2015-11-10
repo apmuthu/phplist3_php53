@@ -1,6 +1,10 @@
 # phplist3_php53
 phpList v3 for PHP v5.3.x
 
+[![Build Status](https://travis-ci.org/phpList/phplist3.svg?branch=master)](https://travis-ci.org/phpList/phplist3)
+
+[![StyleCI](https://styleci.io/repos/32042787/shield)](https://styleci.io/repos/32042787)
+
 * This version starts by keeping track of phplist v3.x releases
 * The original project is at [SourceForge](https://sourceforge.net/projects/phplist/) - their [commercial offering](http://www.phplist.com)
 * It is being developed at [GitHub](https://github.com/phpList/phplist3)
@@ -26,18 +30,58 @@ Particular aspects of the system are:
 ## Requirements
 To use phpList you need a webserver which supports PHP version 5, and a MySQL database.
 
+phpList should work with a standard PHP environment, but some functionality may require additional modules. 
+
+More detailed requirements can be found in the [Reources Wiki](https://resources.phplist.com/system)
+
 ## Installation
-See file: docs/INSTALL
+Read the installation instructions with abundant help at: 
+
+https://www.phplist.org/manual/ch028_installation.xhtml
 
 ## Upgrade
-See file: docs/UPGRADE
 
-## Security
-See file: docs/README.security
+phpList upgrade process.
+
+How to upgrade from any previous version to the latest version
+
+Step 1. BACKUP your database
+(e.g. # mysqldump -u[user] -p[password] [database] > phplist-backup.sql)
+
+Step 2. Copy your old configured files to some safe place
+
+These files are:
+	lists/config/config.php
+        possibly lists/texts/english.inc or any other language.inc if you have edited it
+
+Step 3. Copy the files from the tar file to your webroot.
+
+You can copy everything in the "lists" directory in the tar file to your website.
+To facilitate future upgrades, ie to make it easier for you to simply copy
+everything I have now put the "configurable" files in their own directory. They
+reside in "lists/config". This is hopefully going to be the directory thay you can
+keep between upgrades, and that will contain the only information that you want
+changed in order to make it work for your own site.
+
+Step 4. Copy your configuration files to lists/config or re-edit the new config file
+sometimes new features are added to the config file, so it's better to use
+the new config file and re-adapt it to your situation.
+
+I have put an example .htaccess file in this directory. You should not allow
+access to this directory from the webserver at all. The example will work with
+apache.
+
+You can overwrite the files that are there. They are example files.
+
+Step 5. Go to http://yourdomain/lists/admin/ and choose the Upgrade link
+
+Step 6. Click the link in this page.
+
+This process may take quite a while if your database is large. Don't interrupt it.
 
 ## Languages
-In the directory `public_html/lists/texts` you will find existing translations of the public
-pages of PHPlist. You can use them in your config file to make the frontend of the system
+In the directory `phplists/lists/texts` you will find existing translations of the public
+pages of phpList. You can use them in your config file to make the frontend of the system
 appear in the language of your choice.
 
 In the config file there are a lot of choices to make about your particular

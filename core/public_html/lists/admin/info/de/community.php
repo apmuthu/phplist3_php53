@@ -3,23 +3,23 @@
 <p>Bitte stellen Sie sicher, dass Sie die neuste Version von phplist verwenden, bevor Sie einen Fehler an die Entwickler melden.</p>
 
 <?php
-ini_set("user_agent",NAME. " (phplist Version ".VERSION.")");
-ini_set("default_socket_timeout",5);
-if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
-  $latestversion = fgets ($fp);
-  $thisversion = VERSION;
-  $thisversion = str_replace("-dev","",$thisversion);
-  if (versionCompare($thisversion,$latestversion)) {
-    print '<p><span class="highlight">Sie haben die aktuelle Version von phplist installiert.</span></p>';
-  } else {
-    print '<p><span class="highlight">Sie haben nicht die aktuelle Version von phplist installiert.</span>';
-    print "<br/>Ihre Version: <b>".$thisversion."</b>";
-    print "<br/>Aktuelle Version: <b>".$latestversion."</b>  ";
-    print '<a href="http://www.phplist.com/files/changelog">Neuerungen anzeigen</a>&nbsp;&nbsp;';
-    print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Aktuelle Version herunterladen</a></p>';
-  }
+ini_set('user_agent', NAME.' (phplist Version '.VERSION.')');
+ini_set('default_socket_timeout', 5);
+if ($fp = @fopen('http://www.phplist.com/files/LATESTVERSION', 'r')) {
+    $latestversion = fgets($fp);
+    $thisversion = VERSION;
+    $thisversion = str_replace('-dev', '', $thisversion);
+    if (versionCompare($thisversion, $latestversion)) {
+        print '<p><span class="highlight">Sie haben die aktuelle Version von phplist installiert.</span></p>';
+    } else {
+        print '<p><span class="highlight">Sie haben nicht die aktuelle Version von phplist installiert.</span>';
+        print '<br/>Ihre Version: <b>'.$thisversion.'</b>';
+        print '<br/>Aktuelle Version: <b>'.$latestversion.'</b>  ';
+        print '<a href="http://www.phplist.com/files/changelog">Neuerungen anzeigen</a>&nbsp;&nbsp;';
+        print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Aktuelle Version herunterladen</a></p>';
+    }
 } else {
-  print "<p>Die aktuelle Version von phplist <a href=http://www.phplist.com/files>finden Sie hier</a>.</p>";
+    print '<p>Die aktuelle Version von phplist <a href=http://www.phplist.com/files>finden Sie hier</a>.</p>';
 }
 ?>
 
@@ -69,7 +69,7 @@ dass dieser das System nicht auf jeder denkbaren Plattform und mit jeder PHP-Ver
 Sie haben wahrscheinlich einen ziemlichen Aufwand betrieben, um diese Software zu finden und mit anderen Programmen zu vergleichen.
 Lass Sie doch andere von Ihren Erfahrungen profitieren.</p>
 
-<p>Sie k&ouml;nnen dies tun, indem Sie <?php echo PageLink2("vote","f&uuml;r phplist stimmen")?>,
+<p>Sie k&ouml;nnen dies tun, indem Sie <?php echo PageLink2('vote', 'f&uuml;r phplist stimmen')?>,
 oder indem Sie einen Erfahrungsbericht schreiben auf Websites, welche Software bereitstellen.
 Sie k&ouml;nnen aber auch einfach Ihren Freunden und Bekannten von phplist erz&auml;hlen.</p></li>
 
@@ -125,14 +125,14 @@ Sie k&ouml;nnen dieses System auch benutzen, um <b>neue Features</b> vorzuschlag
 <ul>
   <li>phplist-Version: <?php echo VERSION?></li>
   <li>PHP-Version: <?php echo phpversion()?></li>
-  <li>Webserver: <?php echo getenv("SERVER_SOFTWARE")?></li>
-  <li>Website: <a href="http://<?php echo getConfig("website")."$pageroot"?>"><?php echo getConfig("website")."$pageroot"?></a></li>
+  <li>Webserver: <?php echo getenv('SERVER_SOFTWARE')?></li>
+  <li>Website: <a href="http://<?php echo getConfig('website')."$pageroot"?>"><?php echo getConfig('website')."$pageroot"?></a></li>
   <li>MySQL-Version: <?php echo mysql_get_server_info();?></li>
   <li>PHP-Module:<br/>
     <ul>
     <?php
     $le = get_loaded_extensions();
-    foreach($le as $module) {
+    foreach ($le as $module) {
         print "<LI>$module\n";
     }
     ?>

@@ -4,23 +4,23 @@
 Cuando vaya a presentar una notificaci&oacute;n de errores
 aseg&uacute;rese de que tiene la &uacute;ltima versi&oacute;n.<br/>
 <?php
-ini_set("user_agent",NAME. " (PHPlist version ".VERSION.")");
-ini_set("default_socket_timeout",5);
-if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
-  $latestversion = fgets ($fp);
-  $thisversion = VERSION;
-  $thisversion = str_replace("-dev","",$thisversion);
-  if (versionCompare($thisversion,$latestversion)) {
-    print '<span class="highlight">Enhorabuena, est&aacute; utilizando la &uacute;ltima versi&oacute;n</span>';
-  } else {
-    print '<span class="highlight">No est&aacute; utilizando la &uacute;ltima versi&oacut;n</span>';
-    print "<br/>Su versi&oacut;n: <b>".$thisversion."</b>";
-    print "<br/>&Uacute;ltima versi&oacute;n: <b>".$latestversion."</b>  ";
-    print '<a href="http://www.phplist.com/files/changelog">Ver los cambios</a>&nbsp;&nbsp;';
-    print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Descargar</a>';
-  }
+ini_set('user_agent', NAME.' (PHPlist version '.VERSION.')');
+ini_set('default_socket_timeout', 5);
+if ($fp = @fopen('http://www.phplist.com/files/LATESTVERSION', 'r')) {
+    $latestversion = fgets($fp);
+    $thisversion = VERSION;
+    $thisversion = str_replace('-dev', '', $thisversion);
+    if (versionCompare($thisversion, $latestversion)) {
+        print '<span class="highlight">Enhorabuena, est&aacute; utilizando la &uacute;ltima versi&oacute;n</span>';
+    } else {
+        print '<span class="highlight">No est&aacute; utilizando la &uacute;ltima versi&oacut;n</span>';
+        print '<br/>Su versi&oacut;n: <b>'.$thisversion.'</b>';
+        print '<br/>&Uacute;ltima versi&oacute;n: <b>'.$latestversion.'</b>  ';
+        print '<a href="http://www.phplist.com/files/changelog">Ver los cambios</a>&nbsp;&nbsp;';
+        print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Descargar</a>';
+    }
 } else {
-  print "<br/>Ver cu&aacute;l es la &uacute;ltima versi&oacute;n: <a href=http://www.phplist.com/files>aqu&iacute;</a>";
+    print '<br/>Ver cu&aacute;l es la &uacute;ltima versi&oacute;n: <a href=http://www.phplist.com/files>aqu&iacute;</a>';
 }
 ?>
 <p>PHPlist naci&oacute; a principios del a&ntilde;o 2000 como un
@@ -67,7 +67,7 @@ difundirlo. Probablemente realiz&oacute; un cierto esfuerzo para
 encontrarlo y tomar la decisi&oacute;n de utilizarlo despu&eacute;s de
 haberlo comparado con otros programas similares. Podr&iacute;a ayudar a otras personas a beneficiarse de su experiencia.</p>
 
-<p>Para ello <?php echo PageLink2("vote","Vote")?> por PHPlist, o
+<p>Para ello <?php echo PageLink2('vote', 'Vote')?> por PHPlist, o
 escriba rese&ntilde;as en los sitios que enumeran este tipo de
 programas. Tambi&eacute;n puede informar sobre el programa
 directamente a otras personas.
@@ -125,13 +125,13 @@ un informe de errores.</p>
 <ul>
 <li>Versi&oacute;n PHPlist: <?php echo VERSION?></li>
 <li>Versi&oacute;n PHP: <?php echo phpversion()?></li>
-<li>Servidor web: <?php echo getenv("SERVER_SOFTWARE")?></li>
-<li>Sitio web: <a href="http://<?php echo getConfig("website")."$pageroot"?>"><?php echo getConfig("website")."$pageroot"?></a></li>
+<li>Servidor web: <?php echo getenv('SERVER_SOFTWARE')?></li>
+<li>Sitio web: <a href="http://<?php echo getConfig('website')."$pageroot"?>"><?php echo getConfig('website')."$pageroot"?></a></li>
 <li>Informaci&oacute;n de MySQL: <?php echo mysql_get_server_info();?></li>
 <li>M&oacute;dulos de PHP:<br/><ul>
 <?php
 $le = get_loaded_extensions();
-foreach($le as $module) {
+foreach ($le as $module) {
     print "<LI>$module\n";
 }
 ?>

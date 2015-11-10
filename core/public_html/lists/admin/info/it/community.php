@@ -3,23 +3,23 @@
 <p><b>Ultima Versione</b><br/>
 Accertatevi di utilizzare l'ultima versione prima di segnalare un bug.</p>
 <?php
-ini_set("user_agent",NAME. " (phplist version ".VERSION.")");
-ini_set("default_socket_timeout",5);
-if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
-  $latestversion = fgets ($fp);
-  $thisversion = VERSION;
-  $thisversion = str_replace("-dev","",$thisversion);
-  if (versionCompare($thisversion,$latestversion)) {
-    print '<span class="highlight">Congratulazioni, state usando l'ultima versione</span>';
-  } else {
-    print '<span class="highlight">Non state usando l'ultima versione</span>';
-    print "<br/>La tua versione: <b>".$thisversion."</b>";
-    print "<br/>Ultima versione: <b>".$latestversion."</b>  ";
-    print '<a href="http://www.phplist.com/files/changelog">Visualizza cosa &egrave; cambiato</a>&nbsp;&nbsp;';
-    print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Download</a>';
-  }
+ini_set('user_agent', NAME.' (phplist version '.VERSION.')');
+ini_set('default_socket_timeout', 5);
+if ($fp = @fopen('http://www.phplist.com/files/LATESTVERSION', 'r')) {
+    $latestversion = fgets($fp);
+    $thisversion = VERSION;
+    $thisversion = str_replace('-dev', '', $thisversion);
+    if (versionCompare($thisversion, $latestversion)) {
+        print '<span class="highlight">Congratulazioni, state usando l\'ultima versione</span>';
+    } else {
+        print '<span class="highlight">Non state usando l\'ultima versione</span>';
+        print '<br/>La tua versione: <b>'.$thisversion.'</b>';
+        print '<br/>Ultima versione: <b>'.$latestversion.'</b>  ';
+        print '<a href="http://www.phplist.com/files/changelog">Visualizza cosa &egrave; cambiato</a>&nbsp;&nbsp;';
+        print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Download</a>';
+    }
 } else {
-  print "<br/>Controlla l'ultima versione: <a href=http://www.phplist.com/files>Qui</a>";
+    print "<br/>Controlla l'ultima versione: <a href=http://www.phplist.com/files>Qui</a>";
 }
 ?>
 <p><i>PHPlist</i> &egrave; stata creata agli inizi del 2000 come una piccola applicazione per il <a href="http://www.nationaltheatre.org.uk" target="_blank">Royal National Theatre di Londra</a>. Col tempo si &egrave; sviluppato come un sistema abbastanza completo per l'invio di newsletter e il numero di siti che lo utilizzano &egrave; cresciuto rapidamente. Sebbene il codice base sia principalmente mantenuto da una persona, sta diventando gradulamente molto complesso e al fine assicurare la qualit&agrave; sar&agrave necessaria la partecipazione di pi&ugrave; persone.</p>
@@ -48,7 +48,7 @@ if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
 <h3>Altre cose che potete fare per aiutarci</h3>
 <ul class="otherhelp">
 
-<li><p>Se pensate che PHPlist sia di grande aiuto, perch&egrave; non ci aiutate ad informare gli altri della sua esistenza? Probabilmente avete fatto un grosso sforzo per trovarlo e decidere di utilizzarlo, dopo averlo confrontato con altre applicazioni simili, quindi la vostra esperienza pu&ograve essere di beneficio ad altre persone.</p><p>Per fare questo, puoi <?php echo PageLink2("vote","Votare")?> per PHPlist, o scrivere una recensione nei siti che elencano questo tipo di applicazioni. Potete inoltre parlarne alle persone che conoscete.</p></li>
+<li><p>Se pensate che PHPlist sia di grande aiuto, perch&egrave; non ci aiutate ad informare gli altri della sua esistenza? Probabilmente avete fatto un grosso sforzo per trovarlo e decidere di utilizzarlo, dopo averlo confrontato con altre applicazioni simili, quindi la vostra esperienza pu&ograve essere di beneficio ad altre persone.</p><p>Per fare questo, puoi <?php echo PageLink2('vote', 'Votare')?> per PHPlist, o scrivere una recensione nei siti che elencano questo tipo di applicazioni. Potete inoltre parlarne alle persone che conoscete.</p></li>
 <li><p>Potete <b>Tradurre</b> PHPlist nella vostra lingua e inviarci la traduzione. Per aiutarci controlla le <a href="http://docs.phplist.com/PhplistTranslation">Pagine di traduzione</a> sul Wiki.</p></li>
 <li><p>Potete <b>Provare</b> tutte le varie caratteristiche di PHPlist e controllare che funzionino bene. Inviate i vostri risultati nei <a href="http://www.phplist.com/forums/" target="_blank">Forums</a>.</p></li>
 <li><p>Potete usare PHPlist a pagamento per i vostri clienti (Se siete una agenzia-web per esempio) e convincerli che questo &egrave un ottimo strumento per raggiungere i loro obiettivi. In seguito, se desiderano alcuni cambiamenti potete <b>commissionare nuove caratteristiche</b> che saranno pagate dai vostri clienti. Se desiderate sapere quanto costerebbe aggiungere caratteristiche a PHPlist, <a href="mailto:phplist2@tincan.co.uk?subject=request for quote to change PHPlist">Basta cliccare qui</a>. La maggior parte delle nuove caratteristiche di PHPlist sono state aggiunte su richiesta di clienti paganti. Da questo trarrete vantaggio voi, pagando solo una piccola somma per realizzare i vostri obiettivi,la comunit&agrave;, ottenendo nuove caratteristiche, e gli sviluppatori venendo pagati per il lavoro svolto su PHPlist :-)</p></li>
@@ -57,10 +57,12 @@ if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
 <p><b><a name="bugtrack"></a>Mantis</b><br/>
 <a href="http://mantis.tincan.co.uk/" target="_blank">Mantis</a> &egrave; il sito in cui potete riportare i problemi che avete riscontrato in phplist. Oltre a questp, potete riportare qualsiasi cosa relativa a phplist, commenti e sugerimenti su come migliorarlo o il resoconto di un bug. Se inserite il resoconto di un bug, assicuratevi di includere pi&ugrave; informazioni possibili per facilitare gli sviluppatori nel risolvere il problema.</p>
 <p>I requisiti minimi per riportare un bug sono i dettagli del vostro sistema:</p>
-<?php if (!stristr($_SERVER['HTTP_USER_AGENT'],'firefox')) { ?>
+<?php if (!stristr($_SERVER['HTTP_USER_AGENT'], 'firefox')) {
+    ?>
 <p>Se trovate dei problemi, provate a usare Firefox per vedere se cos&igrave; il problema &egrave risolto.
 <a href="http://www.spreadfirefox.com/?q=affiliates&amp;id=131358&amp;t=81"><img border="0" alt="Get Firefox!" title="Get Firefox!" src="images/getff.gif"/></a></p>
-<?php } ?>
+<?php 
+} ?>
 <p class="information">I dettagli del vostro sistema sono:</p>
 <div class="systemdetails">
 <ul>
@@ -68,12 +70,12 @@ if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
 <li>PHP version: <?php echo phpversion()?></li>
 <li>Browser: <?php echo $_SERVER['HTTP_USER_AGENT']?></li>
 <li>Webserver: <?php echo $_SERVER['SERVER_SOFTWARE']?></li>
-<li>Website: <a href="http://<?php echo getConfig("website")."$pageroot"?>"><?php echo getConfig("website")."$pageroot"?></a></li>
+<li>Website: <a href="http://<?php echo getConfig('website')."$pageroot"?>"><?php echo getConfig('website')."$pageroot"?></a></li>
 <li>Mysql Info: <?php echo mysql_get_server_info();?></li>
 <li>PHP Modules:<br/><ul class="modules">
 <?php
 $le = get_loaded_extensions();
-foreach($le as $module) {
+foreach ($le as $module) {
     print "         <li>$module</li>";
 }
 ?>

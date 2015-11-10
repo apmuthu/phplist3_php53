@@ -3,23 +3,23 @@
 <p><b>Derni&egrave;re Version</b><br/>
 V&eacute;rifiez que vous utilisez la derni&egrave;re version de PHPlist avant de soumettre un rapport de bug. <br/>
 <?php
-ini_set("user_agent",NAME. " (PHPlist version ".VERSION. ")");
-ini_set("default_socket_timeout",5);
-if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
-  $latestversion = fgets ($fp);
-  $thisversion = VERSION;
-  $thisversion = str_replace("-dev","",$thisversion);
-  if (versionCompare($thisversion,$latestversion)) {
-    print '<span class="highlight">F&eacute;licitations, vous utilisez la derni&egrave;re version de PHPlist</span>';
-  } else {
-    print '<span class="highlight">Vous n\'utilisez pas la derni&egrave;re version de PHPlist</span>';
-    print "<br/>Votre version: <b>". $thisversion. "</b>";
-    print "<br/>La derni&egrave;re version disponible: <b>". $latestversion. "</b>  ";
-    print '<a href="http://www.phplist.com/files/changelog">Pour voir ce qui a chang&eacute;</a>&nbsp;&nbsp;';
-    print '<a href="http://www.phplist.com/files/phplist-'. $latestversion. '.tgz">T&eacute;l&eacute;charger</a>';
-  }
+ini_set('user_agent', NAME.' (PHPlist version '.VERSION.')');
+ini_set('default_socket_timeout', 5);
+if ($fp = @fopen('http://www.phplist.com/files/LATESTVERSION', 'r')) {
+    $latestversion = fgets($fp);
+    $thisversion = VERSION;
+    $thisversion = str_replace('-dev', '', $thisversion);
+    if (versionCompare($thisversion, $latestversion)) {
+        print '<span class="highlight">F&eacute;licitations, vous utilisez la derni&egrave;re version de PHPlist</span>';
+    } else {
+        print '<span class="highlight">Vous n\'utilisez pas la derni&egrave;re version de PHPlist</span>';
+        print '<br/>Votre version: <b>'.$thisversion.'</b>';
+        print '<br/>La derni&egrave;re version disponible: <b>'.$latestversion.'</b>  ';
+        print '<a href="http://www.phplist.com/files/changelog">Pour voir ce qui a chang&eacute;</a>&nbsp;&nbsp;';
+        print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">T&eacute;l&eacute;charger</a>';
+    }
 } else {
-  print "<br/>T&eacute;l&eacute;charger la derni&egrave;re version de PHPlist: <a href=http://www.phplist.com/files>ici</a>";
+    print '<br/>T&eacute;l&eacute;charger la derni&egrave;re version de PHPlist: <a href=http://www.phplist.com/files>ici</a>';
 }
 ?>
 <p>PHPlist a &eacute;t&eacute; cr&eacute;&eacute; d&eacute;but 2000 sous la forme d'un petit logiciel pour le
@@ -37,7 +37,7 @@ if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
 <h3>D'autres choses que vous pouvez faire pour aider</h3>
 <ul>
 <li><p>Si vous pensez que PHPlist vous est d'une grande utilit&eacute;, pourquoi ne pas en faire la pub autour de vous?  Vous avez probablement fait un effort pour trouver ce logiciel et vous avez bien r&eacute;fl&eacute;chi avant de d&eacute;cider de l'utiliser apr&egrave;s l'avoir compar&eacute; &amp;agrave; d'autres logiciels similares. Vous pouvez faire profiter d'autres personnes de votre exp&eacute;rience. </p>
-<p>Pour ce faire, vous pouvez <?php echo PageLink2("vote","Voter")?> pour PHPlist, ou &eacute;crire des revues de presse sur les sites qui parlent de logiciels. Vous pouvez &eacute;galement dire aux gens autour de vous que vous connaissez ce logiciel. </li>
+<p>Pour ce faire, vous pouvez <?php echo PageLink2('vote', 'Voter')?> pour PHPlist, ou &eacute;crire des revues de presse sur les sites qui parlent de logiciels. Vous pouvez &eacute;galement dire aux gens autour de vous que vous connaissez ce logiciel. </li>
 <li><p>Vous pouvez <b>Traduire</b> PHPlist dans votre langue et soumettre votre traduction. Nous esp&eacute;rons pouvoir am&eacute;liorer l'internationalisation de PHPlist, mais pour le moment, il vous suffit de traduire le fichier <i>english.inc</i>. </p>
 </li>
 <li>
@@ -60,13 +60,13 @@ Vous pouvez ensuite rentrer dans le syst&egrave;me "mantis" et soumettre votre r
 <ul>
 <li>PHPlist version: <?php echo VERSION?></li>
 <li>PHP version: <?php echo phpversion()?></li>
-<li>Serveur Web : <?php echo getenv("SERVER_SOFTWARE")?></li>
-<li>Site Internet : <a href="http://<?php echo getConfig("website"). "$pageroot"?>"><?php echo getConfig("website"). "$pageroot"?></a></li>
+<li>Serveur Web : <?php echo getenv('SERVER_SOFTWARE')?></li>
+<li>Site Internet : <a href="http://<?php echo getConfig('website')."$pageroot"?>"><?php echo getConfig('website')."$pageroot"?></a></li>
 <li>Information sur la version Mysql utilis&eacute;e : <?php echo mysql_get_server_info();?></li>
 <li>Modules PHP : affichage des modules utilis&eacute;s<br/><ul>
 <?php
 $le = get_loaded_extensions();
-foreach($le as $module) {
+foreach ($le as $module) {
     print "<LI>$module\n";
 }
 ?>

@@ -5,6 +5,6 @@ Benutzen Sie diese Option, wenn Sie Daten aus einer Tabellenkalkulation bzw. ein
 welche die Attribute spaltenweise und die Abonnenten zeilenweise enthält.
 Die Attributnamen m&uuml;ssen dabei in der ersten Zeile der Datei stehen.
 <br /><br />
-<?php echo PageLink2("import","Andere Importmethode w&auml;hlen");?>
+<?php echo PageLink2('import', 'Andere Importmethode w&auml;hlen');?>
 <br /><br />
 

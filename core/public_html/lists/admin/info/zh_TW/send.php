@@ -2,7 +2,7 @@
 <br><br>
 <?php
 if (isset($GLOBALS['USE_LIST_EXCLUDE']) && $GLOBALS['USE_LIST_EXCLUDE'] == 1) {
-	echo '若選擇 "排除的電子報群組"，系統將不會寄送信件到排除的電子報分類群組';
+    echo '若選擇 "排除的電子報群組"，系統將不會寄送信件到排除的電子報分類群組';
 }
 ?>
 </p>

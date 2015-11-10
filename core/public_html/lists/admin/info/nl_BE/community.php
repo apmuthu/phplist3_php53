@@ -3,23 +3,23 @@
 <p><b>Laatste Versie</b><br/>
 Alvorens een fout te rapporteren, zorg ervoor dat u over de laatste versie beschikt.<br/>
 <?php
-ini_set("user_agent",NAME. " (PHPlist versie ".VERSION.")");
-ini_set("default_socket_timeout",5);
-if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
-  $latestversion = fgets ($fp);
-  $thisversion = VERSION;
-  $thisversion = str_replace("-dev","",$thisversion);
-  if (versionCompare($thisversion,$latestversion)) {
-    print "<font color=green size=2>Proficiat, u beschikt over de recentste versie</font>";
-  } else {
-    print "<font color=green size=2>Momenteel gebruikt u niet de recentste versie</font>";
-    print "<br/>Uw versie: <b>".$thisversion."</b>";
-    print "<br/>Recentste versie: <b>".$latestversion."</b>  ";
-    print '<a href="http://www.phplist.com/files/changelog">Bekijk wat er werd aangepast</a>&nbsp;&nbsp;';
-    print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Download</a>';
-  }
+ini_set('user_agent', NAME.' (PHPlist versie '.VERSION.')');
+ini_set('default_socket_timeout', 5);
+if ($fp = @fopen('http://www.phplist.com/files/LATESTVERSION', 'r')) {
+    $latestversion = fgets($fp);
+    $thisversion = VERSION;
+    $thisversion = str_replace('-dev', '', $thisversion);
+    if (versionCompare($thisversion, $latestversion)) {
+        print '<font color=green size=2>Proficiat, u beschikt over de recentste versie</font>';
+    } else {
+        print '<font color=green size=2>Momenteel gebruikt u niet de recentste versie</font>';
+        print '<br/>Uw versie: <b>'.$thisversion.'</b>';
+        print '<br/>Recentste versie: <b>'.$latestversion.'</b>  ';
+        print '<a href="http://www.phplist.com/files/changelog">Bekijk wat er werd aangepast</a>&nbsp;&nbsp;';
+        print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Download</a>';
+    }
 } else {
-  print "<br/>Controleer op de laatste versie: <a href=http://www.phplist.com/files>hier</a>";
+    print '<br/>Controleer op de laatste versie: <a href=http://www.phplist.com/files>hier</a>';
 }
 ?>
 <p>PHPlist werd begin 2000 geboren als een klein project voor het
@@ -66,7 +66,7 @@ bezig houd, kan het systeem niet op alle mogelijke platformen en PHP versies wor
 Waarschijnlijk bent u wel al even aan't rondzoeken geweest naar een soortgelijk project en heeft u nu beslist om het
 te gaan gebruiken na vergelijking met andere programma's. Ook met deze ervaring kan u reeds andere personen helpen!</p>
 
-<p>Hiervoor kan u <?php echo PageLink2("stemmen","Vote")?> voor PHPlist, of een verslagje schrijven op de verschillende
+<p>Hiervoor kan u <?php echo PageLink2('stemmen', 'Vote')?> voor PHPlist, of een verslagje schrijven op de verschillende
 websites die soortgelijke programma's aanbieden. U kan ook andere personen informeren dat je PhpList kent.</p></li>
 <li>
 <p>U kan ook PhpList <b>vertalen</b> en doorsturen zodat andere gebruikers er ook baat bij hebben.
@@ -98,10 +98,12 @@ Dit kan gaan van commentaar, suggesties, verbeteringen of fouten. Indien u een f
 zoveel mogelijk relevante informatie mee te geven om het de ontwikkelaars gemakkelijker te maken om het probleem op te kunnen lossen.</p>
 <p>Begin alvast om uw systeemgegevens te vermelden:</p>
 
-<?php if (!stristr($_SERVER['HTTP_USER_AGENT'],'firefox')) { ?>
+<?php if (!stristr($_SERVER['HTTP_USER_AGENT'], 'firefox')) {
+    ?>
 <p>Indien u problemen ondervindt, probeer dan eerst eens om FireFox te gebruiken ipv je huidige browser. Dit kan uw probleem soms al oplossen.
 <a href="http://www.spreadfirefox.com/?q=affiliates&amp;id=131358&amp;t=81"><img border="0" alt="Get Firefox!" title="Get Firefox!" src="images/getff.gif"/></a>
-<?php } ?></p>
+<?php 
+} ?></p>
 
 <p>Uw systeemgegevens zijn:</p>
 
@@ -110,12 +112,12 @@ zoveel mogelijk relevante informatie mee te geven om het de ontwikkelaars gemakk
 <li>PHP versie: <?php echo phpversion()?></li>
 <li>Browser: <?php echo $_SERVER['HTTP_USER_AGENT']?></li>
 <li>Webserver: <?php echo $_SERVER['SERVER_SOFTWARE']?></li>
-<li>Website: <a href="http://<?php echo getConfig("website")."$pageroot"?>"><?php echo getConfig("website")."$pageroot"?></a></li>
+<li>Website: <a href="http://<?php echo getConfig('website')."$pageroot"?>"><?php echo getConfig('website')."$pageroot"?></a></li>
 <li>Mysql Info: <?php echo mysql_get_server_info();?></li>
 <li>PHP Modules:<br/><ul>
 <?php
 $le = get_loaded_extensions();
-foreach($le as $module) {
+foreach ($le as $module) {
     print "<LI>$module\n";
 }
 ?>

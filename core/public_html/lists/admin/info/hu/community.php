@@ -3,23 +3,23 @@
 <p><b>Legújabb verzió</b><br/>
 Kérjük, hogy hiba bejelentésekor győződjön meg róla, hogy a legújabb verziót használja-e.<br/>
 <?php
-ini_set("user_agent",NAME. " (phplist version ".VERSION.")");
-ini_set("default_socket_timeout",5);
-if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
-  $latestversion = fgets ($fp);
-  $thisversion = VERSION;
-  $thisversion = str_replace("-dev","",$thisversion);
-  if (versionCompare($thisversion,$latestversion)) {
-    print '<span class="highlight">Gratulálunk! Ön a legújabb verziót használja</span>';
-  } else {
-    print '<span class="highlight">Ön nem a legújabb verziót használja</span>';
-    print "<br/>Az Ön verziója: <b>".$thisversion."</b>";
-    print "<br/>A legújabb verzió: <b>".$latestversion."</b>  ";
-    print '<a href="http://www.phplist.com/files/changelog">Tekintse meg, mi változott</a>&nbsp;&nbsp;';
-    print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Letöltés</a>';
-  }
+ini_set('user_agent', NAME.' (phplist version '.VERSION.')');
+ini_set('default_socket_timeout', 5);
+if ($fp = @fopen('http://www.phplist.com/files/LATESTVERSION', 'r')) {
+    $latestversion = fgets($fp);
+    $thisversion = VERSION;
+    $thisversion = str_replace('-dev', '', $thisversion);
+    if (versionCompare($thisversion, $latestversion)) {
+        print '<span class="highlight">Gratulálunk! Ön a legújabb verziót használja</span>';
+    } else {
+        print '<span class="highlight">Ön nem a legújabb verziót használja</span>';
+        print '<br/>Az Ön verziója: <b>'.$thisversion.'</b>';
+        print '<br/>A legújabb verzió: <b>'.$latestversion.'</b>  ';
+        print '<a href="http://www.phplist.com/files/changelog">Tekintse meg, mi változott</a>&nbsp;&nbsp;';
+        print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Letöltés</a>';
+    }
 } else {
-  print "<br/>A legújabb verzió ellenőrzése: <a href=http://www.phplist.com/files/>itt</a>";
+    print '<br/>A legújabb verzió ellenőrzése: <a href=http://www.phplist.com/files/>itt</a>';
 }
 ?>
 <p>A <i>phplist</i> 2000. elején a 
@@ -66,7 +66,7 @@ az ismerőseit? Bizonyára sokat fáradozott, amíg megtalálta, s a használata
 miután összehasonlította más hasonló alkalmazásokkal, szóval az Ön tapasztalata
 segíthet másoknak.</p>
 
-<p>Ezt úgy teheti meg, ha <?php echo PageLink2("vote","szavaz")?> a phplistre, vagy megírja a véleményét
+<p>Ezt úgy teheti meg, ha <?php echo PageLink2('vote', 'szavaz')?> a phplistre, vagy megírja a véleményét
 a szkriptgyűjteményekben. Ismerőseinek is nyugodtan beszélhet róla.
 </li>
 <li><p><b>Lefordíthatja</b> a phplistet az Ön nyelvére, s beküldheti a fordítást.
@@ -98,10 +98,12 @@ hogy mennyire teljesít jól a phplist.</p></li>
 A <a href="http://mantis.phplist.com/" target="_blank">Mantis</a> az a hely, ahol bejelentheti a phplist használata során felmerülő problémákat. A bejelentés bármi lehet, ami a phplisttel kapcsolatos, észrevételek és javaslatok a továbbfejlesztéséhez, vagy hibabejelentések. Hibabejelentés esetén bizonyosodjon meg róla, hogy a lehető legtöbb információt adta-e meg, megkönnyítve a fejlesztők munkáját a probléma megoldásában.</p>
 <p>A hibabejelentés minimális követelménye a rendszerinformációk megadása:</p>
 
-<?php if (!stristr($_SERVER['HTTP_USER_AGENT'],'firefox')) { ?>
+<?php if (!stristr($_SERVER['HTTP_USER_AGENT'], 'firefox')) {
+    ?>
 <p>Ha problémákba ütközik, kérjük, győződjön meg róla, hogy Firefox böngészőt használ-e, ugyanis ez megoldhatja a problémát.
 <a href="http://www.spreadfirefox.com/?q=affiliates&amp;id=131358&amp;t=81"><img border="0" alt="Get Firefox!" title="Get Firefox!" src="images/getff.gif"/></a>
-<?php } ?>
+<?php 
+} ?>
 
 </p>
 <p>Az Ön rendszeradatai:</p>
@@ -111,12 +113,12 @@ A <a href="http://mantis.phplist.com/" target="_blank">Mantis</a> az a hely, aho
 <li>PHP-verzió: <?php echo phpversion()?></li>
 <li>Böngésző: <?php echo $_SERVER['HTTP_USER_AGENT']?></li>
 <li>Webkiszolgáló: <?php echo $_SERVER['SERVER_SOFTWARE']?></li>
-<li>Webhely: <a href="http://<?php echo getConfig("website")."$pageroot"?>"><?php echo getConfig("website")."$pageroot"?></a></li>
+<li>Webhely: <a href="http://<?php echo getConfig('website')."$pageroot"?>"><?php echo getConfig('website')."$pageroot"?></a></li>
 <li>MySQL-információ: <?php echo mysql_get_server_info();?></li>
 <li>PHP-modulok:<br/><ul>
 <?php
 $le = get_loaded_extensions();
-foreach($le as $module) {
+foreach ($le as $module) {
     print "<LI>$module\n";
 }
 ?>

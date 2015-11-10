@@ -3,23 +3,23 @@
 <p><b>آخرین ویرایش</b><br/>
 لطفا هنگامی که میخواهید اشکالات را گزارش کنید، ابتدا اطمینان حاصل کنید که آخرین ویرایش را به کار گرفته اید.<br/>
 <?php
-ini_set("user_agent",NAME. " (phplist version ".VERSION.")");
-ini_set("default_socket_timeout",5);
-if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
-  $latestversion = fgets ($fp);
-  $thisversion = VERSION;
-  $thisversion = str_replace("-dev","",$thisversion);
-  if (versionCompare($thisversion,$latestversion)) {
-    print "<font color=green size=2>تبریک، شما آخرین ویرایش را به کار میبرید</font>";
-  } else {
-    print "<font color=green size=2>ویرایش جدیدتری هم وجود دارد</font>";
-    print "<br/>ویرایش شما: <b>".$thisversion."</b>";
-    print "<br/>آخرین ویرایش: <b>".$latestversion."</b>  ";
-    print '<a href="http://www.phplist.com/files/changelog">مشاهده تغییرات</a>&nbsp;&nbsp;';
-    print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">دریافت</a>';
-  }
+ini_set('user_agent', NAME.' (phplist version '.VERSION.')');
+ini_set('default_socket_timeout', 5);
+if ($fp = @fopen('http://www.phplist.com/files/LATESTVERSION', 'r')) {
+    $latestversion = fgets($fp);
+    $thisversion = VERSION;
+    $thisversion = str_replace('-dev', '', $thisversion);
+    if (versionCompare($thisversion, $latestversion)) {
+        print '<font color=green size=2>تبریک، شما آخرین ویرایش را به کار میبرید</font>';
+    } else {
+        print '<font color=green size=2>ویرایش جدیدتری هم وجود دارد</font>';
+        print '<br/>ویرایش شما: <b>'.$thisversion.'</b>';
+        print '<br/>آخرین ویرایش: <b>'.$latestversion.'</b>  ';
+        print '<a href="http://www.phplist.com/files/changelog">مشاهده تغییرات</a>&nbsp;&nbsp;';
+        print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">دریافت</a>';
+    }
 } else {
-  print "<br/>برای آخرین ویرایش <a href=http://www.phplist.com/files>اینجا</a> را بررسی کنید";
+    print '<br/>برای آخرین ویرایش <a href=http://www.phplist.com/files>اینجا</a> را بررسی کنید';
 }
 ?>
 <p><i>phplist</i> از اوایل سال 2000 به عنوان یک برنامه کوچک برای 
@@ -53,7 +53,7 @@ if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
 <ul>
 <li><p>اگر فکر میکنید که PHPlist برای شما مفید بوده است، چرا درباره‌اش به دیگران نگویید؟‌ به احتمال زیاد شما برای پیدا کردنش خیلی تلاش کرده اید و بعد از مقایسه‌اش با سیستمهای دیگر تصمیم به استفاده از آن گرفته‌اید، پس می‌توانید با تجربه‌ای که کسب کرده‌اید به دیگران نیز سود برسانید.</p>
 
-<p>برای اینکار، میتوانید به  PHPlist <?php echo PageLink2("رای دهید","Vote")?> یا در سایتهایی که نرم افزارها را معرفی میکنند برایش بنویسید. همچنین می‌توانید درباره‌اش به افرادی که می‌شناسید بگویید.
+<p>برای اینکار، میتوانید به  PHPlist <?php echo PageLink2('رای دهید', 'Vote')?> یا در سایتهایی که نرم افزارها را معرفی میکنند برایش بنویسید. همچنین می‌توانید درباره‌اش به افرادی که می‌شناسید بگویید.
 </li>
 <li><p>می‌توانید PHPlist را <b>به زبان خودتان برگردانید</b> و برگردان را ارايه دهید.
 برای یاری رساندن  <a href="http://docs.phplist.com/PhplistTranslation">برگه های برگردان</a> در ویکی بررسی کنید.
@@ -76,10 +76,12 @@ if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
 <a href="http://mantis.phplist.com/" target="_blank">مانتیس</a> مکانی برای گزارش مواردی است که در PHPlist به آنها برمی‌خورید. این مورد می‌تواند هر چیزی مربوط به PHPlist، ،دیدگاه‌ها و پیشنهادهایی برای بهبود آن  یا گزارش یک باگ باشد. اگر باگی را گزارش می‌کنید، مطمئن شوید که تا جایی که می‌توانید اطلاعات بیشتری را همراه گزارش بفرستید تا برطرف نمودن آن باگ برای توسعه دهندگان آسان تر شود.</p>
 <p>کمینه نیازمندی یک گزارش باگ، جزئیات مشخصات سیستم شماست:</p>
 
-<?php if (!stristr($_SERVER['HTTP_USER_AGENT'],'firefox')) { ?>
+<?php if (!stristr($_SERVER['HTTP_USER_AGENT'], 'firefox')) {
+    ?>
 <p>اگر به مشکلی برمی‌خورید، لطفا از Firefox استفاده کنید تا ببینید که آیا مشکل حل می‌شود یا خیر.
 <a href="http://www.spreadfirefox.com/?q=affiliates&amp;id=131358&amp;t=81"><img border="0" alt="Get Firefox!" title="فایرفاکس دار شوید!" src="images/getff.gif"/></a>
-<?php } ?>
+<?php 
+} ?>
 
 </p>
 <p>جزئیات سیستم شما عبارتند از:</p>
@@ -89,12 +91,12 @@ if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
 <li>ویرایش PHP: <?php echo phpversion()?></li>
 <li>مرورگر: <?php echo $_SERVER['HTTP_USER_AGENT']?></li>
 <li>سرورِ وب: <?php echo $_SERVER['SERVER_SOFTWARE']?></li>
-<li>سایتِ وب: <a href="http://<?php echo getConfig("website")."$pageroot"?>"><?php echo getConfig("website")."$pageroot"?></a></li>
+<li>سایتِ وب: <a href="http://<?php echo getConfig('website')."$pageroot"?>"><?php echo getConfig('website')."$pageroot"?></a></li>
 <li>اطلاعاتِ Mysql: <?php echo mysql_get_server_info();?></li>
 <li>ماجولهای PHP:<br/><ul>
 <?php
 $le = get_loaded_extensions();
-foreach($le as $module) {
+foreach ($le as $module) {
     print "<LI>$module\n";
 }
 ?>

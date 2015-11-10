@@ -3,23 +3,23 @@
 <p><b>Latest Version</b><br/>
 Please make sure you are using the latest version when submitting a bugreport.</p>
 <?php
-ini_set("user_agent",NAME. " (phplist version ".VERSION.")");
-ini_set("default_socket_timeout",5);
-if ($fp = @fopen ("http://www.phplist.com/files/LATESTVERSION","r")) {
-  $latestversion = fgets ($fp);
-  $thisversion = VERSION;
-  $thisversion = str_replace("-dev","",$thisversion);
-  if (versionCompare($thisversion,$latestversion)) {
-    print '<span class="highlight">Congratulations, you are using the latest version</span>';
-  } else {
-    print '<span class="highlight">You are not using the latest version</span>';
-    print "<br/>Your version: <b>".$thisversion."</b>";
-    print "<br/>Latest version: <b>".$latestversion."</b>  ";
-    print '<a href="http://www.phplist.com/files/changelog">View what has changed</a>&nbsp;&nbsp;';
-    print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Download</a>';
-  }
+ini_set('user_agent', NAME.' (phplist version '.VERSION.')');
+ini_set('default_socket_timeout', 5);
+if ($fp = @fopen('http://www.phplist.com/files/LATESTVERSION', 'r')) {
+    $latestversion = fgets($fp);
+    $thisversion = VERSION;
+    $thisversion = str_replace('-dev', '', $thisversion);
+    if (versionCompare($thisversion, $latestversion)) {
+        print '<span class="highlight">Congratulations, you are using the latest version</span>';
+    } else {
+        print '<span class="highlight">You are not using the latest version</span>';
+        print '<br/>Your version: <b>'.$thisversion.'</b>';
+        print '<br/>Latest version: <b>'.$latestversion.'</b>  ';
+        print '<a href="http://www.phplist.com/files/changelog">View what has changed</a>&nbsp;&nbsp;';
+        print '<a href="http://www.phplist.com/files/phplist-'.$latestversion.'.tgz">Download</a>';
+    }
 } else {
-  print "<br/>Check for the latest version: <a href=http://www.phplist.com/files>here</a>";
+    print '<br/>Check for the latest version: <a href=http://www.phplist.com/files>here</a>';
 }
 ?>
 <p><i>phplist</i> started early 2000 as a small application for the
@@ -68,7 +68,7 @@ it's existence. You probably made quite an effort to find it and to decide to us
 having compared it to other similar applications, so you could help other people benefit
 from your experience.</p>
 
-<p>To do so, you can <?php echo PageLink2("vote","Vote")?> for phplist, or write reviews on the
+<p>To do so, you can <?php echo PageLink2('vote', 'Vote')?> for phplist, or write reviews on the
 sites that list applications. You can also tell other people you know about it.</p>
 </li>
 <li><p>You can <b>Translate</b> phplist into your language and submit the translation.
@@ -105,10 +105,12 @@ it or reports of a bug. If you report a bug, make sure to include as much inform
 facilitate the developers in solving the problem.</p>
 <p>The minimum requirements for reporting a bug are your system details:</p>
 
-<?php if (!stristr($_SERVER['HTTP_USER_AGENT'],'firefox')) { ?>
+<?php if (!stristr($_SERVER['HTTP_USER_AGENT'], 'firefox')) {
+    ?>
 <p>If you experience problems, please make sure to use Firefox to see if that solves the problem.
 <a href="http://www.spreadfirefox.com/?q=affiliates&amp;id=131358&amp;t=81"><img border="0" alt="Get Firefox!" title="Get Firefox!" src="images/getff.gif"/></a></p>
-<?php } ?>
+<?php 
+} ?>
 
 <p class="information">Your system details are:</p>
 <div class="systemdetails">
@@ -117,12 +119,12 @@ facilitate the developers in solving the problem.</p>
 <li>PHP version: <?php echo phpversion()?></li>
 <li>Browser: <?php echo $_SERVER['HTTP_USER_AGENT']?></li>
 <li>Webserver: <?php echo $_SERVER['SERVER_SOFTWARE']?></li>
-<li>Website: <a href="http://<?php echo getConfig("website")."$pageroot"?>"><?php echo getConfig("website")."$pageroot"?></a></li>
+<li>Website: <a href="http://<?php echo getConfig('website')."$pageroot"?>"><?php echo getConfig('website')."$pageroot"?></a></li>
 <li>Mysql Info: <?php echo mysql_get_server_info();?></li>
 <li>PHP Modules:<br/><ul class="modules">
 <?php
 $le = get_loaded_extensions();
-foreach($le as $module) {
+foreach ($le as $module) {
     print "         <li>$module</li>";
 }
 ?>
