@@ -6,17 +6,11 @@
  * it cannot use the DB contents, as the DB connection hasn't been established yet
  */
 define('PHPLISTINIT', true);
+error_reporting(0);
 
-define("VERSION", "3.2.2");
-
-if (empty($GLOBALS['commandline']) && isset($GLOBALS['developer_email']) && $_SERVER['HTTP_HOST'] != 'dev.phplist.com' && !empty($GLOBALS['show_dev_errors'])) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-    foreach ($_REQUEST as $key => $val) {
-        unset($$key);
-    }
-} else {
-    error_reporting(0);
+define("VERSION", "3.2.3");
+if (!defined('DEVVERSION')) {
+    define('DEVVERSION', false);
 }
 
 # record the start time(usec) of script

@@ -4741,9 +4741,9 @@ msgid "phplist has started sending the campaign with subject %s"
 msgstr "phpList iniciou o envio das mensagens com assunto %s"
 
 #: public_html/lists/admin/actions/processqueue.php:674
-#, php-format
+#, fuzzy, php-format
 msgid "to view the progress of this campaign, go to %s://%s"
-msgstr ""
+msgstr "para ver o progresso do envio desta mensagem, vá para http://%s"
 
 #: public_html/lists/admin/actions/processqueue.php:681
 msgid "Processing message"
@@ -4914,9 +4914,9 @@ msgid "phpList has finished sending the campaign with subject %s"
 msgstr "phpList concluiu o envio da campanha com assunto %s"
 
 #: public_html/lists/admin/actions/processqueue.php:1318
-#, php-format
+#, fuzzy, php-format
 msgid "to view the statistics of this campaign, go to %s://%s"
-msgstr ""
+msgstr "para ver os resultados desta campanha acesse http://%s"
 
 #: public_html/lists/admin/actions/processqueue.php:1326
 msgid "to send this message"
@@ -6778,8 +6778,9 @@ msgid "Name of the organisation"
 msgstr "Nome da organização"
 
 #: public_html/lists/admin/defaultconfig.php:84
+#, fuzzy
 msgid "Logo of the organisation"
-msgstr ""
+msgstr "Nome da organização"
 
 #: public_html/lists/admin/defaultconfig.php:93
 msgid "How often do you want to check for a new version of phplist (days)"
@@ -7326,8 +7327,9 @@ msgid "Your session timed out, please login again"
 msgstr "A sua sessão expirou, por favor identifique-se novamente"
 
 #: public_html/lists/admin/index.php:393
+#, fuzzy
 msgid "Main page"
-msgstr ""
+msgstr "Página Principal "
 
 #: public_html/lists/admin/index.php:397
 msgid "goodbye"

@@ -4733,9 +4733,11 @@ msgid "phplist has started sending the campaign with subject %s"
 msgstr "phpList ha iniziato ad inviare il messaggio con oggetto %s"
 
 #: public_html/lists/admin/actions/processqueue.php:674
-#, php-format
+#, fuzzy, php-format
 msgid "to view the progress of this campaign, go to %s://%s"
 msgstr ""
+"per visualizzare lo stato di avanzamento di questa messaggio, andare "
+"all'indirizzo http://%s"
 
 #: public_html/lists/admin/actions/processqueue.php:681
 msgid "Processing message"
@@ -4906,9 +4908,11 @@ msgid "phpList has finished sending the campaign with subject %s"
 msgstr "phpList ha finito di inviare il messaggio con oggetto %s"
 
 #: public_html/lists/admin/actions/processqueue.php:1318
-#, php-format
+#, fuzzy, php-format
 msgid "to view the statistics of this campaign, go to %s://%s"
 msgstr ""
+"per visualizzare il risultato di questa messaggio, andare all'indirizzo "
+"http://%s"
 
 #: public_html/lists/admin/actions/processqueue.php:1326
 msgid "to send this message"
@@ -7336,8 +7340,9 @@ msgid "Your session timed out, please login again"
 msgstr "La tua sessione è scaduta, per favore fai di nuovo il login"
 
 #: public_html/lists/admin/index.php:393
+#, fuzzy
 msgid "Main page"
-msgstr ""
+msgstr "Pagina iniziale"
 
 #: public_html/lists/admin/index.php:397
 msgid "goodbye"

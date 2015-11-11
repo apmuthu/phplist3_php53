@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: phpList 2.11.X\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-11-09 16:19+0000\n"
-"PO-Revision-Date: 2015-10-18 10:10+0000\n"
+"PO-Revision-Date: 2015-11-10 20:16+0000\n"
 "Last-Translator: Raynau <contact@lecochonsideral.info>\n"
 "Language-Team: phpList <info@phplist.com>\n"
 "Language: fr\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: public_html\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: /home/michiel/svn/phplist/translate/phplist\n"
-"X-POOTLE-MTIME: 1445163052.000000\n"
+"X-POOTLE-MTIME: 1447186576.000000\n"
 "X-Poedit-KeywordsList: _;gettext;gettext_noop;get;s\n"
 
 #: public_html/lists/index.php:622
@@ -4061,7 +4061,7 @@ msgstr "contenu du message absent"
 
 #: public_html/lists/admin/send_core.php:1174
 msgid "Incorrect URL for sending"
-msgstr ""
+msgstr "Le nom de domaine utilisé pour l'envoi n'est pas correct"
 
 #: public_html/lists/admin/send_core.php:1183
 msgid "From missing"
@@ -4842,7 +4842,7 @@ msgstr "phplist a commencé à envoyer le message ayant comme Sujet %s"
 #: public_html/lists/admin/actions/processqueue.php:674
 #, php-format
 msgid "to view the progress of this campaign, go to %s://%s"
-msgstr ""
+msgstr "pour afficher la progression de cet envoi, aller à %s://%s"
 
 #: public_html/lists/admin/actions/processqueue.php:681
 msgid "Processing message"
@@ -5017,6 +5017,7 @@ msgstr "phplist a fini d'envoyer le message ayant comme Objet %s"
 #, php-format
 msgid "to view the statistics of this campaign, go to %s://%s"
 msgstr ""
+"pour afficher les résultats de l'envoi de cette campagne, aller à %s://%s"
 
 #: public_html/lists/admin/actions/processqueue.php:1326
 msgid "to send this message"
@@ -6917,7 +6918,6 @@ msgid "Name of the organisation"
 msgstr "Nom de l'organisation"
 
 #: public_html/lists/admin/defaultconfig.php:84
-#, fuzzy
 msgid "Logo of the organisation"
 msgstr "Nom de l'organisation"
 
@@ -7362,9 +7362,8 @@ msgid "Initialise plugin"
 msgstr "Initialise plugiciel"
 
 #: public_html/lists/admin/initialise.php:190
-#, fuzzy
 msgid "List for testing"
-msgstr "Liste pour réaliser des tests."
+msgstr "Liste destinée à la réalisation de tests"
 
 #: public_html/lists/admin/initialise.php:192
 msgid "Sign up to our newsletter"
@@ -7470,11 +7469,11 @@ msgstr "Votre session a expiré, veuillez-vous connecter à nouveau"
 
 #: public_html/lists/admin/index.php:336
 msgid "Your session timed out, please login again"
-msgstr "Votre session a expirée, svp vous connecter de nouveau"
+msgstr "Votre session a expiré, veuillez renseigner de nouveau vos identifiants"
 
 #: public_html/lists/admin/index.php:393
 msgid "Main page"
-msgstr ""
+msgstr "Page Principale"
 
 #: public_html/lists/admin/index.php:397
 msgid "goodbye"
@@ -7497,8 +7496,8 @@ msgid ""
 "phpList will work without Javascript, but it will be easier to use if you "
 "switch it on."
 msgstr ""
-"phpList fonctionnera sans Javascript, mais il sera plus facile à utiliser si "
-"vous l'activez."
+"phpList fonctionnera sans Javascript, mais il sera plus convivial si vous "
+"l'activez."
 
 #: public_html/lists/admin/index.php:433
 #: public_html/lists/admin/processqueue.php:32
@@ -7522,13 +7521,14 @@ msgid ""
 "open_basedir restrictions are in effect, which may be the cause of the next "
 "warning"
 msgstr ""
-"open_basedir est activé, ces restrictions peuvent causer les alertes "
-"suivantes"
+"Vous essayez d'utiliser les flux RSS, mais l'analyse XML n'est pas inclue "
+"dans votre configuration php"
 
 #: public_html/lists/admin/index.php:446
 msgid "The attachment repository does not exist or is not writable"
 msgstr ""
-"Le répertoire pour les pièces jointes n'existe pas ou n'est pas inscriptible"
+"Le répertoire pour les pièces jointes n'existe pas ou n'est pas autorisé en "
+"écriture."
 
 #: public_html/lists/admin/index.php:457
 msgid "Process the queue"
@@ -8612,7 +8612,7 @@ msgstr "Valeur de l’attribut pour cet abonné"
 #: public_html/databasestructure.php:11 public_html/databasestructure.php:150
 #, fuzzy
 msgid "PKey"
-msgstr "PKey"
+msgstr "Liste pour réaliser des tests."
 
 #: public_html/databasestructure.php:13
 msgid "Is this subscriber confirmed"
@@ -9668,9 +9668,8 @@ msgid "pagetitle:bouncerule"
 msgstr "Titre de la page : règles gestion pour les messages revenus en erreur"
 
 #: public_html/databasestructure.php:337
-#, fuzzy
 msgid "pagetitlehover:bouncerule"
-msgstr "PKey"
+msgstr "Titre de la page : règle des messages retrounés"
 
 #: public_html/databasestructure.php:338
 msgid "pagetitle:checkbouncerules"
