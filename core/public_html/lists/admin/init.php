@@ -8,7 +8,7 @@
 define('PHPLISTINIT', true);
 error_reporting(0);
 
-define("VERSION", "3.2.3");
+define("VERSION", "3.2.4");
 if (!defined('DEVVERSION')) {
     define('DEVVERSION', false);
 }
@@ -527,6 +527,9 @@ if (!defined('PHPMAILERTESTHOST') && defined('PHPMAILERHOST')) {
 if (!defined('PHPMAILER_SECURE')) {
     define('PHPMAILER_SECURE', false);
 }
+if (!defined('PHPMAILER_SMTP_DEBUG')) {
+    define('PHPMAILER_SMTP_DEBUG', 0);
+}
 if (!defined('USERSPAGE_MAX')) {
     define('USERSPAGE_MAX', 1000);
 }
@@ -618,6 +621,8 @@ if (!isset($pageroot)) {
 $adminpages = $GLOBALS['pageroot'].'/admin';
 ## remove possibly duplicated // at the beginning
 $adminpages = preg_replace('~^//~', '/', $adminpages);
+
+$GLOBALS['homepage'] = 'home';
 
 if (!isset($systemroot)) {
     $systemroot = dirname(__FILE__);

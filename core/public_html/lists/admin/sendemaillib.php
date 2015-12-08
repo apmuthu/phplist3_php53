@@ -766,6 +766,12 @@ function sendEmail($messageid, $email, $hash, $htmlpref = 0, $rssitems = array()
 
   # build the email
   $mail = new PHPlistMailer($messageid, $destinationemail);
+
+    if ($isTestMail) {
+        $mail->SMTPDebug = PHPMAILER_SMTP_DEBUG;
+        $mail->Debugoutput = 'html';
+    }
+
     if ($forwardedby) {
         $mail->add_timestamp();
     }
@@ -798,9 +804,6 @@ function sendEmail($messageid, $email, $hash, $htmlpref = 0, $rssitems = array()
   switch ($cached[$messageid]['sendformat']) {
     case 'PDF':
       # send a PDF file to users who want html and text to everyone else
-      foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-          $plugin->processSuccesFailure($messageid, 'astext', $userdata);
-      }
       if ($htmlpref) {
           if (!$isTestMail) {
               Sql_Query("update {$GLOBALS['tables']['message']} set aspdf = aspdf + 1 where id = $messageid");
@@ -842,9 +845,6 @@ function sendEmail($messageid, $email, $hash, $htmlpref = 0, $rssitems = array()
       }
       break;
     case 'text and PDF':
-      foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-          $plugin->processSuccesFailure($messageid, 'astext', $userdata);
-      }
       # send a PDF file to users who want html and text to everyone else
       if ($htmlpref) {
           if (!$isTestMail) {
@@ -888,9 +888,6 @@ function sendEmail($messageid, $email, $hash, $htmlpref = 0, $rssitems = array()
       break;
     case 'text':
       # send as text
-      foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-          $plugin->processSuccesFailure($messageid, 'astext', $userdata);
-      }
       if (!$isTestMail) {
           Sql_Query("update {$GLOBALS['tables']['message']} set astext = astext + 1 where id = $messageid");
       }
@@ -918,9 +915,6 @@ function sendEmail($messageid, $email, $hash, $htmlpref = 0, $rssitems = array()
             if (!$isTestMail) {
                 Sql_Query("update {$GLOBALS['tables']['message']} set astextandhtml = astextandhtml + 1 where id = $messageid");
             }
-            foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                $plugin->processSuccesFailure($messageid, 'ashtml', $userdata);
-            }
         #  dbg("Adding HTML ".$cached[$messageid]["templateid"]);
           if (WORDWRAP_HTML) {
               ## wrap it: http://mantis.phplist.com/view.php?id=15528
@@ -936,9 +930,6 @@ function sendEmail($messageid, $email, $hash, $htmlpref = 0, $rssitems = array()
         } else {
             if (!$isTestMail) {
                 Sql_Query("update {$GLOBALS['tables']['message']} set astext = astext + 1 where id = $messageid");
-            }
-            foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                $plugin->processSuccesFailure($messageid, 'astext', $userdata);
             }
             $mail->add_text($textmessage);
 #          $mail->setText($textmessage);
@@ -1602,20 +1593,9 @@ exit;
         $cached[$messageid]['content'] = preg_replace('/<img(.*)src="\/'.$dir.'(.*)>/iU', '<img\\1src="'.$GLOBALS['public_scheme'].'://'.$baseurl.'/'.UPLOADIMAGES_DIR.'\\2>', $cached[$messageid]['content']);
     }
 
-  ## replace Logo placeholders
-  foreach (array('content', 'template', 'htmlfooter') as $element) {
-      preg_match_all('/\[LOGO\:?(\d+)?\]/', $cached[$messageid][$element], $logoInstances);
-      foreach ($logoInstances[0] as $index => $logoInstance) {
-          $size = sprintf('%d', $logoInstances[1][$index]);
-          if (!empty($size)) {
-              $logoSize = $size;
-          } else {
-              $logoSize = '500';
-          }
-          createCachedLogoImage($logoSize);
-          $cached[$messageid][$element] = str_replace($logoInstance, 'ORGANISATIONLOGO'.$logoSize.'.png', $cached[$messageid][$element]);
-      }
-  }
+    foreach (array('content', 'template', 'htmlfooter') as $element) {
+        $cached[$messageid][$element] = parseLogoPlaceholders($cached[$messageid][$element]);
+    }
 
     return 1;
 }

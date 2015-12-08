@@ -15,7 +15,6 @@ if (!$GLOBALS['message_envelope']) {
         $GLOBALS['message_envelope'] = $admin;
     }
 }
-$GLOBALS['homepage'] = 'home';
 
 if (defined('IN_WEBBLER') && is_object($GLOBALS['config']['plugins']['phplist'])) {
     $GLOBALS['tables'] = $GLOBALS['config']['plugins']['phplist']->tables;
@@ -419,6 +418,7 @@ function constructSystemMail($message, $subject = '')
         } else {
             $htmlcontent .= $phpListPowered;
         }
+        $htmlcontent = parseLogoPlaceholders($htmlcontent);
     }
 
     return array($htmlcontent,$textmessage);
@@ -1978,3 +1978,20 @@ function flushLogoCache()
 {
     Sql_Query(sprintf('delete from %s where template = 0 and filename like "ORGANISATIONLOGO%%.png"', $GLOBALS['tables']['templateimage']));
 }
+
+function parseLogoPlaceholders($content) {
+    ## replace Logo placeholders
+    preg_match_all('/\[LOGO\:?(\d+)?\]/', $content, $logoInstances);
+    foreach ($logoInstances[0] as $index => $logoInstance) {
+        $size = sprintf('%d', $logoInstances[1][$index]);
+        if (!empty($size)) {
+            $logoSize = $size;
+        } else {
+            $logoSize = '500';
+        }
+        createCachedLogoImage($logoSize);
+        $content = str_replace($logoInstance, 'ORGANISATIONLOGO'.$logoSize.'.png', $content);
+    }
+    return $content;
+}
+
