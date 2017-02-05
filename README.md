@@ -3,8 +3,6 @@ phpList v3 for PHP v5.3.x
 
 [![Build Status](https://travis-ci.org/phpList/phplist3.svg?branch=master)](https://travis-ci.org/phpList/phplist3)
 
-[![StyleCI](https://styleci.io/repos/32042787/shield)](https://styleci.io/repos/32042787)
-
 * This version starts by keeping track of phplist v3.x releases
 * The original project is at [SourceForge](https://sourceforge.net/projects/phplist/) - their [commercial offering](http://www.phplist.com)
 * It is being developed at [GitHub](https://github.com/phpList/phplist3)
