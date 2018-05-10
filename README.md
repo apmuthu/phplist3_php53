@@ -15,31 +15,45 @@ phpList v3 for PHP v5.3.x
 
 phpList is a set of PHP pages that implement a simple mailinglist system. It uses MySQL for storing the information.
 
-Particular aspects of the system are:
+Features:
 
 * Posting to the mailinglist is via a webpage. It is therefore more a kind of "announcements" list system than an actual email mailinglist.
 * It is designed to be able to deal with a very large amount of email addresses.
 * Users can sign up to multiple lists. If a message is sent to multiple lists, they will only receive one copy of the email and not as many as the number of lists they are subscribed to.
 * Geographical information. If people sign up, they can identify the geographical location they're in and when sending an email you can determine which locations need to receive the message.
 * Personalised emails. You can specify "variables" in your emails, which will at send time be replaced by the appropriate values for specific to the email recepient.
+* Tracking how many users opened + clicked your email.
+* Bounce Handling processed. Auto and Self unsubscribe.
+* CSV User Import and Export
+* Send a Webpage as mail
+* Send scheduling
+* Attachments in mail
+* Load throttling
 
 ---
 
 ## Requirements
-To use phpList you need a webserver which supports PHP version 5, and a MySQL database.
+See [System requirements](https://resources.phplist.com/system)
 
-phpList should work with a standard PHP environment, but some functionality may require additional modules. 
+## Demo
 
-More detailed requirements can be found in the [Reources Wiki](https://resources.phplist.com/system)
+Latest stable [Public demo](http://demo.phplist.org/lists/admin/) 
+
+Latest unstable [Latest Dev code](http://dev.phplist.com/lists/admin/)
+
+## Development
+See [phpList development](https://resources.phplist.com/develop/start)
 
 ## Installation
-Read the installation instructions with abundant help at: 
-
-https://www.phplist.org/manual/ch028_installation.xhtml
+See the [Installation guide](https://www.phplist.org/manual/ch028_installation.xhtml)
 
 ## Upgrade
 
-phpList upgrade process.
+### For users
+
+See [Upgrading a manual installation](https://www.phplist.org/manual/ch031_upgrading.xhtml)
+
+### For developers
 
 How to upgrade from any previous version to the latest version
 
@@ -76,6 +90,10 @@ Step 5. Go to http://yourdomain/lists/admin/ and choose the Upgrade link
 Step 6. Click the link in this page.
 
 This process may take quite a while if your database is large. Don't interrupt it.
+
+## Issues
+
+Report issues to [Mantis issue tracker](https://mantis.phplist.org/bug_report_page.php) (select project *phpList*)
 
 ## Languages
 In the directory `phplists/lists/texts` you will find existing translations of the public

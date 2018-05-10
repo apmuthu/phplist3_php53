@@ -15,7 +15,7 @@ if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
 } elseif (is_file('config/config.php')) {
     include 'config/config.php';
 } else {
-    print "Error, cannot find config file\n";
+    echo "Error, cannot find config file\n";
     exit;
 }
 

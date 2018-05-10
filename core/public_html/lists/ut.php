@@ -16,7 +16,7 @@ if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
 } elseif (is_file('config/config.php')) {
     include 'config/config.php';
 } else {
-    print "Error, cannot find config file\n";
+    echo "Error, cannot find config file\n";
     exit;
 }
 
@@ -53,4 +53,4 @@ if (!empty($_GET['u']) && !empty($_GET['m'])) {
 
 @ob_end_clean();
 header('Content-Type: image/png');
-print base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=');
+echo base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=');
